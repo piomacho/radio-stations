@@ -5,6 +5,9 @@ import cors from 'cors';
 import logger from 'morgan';
 import path from 'path';
 import BaseRouter from './routes';
+import superagent from 'superagent';
+import { getFieldsFromObject } from './common/global';
+// import { logger } from '@shared';
 
 // Init express
 const app = express();
@@ -17,6 +20,25 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use('/api', BaseRouter);
 
+
+app.get('/api/hello', (req, res) => {
+
+    try {
+        superagent.get('https://mapy.radiopolska.pl/api/programAll/PL').end((err, response) => {
+        const programArray = getFieldsFromObject(response.body.data, ['nazwa', 'id_program']);
+        return res.send(programArray);
+    });
+       
+    } catch (err) {
+        // logger.error(err.message, err);
+        return res.status(404).json({
+            error: err.message,
+        });
+    }
+    // res.send({ express: 'Hello From Express' });
+  });
+
+//   https://mapy.radiopolska.pl/api/programAll/PL
 /**
  * Point express to the 'views' directory. If you're using a
  * single-page-application framework like react or angular
@@ -24,13 +46,13 @@ app.use('/api', BaseRouter);
  * configure this to only serve the index file while in
  * production mode.
  */
-const viewsDir = path.join(__dirname, 'views');
-app.set('views', viewsDir);
+// const viewsDir = path.join(__dirname, 'views');
+// app.set('views', viewsDir);
 const staticDir = path.join(__dirname, 'public');
 app.use(express.static(staticDir));
-app.get('*', (req: Request, res: Response) => {
-    res.sendFile('index.html', {root: viewsDir});
-});
+// app.get('*', (req: Request, res: Response) => {
+//     res.sendFile('index.html', {root: viewsDir});
+// });
 
 // Export express instance
 export default app;
