@@ -1,91 +1,58 @@
-import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-// import {
-//     StationsWrapper,
-//     StationsDropdownList,
-//     StationsDownIconWrapper,
-//     StationsLabel,
-//     StationsSelectedLabel
-// // } from './Stations.style';
-// import { useClickOutside } from 'src/universes/carousel/utils/useClickOutside';
-// import { Option } from './Option/Option';
-import { observable } from 'mobx';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+import { callApiFetch } from '../../common/global';
+import SelectBox from '../SelectBox/SelectBox';
 
-export interface StationsOptionsType {
-    [key: string]: string;
-}
-
-interface StationsPropsType {
-  
-}
-
-interface OptionType {
-    id: string,
-    label: string
-}
 
 interface ProgramType{
     id_program: string;
     nazwa: string;
 }
 
-class StationsState {
-    @observable programs: Array<ProgramType>
-    @observable selected: OptionType | null;
-
-    constructor() {
-        this.programs = [];
-        this.selected = null;
-    }
-    //     this.isOpen = !this.isOpen;
-    // }
-
-    handleChange = (selectedOption: OptionType) => {
-        this.selected = selectedOption;
-        console.log(`Option selected:`, this.selected);
-        
-    };
-    // setOpen = (open: boolean): void => {
-    //     this.isOpen = !open;
-    // }
-
+interface OptionType {
+    value: string,
+    label: string
 }
 
-const callApi = async () => {
-    const response = await fetch('/api/hello');
-    const body = await response.json();
-    if (response.status !== 200) throw Error(body.message);
+// const callApi = async () => {
+//     const response = await fetch('/api/hello');
+//     const body = await response.json();
+//     if (response.status !== 200) throw Error(body.message);
     
-    return body;
-  };
+//     return body;
+// };
 
-// const  
+// const setParameters = (programs: Array<ProgramType>): Array<OptionType> => {
+//     return programs.map((program: ProgramType) => {
+//         return { value: program.id_program, label: program.nazwa} 
+//     });
+// }
+const setParameters = (programs: Array<ProgramType>): Array<OptionType> => {
+    return programs.map((program: ProgramType) => {
+        return { value: program.id_program, label: program.nazwa} 
+    });
+}
 
-const Stations = observer(() => {
- const [state] = React.useState(() => new StationsState());
+const Stations = () => {
+    // const [selectedOption, setSelectedOption ] = useState({value: '', label: ''});
+    const [ stations, setStations ] = useState([{value: '', label: ''}]);
 
     useEffect(() => {
-        callApi()
-        .then(res =>  state.programs = res)
+        callApiFetch('api/hello')
+        .then(response =>  setParameters(response))
+        .then(programs =>  setStations(programs))
         .catch(err => console.log(err));
         // code to run on component mount
       }, [])
 
-    const { programs, selected, handleChange } = state;
-    const options = programs.map((program: ProgramType) => {
-        return { id: program.id_program, label: program.nazwa} 
-    });
-    // const [setRef] = useClickOutside({callback: state.setOpen}
-
+ 
     return (
-        <Select
-          value={selected}
-          onChange={() => handleChange}
-          options={options}
-        />
+    stations &&
+      <SelectBox
+        options={stations}
+      />
     );
-});
+  
+}
 
 export default Stations;
