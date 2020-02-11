@@ -1,13 +1,13 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import Stations from './components/Stations/Stations';
+import { AppWrapper } from './App.styles';
+import SelectionPanel from './components/SelectionPanel/SelectionPanel';
+
 
 const App = () => {
   return (
-    <div className="App">
-      <Stations />
-    </div>
+    <AppWrapper>
+      <SelectionPanel />
+    </AppWrapper>
   );
 }
 

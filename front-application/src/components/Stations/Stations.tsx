@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
 import { callApiFetch } from '../../common/global';
 import SelectBox from '../SelectBox/SelectBox';
+import store from '../../Store/Store';
 
 
 interface ProgramType{
@@ -14,19 +14,6 @@ interface OptionType {
     label: string
 }
 
-// const callApi = async () => {
-//     const response = await fetch('/api/hello');
-//     const body = await response.json();
-//     if (response.status !== 200) throw Error(body.message);
-    
-//     return body;
-// };
-
-// const setParameters = (programs: Array<ProgramType>): Array<OptionType> => {
-//     return programs.map((program: ProgramType) => {
-//         return { value: program.id_program, label: program.nazwa} 
-//     });
-// }
 const setParameters = (programs: Array<ProgramType>): Array<OptionType> => {
     return programs.map((program: ProgramType) => {
         return { value: program.id_program, label: program.nazwa} 
@@ -34,15 +21,16 @@ const setParameters = (programs: Array<ProgramType>): Array<OptionType> => {
 }
 
 const Stations = () => {
-    // const [selectedOption, setSelectedOption ] = useState({value: '', label: ''});
-    const [ stations, setStations ] = useState([{value: '', label: ''}]);
+  const { useGlobalState } = store;
+  const [station, setStation] = useGlobalState('station');
+  const [ stations, setStations ] = useState([{value: '', label: ''}]);
+
 
     useEffect(() => {
-        callApiFetch('api/hello')
+        callApiFetch('api/stations/all')
         .then(response =>  setParameters(response))
-        .then(programs =>  setStations(programs))
+        .then(programs =>  { setStations(programs); setStation(programs[0]); })
         .catch(err => console.log(err));
-        // code to run on component mount
       }, [])
 
  
@@ -50,6 +38,8 @@ const Stations = () => {
     stations &&
       <SelectBox
         options={stations}
+        setSelectedOption={setStation}
+        selectedValue={station}
       />
     );
   

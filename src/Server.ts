@@ -21,22 +21,22 @@ app.use(cookieParser());
 app.use('/api', BaseRouter);
 
 
-app.get('/api/hello', (req, res) => {
+// app.get('/api/hello', (req, res) => {
 
-    try {
-        superagent.get('https://mapy.radiopolska.pl/api/programAll/PL').end((err, response) => {
-        const programArray = getFieldsFromObject(response.body.data, ['nazwa', 'id_program']);
-        return res.send(programArray);
-    });
+//     try {
+//         superagent.get('https://mapy.radiopolska.pl/api/programAll/PL').end((err, response) => {
+//         const programArray = getFieldsFromObject(response.body.data, ['nazwa', 'id_program']);
+//         return res.send(programArray);
+//     });
        
-    } catch (err) {
-        // logger.error(err.message, err);
-        return res.status(404).json({
-            error: err.message,
-        });
-    }
-    // res.send({ express: 'Hello From Express' });
-  });
+//     } catch (err) {
+//         // logger.error(err.message, err);
+//         return res.status(404).json({
+//             error: err.message,
+//         });
+//     }
+//     // res.send({ express: 'Hello From Express' });
+//   });
 
 //   https://mapy.radiopolska.pl/api/programAll/PL
 /**
