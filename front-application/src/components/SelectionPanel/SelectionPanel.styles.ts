@@ -7,3 +7,10 @@ export const Wrapper = styled('div')`
     flex-direction: column;
     padding: 10px;
 `;
+
+export const ButtonWrapper = styled('div')`
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+
+`;

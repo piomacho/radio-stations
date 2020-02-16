@@ -43,9 +43,7 @@ class StationsState {
     // }
 
     handleChange = (selectedOption: any, data: any) => {
-        this.selected = selectedOption.value;
-        console.log(`Option selected:`, this.selected, " --- ", data);
-        
+        this.selected = selectedOption.value;        
     };
     // setOpen = (open: boolean): void => {
     //     this.isOpen = !open;
