@@ -27,6 +27,7 @@
     "http-status-codes": "^1.4.0",
     "module-alias": "^2.2.2",
     "morgan": "^1.9.1",
+    "plotly.js-gl3d-dist": "^1.52.2",
     "react-context-hook": "^1.2.0",
     "react-hooks-global-state": "^1.0.0-alpha.2",
     "winston": "^3.2.1"

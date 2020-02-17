@@ -10,9 +10,8 @@ export interface ButtonType{
     backColor?: string;
     backColorHover?: string;
     label?: string;
-    onClick: () => void;
+    onClick: any; //tdo remove any
 }
-
 
 const Button = ({label, width, height, color, colorHover, backColor, backColorHover, onClick} :ButtonType) => {
     return (
