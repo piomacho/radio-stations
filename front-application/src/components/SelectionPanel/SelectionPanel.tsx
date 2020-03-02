@@ -27,16 +27,16 @@ const PlotButton = memo(SubmitButton);
 const format = (coords: Array<CoordinatesType>): Array<Array<number>> => {
   // const arr = [];
   const secondArr: Array<Array<any>>= [[]];
-  for(let i = 0; i < 5; i++) {
+  for(let i = 0; i < 50; i++) {
     secondArr[i] =[];
-    for(let j = 0; j<5; j++ ) {
-      secondArr[i].push(coords[i*5+j] && coords[i*5+j].elevation);
+    for(let j = 0; j<50; j++ ) {
+      secondArr[i].push(coords[i*50+j] && coords[i*50+j].elevation);
     }
 
   
     // arr.push(secondArr);
   }
-  console.log("------------------------", secondArr)
+  // console.log("------------------------", secondArr)
   return secondArr;
 }
 
@@ -61,7 +61,7 @@ const SelectionPanel = () => {
 
   const getCoordinates = async() => {
    
-    const coords =  await generateTrialCoordinates(+adapter.dlugosc, +adapter.szerokosc, 25);
+    const coords =  await generateTrialCoordinates(+adapter.dlugosc, +adapter.szerokosc, 50);
         setLoading(true);
          if(coords) {
           OEClient.postLookup(
