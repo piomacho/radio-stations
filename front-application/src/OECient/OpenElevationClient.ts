@@ -80,14 +80,47 @@ class OpenElevationRestClient extends React.Component {
             headers,
             body: JSON.stringify(body)
         }).then((response) => {
-            // console.log("no ja pierdole 1", response.json());
             return response.json() ;
         }).then((body) => {
-            console.log("no ja pierdole 2",body);
             deferred.resolve(body);
         }).catch((error) => {
             deferred.reject(error);
         });
+    };
+
+        /**
+     * 
+     * @method
+     * @name OpenElevationRestClient#postLookup
+     * @param {object} parameters - method options and parameters
+     * @param {string} parameters.locations - locations: [{latitude: 42.216667,longitude: 27.416667}]
+     */
+    postLookupNew = (parameters : any) => {
+        if (parameters === undefined) {
+            parameters = {};
+        }
+        let deferred = Q.defer();
+        let domain = this.domain,
+            path = '/lookupnew';
+        let body: Record<string, any> = {},
+            queryParameters: Record<string, any> = {},
+            headers: Record<string, any> = {},
+            form: Record<string, any> = {};
+
+        headers["Accept"] = ["application/json"];
+        headers["Content-Type"] = ["application/json"];
+        // adapterLongitude: +adapter.dlugosc, adapterLatitude: 
+        if (parameters['adapterLongitude'] !== undefined && parameters['adapterLatitude'] !== undefined && parameters['range'] !== undefined) {
+            body = {"adapterLongitude": parameters['adapterLongitude'], adapterLatitude: parameters['adapterLatitude'], range: parameters['range'] };
+            
+        }
+        console.log("body ", body);
+
+        queryParameters = this.mergeQueryParams(parameters, queryParameters);
+
+        this.makeRequest('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+        return deferred.promise;
     };
 
     /**
@@ -98,7 +131,6 @@ class OpenElevationRestClient extends React.Component {
      * @param {string} parameters.locations - locations: [{latitude: 42.216667,longitude: 27.416667}]
      */
     postLookup = (parameters : any) => {
-        console.log("IDZIE")
         if (parameters === undefined) {
             parameters = {};
         }
@@ -114,7 +146,6 @@ class OpenElevationRestClient extends React.Component {
         headers["Content-Type"] = ["application/json"];
 
         if (parameters['locations'] !== undefined) {
-            console.log("WTH")
             body = {"locations": parameters['locations'] };
             
         }

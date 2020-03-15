@@ -20,7 +20,7 @@ interface OptionType {
 
 const setParameters = (adapters: Array<AdapterType>): Array<OptionType> => {
     return adapters.map((adapter: AdapterType) => {
-        return { value: adapter.id_obiekt, label: adapter.obiekt, szerokosc: adapter.szerokosc, dlugosc: adapter.szerokosc} 
+        return { value: adapter.id_obiekt, label: adapter.obiekt, szerokosc: adapter.szerokosc, dlugosc: adapter.dlugosc} 
     });
 }
 

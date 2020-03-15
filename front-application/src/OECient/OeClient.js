@@ -114,7 +114,6 @@ class OpenElevationRestClient extends React.Component {
         headers["Content-Type"] = ["application/json"];
 
         if (parameters['locations'] !== undefined) {
-            console.log("WTH")
             body = {"locations": parameters['locations'] };
             
         }

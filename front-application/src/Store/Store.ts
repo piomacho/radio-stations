@@ -17,10 +17,16 @@ interface InitialStateType {
         dlugosc: string;
         szerokosc: string;
     },
-    coordinates: Array<CoordinatesType>
+    // todo remove any
+    coordinates: Array<Array<number>>,
+    trialCoords: Array<any>,
+    elevationResults: Array<CoordinatesType>
 }
 
-const initialState: InitialStateType = { station: {value: '', label: ''},  adapter: {value: '', label: '', dlugosc: '', szerokosc: ''}, coordinates: []}; 
+const initialState: InitialStateType = { station: {value: '', label: ''},  adapter: {value: '', label: '', dlugosc: '', szerokosc: ''}, coordinates: [], trialCoords: [], elevationResults: []}; 
+
+// router dom issue
+  //@ts-ignore 
 const store = createStore(null, initialState);
 
 export default store;

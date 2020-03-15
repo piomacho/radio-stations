@@ -23,6 +23,7 @@ export const SubmitButton = styled('a')<ButtonType>`
     display: inline-block;
     border: none;
     transition: all 0.4s ease 0s;
+    cursor: pointer;
 
     &:hover {
         background: ${props => props.backColorHover ?  props.backColorHover : '#fff'};

@@ -13,7 +13,7 @@ export interface ButtonType{
     onClick: any; //tdo remove any
 }
 
-const Button = ({label, width, height, color, colorHover, backColor, backColorHover, onClick} :ButtonType) => {
+const Button = ({label, width, height, color, colorHover, backColor, backColorHover, onClick}: ButtonType) => {
     return (
         <Wrapper width={width} height={height} onClick={onClick}>
             <SubmitButton color={color} colorHover={colorHover} backColor={backColor} backColorHover={backColorHover}>{label}</SubmitButton>

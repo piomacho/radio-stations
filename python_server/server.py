@@ -100,6 +100,34 @@ def body_to_locations():
 
     return latlng
 
+def body_to_adapter():
+    print("body_to_adapters ")
+    try:
+        print("tried")
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        # adapterLongitude = request.json.get('adapterLongitude', None)
+        # rangePar = request.json.get('range', None)
+    except Exception:
+        raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
+
+    if not adapterLatitude:
+        raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
+    # if not adapterLongitude:
+    #     raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    # if not rangePar:
+    #     raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
+
+    latlng = []
+    print("body_to_adapters -> ")
+    # for l in locations:
+    #     try:
+    #         latlng += [ (l['latitude'],l['longitude']) ]
+    #     except KeyError:
+    #         raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
+
+    return latlng
+
+
 
 def do_lookup(get_locations_func):
     """
@@ -109,6 +137,22 @@ def do_lookup(get_locations_func):
     """
     try:
 	print("du lukap")
+        locations = get_locations_func()
+        return {'results': [get_elevation(lat, lng) for (lat, lng) in locations]}
+    except InternalException as e:
+        response.status = 400
+        response.content_type = 'application/json'
+        return e.args[0]
+
+
+def do_lookup_new(get_locations_func):
+    """
+    Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
+    and returns an answer ready to go to the client.
+    :return: 
+    """
+    try:
+	print("du lukap new ")
         locations = get_locations_func()
         return {'results': [get_elevation(lat, lng) for (lat, lng) in locations]}
     except InternalException as e:
@@ -140,5 +184,23 @@ def post_lookup():
         :return: 
         """
     return do_lookup(body_to_locations)
+
+
+# Base Endpoint
+URL_ENDPOINT_NEW = '/api/v1/lookupnew'
+
+# For CORS
+@route(URL_ENDPOINT, method=['OPTIONS'])
+def cors_handler():
+    return {}
+
+@route(URL_ENDPOINT, method=['POST'])
+def post_lookup_new():
+    """
+        GET method. Uses body_to_locations.
+        :return: 
+        """
+    print("DUPA")
+    return do_lookup_new(body_to_adapter)
 
 run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)
