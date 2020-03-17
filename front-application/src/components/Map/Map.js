@@ -10,7 +10,7 @@ import {
 import store from "../../Store/Store";
 import { callApiFetch } from "../../common/global";
 import { measureDistance } from "../../common/global";
-import Keys from "../../../keys.js"
+import Keys from "../../keys"
 
 const MapWithAMarker = compose(
   withScriptjs,

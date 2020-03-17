@@ -77,27 +77,27 @@ const SelectionPanel = () => {
     setTrialCoords(coords);
     setLoading(true);
     if (coords) {
-      OEClient.postLookup({
-        locations: coords
-      })
-        .then((results: any) => {
-          const result = format(results.results, 40);
-          setCoordinates(result);
-          setElevationResults(results.results);
-          return true;
-        })
-        .then(a => {
+      // OEClient.postLookup({
+      //   locations: coords
+      // })
+      //   .then((results: any) => {
+      //     const result = format(results.results, 40);
+      //     setCoordinates(result);
+      //     setElevationResults(results.results);
+      //     return true;
+      //   })
+      //   .then(a => {
          
-          setLoading(false);
-        })
-        .catch((error: any) => {
-          console.log("Error postLookup:" + error);
-        });
+      //     setLoading(false);
+      //   })
+      //   .catch((error: any) => {
+      //     console.log("Error postLookup:" + error);
+      //   });
 
 
 
         OEClient.postLookupNew({
-          locations: { adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 20 }
+           adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 20 
         })
           .then((results: any) => {
             console.log("postLookupNew", results);
@@ -146,7 +146,7 @@ const SelectionPanel = () => {
         <SubmitPlotMemoButton callback={showModal(true, "plot")} />
       </ButtonWrapper>
       <ButtonWrapper>
-        <SubmitMapsMemoButton callback={showModal(true, "maps")} />
+        <SubmitMapsButton callback={showModal(true, "maps")} />
       </ButtonWrapper>
       {loading ? (
         <LoaderOverLay>

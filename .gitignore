@@ -8,14 +8,14 @@ npm-debug.log
 /.pnp
 .pnp.js
 
-/src/keys.js
+/src/keys.ts
 
 # testing
 /front-application/coverage
 
 # production
 /front-application/build
-/front-application/keys.js
+/front-application/src/keys.ts
 /python_server/data
 # misc
 .DS_Store

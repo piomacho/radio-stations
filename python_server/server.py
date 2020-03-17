@@ -1,5 +1,5 @@
+import sys
 import json
-
 import bottle
 from bottle import route, run, request, response, hook
 
@@ -100,25 +100,46 @@ def body_to_locations():
 
     return latlng
 
+def generateCoordinates(range1, x0, y0):
+
+    cArray = []
+    for x in range(range1):
+        for y in range(range1):
+            cArray += [{"latitude": round(((x0 + 0.001 * x) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 + 0.001 * y) + sys.float_info.epsilon) * 1000) / 1000 }]
+
+    for x1 in range(range1):
+        for y1 in range(range1):
+            cArray += [{"latitude": round(((x0 - 0.001 * x1) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 + 0.001 * y1) + sys.float_info.epsilon) * 1000) / 1000 }]
+
+    for x2 in range(range1):
+        for y2 in range(range1):
+            cArray += [{"latitude": round(((x0 - 0.001 * x2) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 - 0.001 * y2) + sys.float_info.epsilon) * 1000) / 1000 }]
+
+    for x3 in range(range1):
+        for y3 in range(range1):
+            cArray += [{"latitude": round(((x0 + 0.001 * x3) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 - 0.001 * y3) + sys.float_info.epsilon) * 1000) / 1000 }]
+    return cArray
+
 def body_to_adapter():
     print("body_to_adapters ")
+    print("TU ->>> ",generateCoordinates(20, 15.33, 20))
     try:
-        print("tried")
+        print("tried", request.json)
         adapterLatitude = request.json.get('adapterLatitude', None)
-        # adapterLongitude = request.json.get('adapterLongitude', None)
-        # rangePar = request.json.get('range', None)
+        adapterLongitude = request.json.get('adapterLongitude', None)
+        rangePar = request.json.get('range', None)
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
     if not adapterLatitude:
         raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
-    # if not adapterLongitude:
-    #     raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
-    # if not rangePar:
-    #     raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
+    if not adapterLongitude:
+        raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    if not rangePar:
+        raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
 
-    latlng = []
-    print("body_to_adapters -> ")
+    latlng = [1, 2]
+    print("MYK !! ")
     # for l in locations:
     #     try:
     #         latlng += [ (l['latitude'],l['longitude']) ]
@@ -136,7 +157,6 @@ def do_lookup(get_locations_func):
     :return: 
     """
     try:
-	print("du lukap")
         locations = get_locations_func()
         return {'results': [get_elevation(lat, lng) for (lat, lng) in locations]}
     except InternalException as e:
@@ -154,7 +174,7 @@ def do_lookup_new(get_locations_func):
     try:
 	print("du lukap new ")
         locations = get_locations_func()
-        return {'results': [get_elevation(lat, lng) for (lat, lng) in locations]}
+        return {'results': locations}
     except InternalException as e:
         response.status = 400
         response.content_type = 'application/json'
@@ -190,17 +210,16 @@ def post_lookup():
 URL_ENDPOINT_NEW = '/api/v1/lookupnew'
 
 # For CORS
-@route(URL_ENDPOINT, method=['OPTIONS'])
+@route(URL_ENDPOINT_NEW, method=['OPTIONS'])
 def cors_handler():
     return {}
 
-@route(URL_ENDPOINT, method=['POST'])
+@route(URL_ENDPOINT_NEW, method=['POST'])
 def post_lookup_new():
     """
         GET method. Uses body_to_locations.
         :return: 
         """
-    print("DUPA")
     return do_lookup_new(body_to_adapter)
 
 run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)

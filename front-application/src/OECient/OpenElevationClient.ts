@@ -87,13 +87,12 @@ class OpenElevationRestClient extends React.Component {
             deferred.reject(error);
         });
     };
-
-        /**
+    /**
      * 
      * @method
-     * @name OpenElevationRestClient#postLookup
+     * @name OpenElevationRestClient#postLookupNew
      * @param {object} parameters - method options and parameters
-     * @param {string} parameters.locations - locations: [{latitude: 42.216667,longitude: 27.416667}]
+     
      */
     postLookupNew = (parameters : any) => {
         if (parameters === undefined) {
@@ -106,7 +105,7 @@ class OpenElevationRestClient extends React.Component {
             queryParameters: Record<string, any> = {},
             headers: Record<string, any> = {},
             form: Record<string, any> = {};
-
+            console.log("parameters ", parameters);
         headers["Accept"] = ["application/json"];
         headers["Content-Type"] = ["application/json"];
         // adapterLongitude: +adapter.dlugosc, adapterLatitude: 
@@ -114,7 +113,7 @@ class OpenElevationRestClient extends React.Component {
             body = {"adapterLongitude": parameters['adapterLongitude'], adapterLatitude: parameters['adapterLatitude'], range: parameters['range'] };
             
         }
-        console.log("body ", body);
+        console.log("body ", domain + path);
 
         queryParameters = this.mergeQueryParams(parameters, queryParameters);
 
