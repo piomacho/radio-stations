@@ -121,13 +121,11 @@ def generateCoordinates(range1, x0, y0):
     return cArray
 
 def body_to_adapter():
-    print("body_to_adapters ")
-    print("TU ->>> ",generateCoordinates(20, 15.33, 20))
     try:
-        print("tried", request.json)
         adapterLatitude = request.json.get('adapterLatitude', None)
         adapterLongitude = request.json.get('adapterLongitude', None)
         rangePar = request.json.get('range', None)
+        print("range ", rangePar)
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -138,13 +136,14 @@ def body_to_adapter():
     if not rangePar:
         raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
 
-    latlng = [1, 2]
-    print("MYK !! ")
-    # for l in locations:
-    #     try:
-    #         latlng += [ (l['latitude'],l['longitude']) ]
-    #     except KeyError:
-    #         raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
+    locations = generateCoordinates(rangePar, adapterLatitude, adapterLongitude);
+    latlng = [];
+
+    for l in locations:
+        try:
+            latlng += [ (l['latitude'],l['longitude']) ]
+        except KeyError:
+            raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
     return latlng
 
@@ -220,6 +219,6 @@ def post_lookup_new():
         GET method. Uses body_to_locations.
         :return: 
         """
-    return do_lookup_new(body_to_adapter)
+    return do_lookup(body_to_adapter)
 
 run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)

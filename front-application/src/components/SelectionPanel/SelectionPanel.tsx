@@ -74,9 +74,9 @@ const SelectionPanel = () => {
       +adapter.dlugosc,
       20
     );
-    setTrialCoords(coords);
+    // setTrialCoords(coords);
     setLoading(true);
-    if (coords) {
+    // if (coords) {
       // OEClient.postLookup({
       //   locations: coords
       // })
@@ -97,20 +97,23 @@ const SelectionPanel = () => {
 
 
         OEClient.postLookupNew({
-           adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 20 
+           adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 12 
         })
           .then((results: any) => {
-            console.log("postLookupNew", results);
+            setTrialCoords(results.results);
+            const result = format(results.results, 60);
+         
+            setCoordinates(result);
+            setElevationResults(results.results);
             return true;
           })
-          .then(a => {
-           
-            // setLoading(false);
-          })
-          .catch((error: any) => {
-            console.log("Error postLookup:" + error);
-          });
-    }
+        .then(a => {
+          setLoading(false);
+        })
+        .catch((error: any) => {
+          console.log("Error postLookup:" + error);
+        });
+    // }
 
     // console.info("cooords ->  ", generateTrialCoordinates(5,5,10))
   };
