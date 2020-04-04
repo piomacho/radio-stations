@@ -66,7 +66,7 @@ const SelectionPanel = () => {
   const [adapter, setAdapter] = useGlobalState("adapter");
   const [coordinates, setCoordinates] = useGlobalState("coordinates");
   const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
-  const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
+  const OEClient = new OpenElevationClient("http://machoski:10000/api/v1");
 
   const getCoordinates = async () => {
     const coords = await generateTrialCoordinates(

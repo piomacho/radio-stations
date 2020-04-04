@@ -221,4 +221,4 @@ def post_lookup_new():
         """
     return do_lookup(body_to_adapter)
 
-run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)
+run(host='0.0.0.0', port=10000, server='waitress', workers=4)
