@@ -4,17 +4,14 @@ import store, { CoordinatesType } from "../../Store/Store";
 import Button from "../Button/Button";
 
 import createPlotlyComponent from "react-plotlyjs";
-//See the list of possible plotly bundles at https://github.com/plotly/plotly.js/blob/master/dist/README.md#partial-bundles or roll your own
 import Plotly from "plotly.js-gl3d-dist";
-import { Link } from "react-router-dom";
+import { ButtonWrapper } from "../Button/Button.styles";
 
 const PlotlyComponent = createPlotlyComponent(Plotly);
 
 interface PlotModalType {
   modalVisiblity: boolean;
   showModal: any;
-  // props: HighchartsReact.Props
-  // showModal: (event: boolean) => (e: React.MouseEvent<Element, MouseEvent> )=> void
 }
 
 const format = (coords: Array<CoordinatesType>): Array<Array<number>> => {
@@ -69,13 +66,16 @@ const PlotModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         layout={layout}
         config={{}}
       />
-      <Button
-        onClick={showModal(false, "plot")}
-        label={"Close"}
-        height={30}
-        width={50}
-        backColorHover={"#ff7979"}
-      />
+      <ButtonWrapper>
+        <Button
+          onClick={showModal(false, "plot")}
+          label={"Close"}
+          height={30}
+          width={50}
+          backColorHover={"#ff7979"}
+        />
+      </ButtonWrapper>
+
     </Modal>
   );
 };

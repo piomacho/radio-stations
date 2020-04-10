@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-interface ButtonType { 
+interface ButtonType {
     width?: number;
     height?: number;
     color?: string;
@@ -29,9 +29,13 @@ export const SubmitButton = styled('a')<ButtonType>`
         background: ${props => props.backColorHover ?  props.backColorHover : '#fff'};
         color: ${props => props.colorHover ?  props.colorHover : '#fff'};
         letter-spacing: 1px;
-        -webkit-box-shadow: 0px 5px 40px -10px rgba(0,0,0,0.57);
-        -moz-box-shadow: 0px 5px 40px -10px rgba(0,0,0,0.57);
         box-shadow: 5px 40px -10px rgba(0,0,0,0.57);
         transition: all 0.4s ease 0s;
     }
+`;
+
+export const ButtonWrapper = styled("div")`
+    position: absolute;
+    bottom: 45px;
+    right: 50px;
 `;

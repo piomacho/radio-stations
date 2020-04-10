@@ -15,6 +15,7 @@ import OpenElevationClient from "../../OECient/OpenElevationClient";
 import Loader from "react-loader-spinner";
 import { LoaderContainer } from "../Adapters/Adapters.style";
 import GMapsModal from "../GMapsModal/GMapsModal";
+import ExportModal from "../ExportModal/ExportModal";
 
 const SubmitPlotButton = ({ callback }: any) => (
   <Button
@@ -34,6 +35,17 @@ const SubmitMapsButton = ({ callback }: any) => (
     backColor={"#2ecc71"}
     backColorHover={"#27ae60"}
     label={"Show Google Maps"}
+    onClick={callback}
+  />
+);
+
+const SendToOctaveButton = ({ callback }: any) => (
+  <Button
+    width={150}
+    height={50}
+    backColor={"#ff7675"}
+    backColorHover={"#d63031"}
+    label={"Send to Octave"}
     onClick={callback}
   />
 );
@@ -60,62 +72,37 @@ const SelectionPanel = () => {
   const { useGlobalState } = store;
   const [plotModalVisiblity, setPlotModalVisiblity] = useState(false);
   const [mapsModalVisiblity, setMapsModalVisiblity] = useState(false);
+  const [exportModalVisiblity, setExportModalVisiblity] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [plotData, setPlotData] = useState<Array<Array<number>>>([]);
+  const [plotData, setPlotData] = useState<Array<any>>([]);
   const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
   const [adapter, setAdapter] = useGlobalState("adapter");
   const [coordinates, setCoordinates] = useGlobalState("coordinates");
   const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
+  let gowno: any ;
 
-  const getCoordinates = async () => {
-    const coords = await generateTrialCoordinates(
-      +adapter.szerokosc,
-      +adapter.dlugosc,
-      20
-    );
-    // setTrialCoords(coords);
+  const getCoordinates = () => {
     setLoading(true);
-    // if (coords) {
-      // OEClient.postLookup({
-      //   locations: coords
-      // })
-      //   .then((results: any) => {
-      //     const result = format(results.results, 40);
-      //     setCoordinates(result);
-      //     setElevationResults(results.results);
-      //     return true;
-      //   })
-      //   .then(a => {
 
-      //     setLoading(false);
-      //   })
-      //   .catch((error: any) => {
-      //     console.log("Error postLookup:" + error);
-      //   });
-
-
-
-        OEClient.postLookupNew({
+     return  OEClient.postLookupNew({
            adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 12
         })
           .then((results: any) => {
             setTrialCoords(results.results);
             const result = format(results.results, 60);
-
+            setPlotData(results.results)
+            // gowno = results;
             setCoordinates(result);
             setElevationResults(results.results);
+            setLoading(false);
             return true;
           })
-        .then(a => {
-          setLoading(false);
-        })
         .catch((error: any) => {
           console.log("Error postLookup:" + error);
+          return false;
         });
-    // }
 
-    // console.info("cooords ->  ", generateTrialCoordinates(5,5,10))
   };
 
   const triggerState = (value: boolean, type: string) => {
@@ -124,6 +111,8 @@ const SelectionPanel = () => {
         return setPlotModalVisiblity(value);
       case "maps":
         return setMapsModalVisiblity(value);
+      case "export":
+          return setExportModalVisiblity(value);
         return;
     }
   };
@@ -131,7 +120,6 @@ const SelectionPanel = () => {
   const showModal = useCallback(
     (value: boolean, type: string) => () => {
       triggerState(value, type);
-      // setModalVisiblity(value);
       if (value) {
         getCoordinates();
       }
@@ -139,7 +127,14 @@ const SelectionPanel = () => {
     [plotModalVisiblity, plotModalVisiblity, adapter]
   );
 
-  // console.log("elevations ",elevationResults)
+  // const sendToOctave = useCallback(
+  //   () => () => {
+
+  //   getCoordinates();
+  //   if(elevationResults) {
+  //    console.log("Są", elevationResults)
+  //   }
+  // ), [elevationResults]);
 
   return (
     <Wrapper>
@@ -150,6 +145,9 @@ const SelectionPanel = () => {
       </ButtonWrapper>
       <ButtonWrapper>
         <SubmitMapsButton callback={showModal(true, "maps")} />
+      </ButtonWrapper>
+      <ButtonWrapper>
+        <SendToOctaveButton callback={showModal(true, "export")} />
       </ButtonWrapper>
       {loading ? (
         <LoaderOverLay>
@@ -163,6 +161,9 @@ const SelectionPanel = () => {
       ) : null}
       {coordinates.length > 0 ? (
         <GMapsModal showModal={showModal} modalVisiblity={mapsModalVisiblity} />
+      ) : null}
+       {coordinates.length > 0 ? (
+        <ExportModal showModal={showModal} modalVisiblity={exportModalVisiblity} />
       ) : null}
     </Wrapper>
   );
