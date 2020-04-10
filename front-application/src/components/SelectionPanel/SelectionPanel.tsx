@@ -66,7 +66,7 @@ const SelectionPanel = () => {
   const [adapter, setAdapter] = useGlobalState("adapter");
   const [coordinates, setCoordinates] = useGlobalState("coordinates");
   const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
-  const OEClient = new OpenElevationClient("http://machoski:10000/api/v1");
+  const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
   const getCoordinates = async () => {
     const coords = await generateTrialCoordinates(
@@ -87,7 +87,7 @@ const SelectionPanel = () => {
       //     return true;
       //   })
       //   .then(a => {
-         
+
       //     setLoading(false);
       //   })
       //   .catch((error: any) => {
@@ -97,12 +97,12 @@ const SelectionPanel = () => {
 
 
         OEClient.postLookupNew({
-           adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 12 
+           adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 12
         })
           .then((results: any) => {
             setTrialCoords(results.results);
             const result = format(results.results, 60);
-         
+
             setCoordinates(result);
             setElevationResults(results.results);
             return true;
