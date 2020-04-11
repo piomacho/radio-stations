@@ -11,14 +11,12 @@ router.get('/all/:id', async (req: Request, res: Response) => {
         const programArray = getFieldsFromObject(response.body.data.fm, ['obiekt', 'dlugosc', 'szerokosc', 'id_obiekt']);
         return res.send(programArray);
     });
-        
+
     } catch (err) {
-        // logger.error(err.message, err);
         return res.status(404).json({
             error: err.message,
         });
     }
-        // res.send({ express: 'Hello From Express' });
 
 });
 

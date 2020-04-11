@@ -5,7 +5,7 @@ import {
   Wrapper,
   ButtonWrapper,
   LoaderOverLay,
-  LoaderWrapper
+  LoaderWrapper,
 } from "./SelectionPanel.styles";
 import Button from "../Button/Button";
 import PlotModal from "../PlotModal/PlotModal";
@@ -53,18 +53,20 @@ const SendToOctaveButton = ({ callback }: any) => (
 const SubmitPlotMemoButton = memo(SubmitPlotButton);
 const SubmitMapsMemoButton = memo(SubmitMapsButton);
 // todo refactor to see proper plot
-const format = (coords: Array<CoordinatesType>, range: number): Array<Array<number>> => {
+const format = (
+  coords: Array<CoordinatesType>,
+  range: number
+): Array<Array<number>> => {
   // const arr = [];
   const secondArr: Array<Array<any>> = [[]];
   for (let i = 0; i < range; i++) {
     secondArr[i] = [];
     for (let j = 0; j < range; j++) {
-      secondArr[i].push(coords[i * range + j] && coords[i * range + j].elevation);
+      secondArr[i].push(
+        coords[i * range + j] && coords[i * range + j].elevation
+      );
     }
-
-    // arr.push(secondArr);
   }
-  // console.log("------------------------", secondArr)
   return secondArr;
 };
 
@@ -78,31 +80,33 @@ const SelectionPanel = () => {
   const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
   const [adapter, setAdapter] = useGlobalState("adapter");
   const [coordinates, setCoordinates] = useGlobalState("coordinates");
-  const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
+  const [elevationResults, setElevationResults] = useGlobalState(
+    "elevationResults"
+  );
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
-  let gowno: any ;
+  let gowno: any;
 
   const getCoordinates = () => {
     setLoading(true);
 
-     return  OEClient.postLookupNew({
-           adapterLongitude: +adapter.dlugosc, adapterLatitude: +adapter.szerokosc, range: 12
-        })
-          .then((results: any) => {
-            setTrialCoords(results.results);
-            const result = format(results.results, 60);
-            setPlotData(results.results)
-            // gowno = results;
-            setCoordinates(result);
-            setElevationResults(results.results);
-            setLoading(false);
-            return true;
-          })
-        .catch((error: any) => {
-          console.log("Error postLookup:" + error);
-          return false;
-        });
-
+    return OEClient.postLookupNew({
+      adapterLongitude: +adapter.dlugosc,
+      adapterLatitude: +adapter.szerokosc,
+      range: 12,
+    })
+      .then((results: any) => {
+        setTrialCoords(results.results);
+        const result = format(results.results, 60);
+        setPlotData(results.results);
+        setCoordinates(result);
+        setElevationResults(results.results);
+        setLoading(false);
+        return true;
+      })
+      .catch((error: any) => {
+        console.log("Error postLookup:" + error);
+        return false;
+      });
   };
 
   const triggerState = (value: boolean, type: string) => {
@@ -112,7 +116,7 @@ const SelectionPanel = () => {
       case "maps":
         return setMapsModalVisiblity(value);
       case "export":
-          return setExportModalVisiblity(value);
+        return setExportModalVisiblity(value);
         return;
     }
   };
@@ -126,15 +130,6 @@ const SelectionPanel = () => {
     },
     [plotModalVisiblity, plotModalVisiblity, adapter]
   );
-
-  // const sendToOctave = useCallback(
-  //   () => () => {
-
-  //   getCoordinates();
-  //   if(elevationResults) {
-  //    console.log("Są", elevationResults)
-  //   }
-  // ), [elevationResults]);
 
   return (
     <Wrapper>
@@ -162,8 +157,11 @@ const SelectionPanel = () => {
       {coordinates.length > 0 ? (
         <GMapsModal showModal={showModal} modalVisiblity={mapsModalVisiblity} />
       ) : null}
-       {coordinates.length > 0 ? (
-        <ExportModal showModal={showModal} modalVisiblity={exportModalVisiblity} />
+      {coordinates.length > 0 ? (
+        <ExportModal
+          showModal={showModal}
+          modalVisiblity={exportModalVisiblity}
+        />
       ) : null}
     </Wrapper>
   );

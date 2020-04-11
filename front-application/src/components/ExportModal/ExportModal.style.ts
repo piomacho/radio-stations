@@ -42,5 +42,13 @@ export const TypeSpan = styled("span")`
     background: #EEF4FF;
     border: 1px solid #99A3BA;
     transition: background .3s ease, border .3s ease, color .3s ease;
-`
+`;
+
+export const InputContainer = styled('div')`
+    display: flex;
+`;
+
+export const ExportWrapper = styled('div')`
+    display: flex;
+`;
 // export const

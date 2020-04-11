@@ -10,14 +10,12 @@ router.get('/all', async (req: Request, res: Response) => {
         const programArray = getFieldsFromObject(response.body.data, ['nazwa', 'id_program']);
         return res.send(programArray);
     });
-        
+
     } catch (err) {
-        // logger.error(err.message, err);
         return res.status(404).json({
             error: err.message,
         });
     }
-        // res.send({ express: 'Hello From Express' });
 
 });
 
