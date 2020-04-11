@@ -5,6 +5,7 @@ npm-debug.log
 .DS_Store
 
 .csv
+.xlsx
 
 /node_modules
 /.pnp

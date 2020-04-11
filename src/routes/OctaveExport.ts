@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 const fs = require('fs');
+var json2xls = require('json2xls');
 
 export interface CoordinatesType {
     latitude: number;
@@ -12,22 +13,23 @@ const router = Router();
 const formatCoordinates = (coords: any) => {
 
    return coords.map((c: CoordinatesType) => {
-        return [c.latitude, c.longitude, c.elevation] + ";";
+        return [c.latitude.toString().replace(',', '.'), c.longitude.toString().replace(',', '.'), c.elevation.toString().replace(',', '.') ];
     });
 };
 
 router.post('/send/', async (req: Request, res: Response) => {
     try {
         // const coordinates = req.params.coordinates;
-        const coordinates = formatCoordinates(req.body.coordinates).toString().replace(/,/g, ' ');
+        const coordinates = formatCoordinates(req.body.coordinates);
+        console.log("-- ", coordinates);
+        var xls = json2xls(coordinates
+            // [data, text] = xlsread('dat2a.xlsx');
+        //     {
+        //     fields: ['latitude',  'longitude', 'elevation']
+        // }
+        );
 
-        fs.writeFile('./elevation-results.csv', coordinates, (err: string) => {
-            // throws an error, you could also catch it here
-            if (err) throw err;
-
-            // success case, the file was saved
-            console.log('Saved to file!');
-        });
+        fs.writeFileSync('dat2a.xlsx', xls, 'binary');
 
         return res.send("ok");
     // });
