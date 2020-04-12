@@ -4,8 +4,8 @@ npm-debug.log
 .env
 .DS_Store
 
-.csv
-.xlsx
+*.csv
+*.xlsx
 
 /node_modules
 /.pnp

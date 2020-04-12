@@ -1,7 +1,9 @@
 import styled from "styled-components";
 import Floppy from "./floppy.svg";
 
-
+interface ExportModalType {
+    error?: boolean;
+}
 
 export const FloppyIcon = styled('div')`
     background-color: #fff;
@@ -16,6 +18,7 @@ export const FloppyIcon = styled('div')`
 export const InputWrapper = styled("div")`
     display: flex;
     justify-content: center;
+    align-items: center;
     padding-top: 60px;
 `;
 
@@ -31,6 +34,7 @@ export const Input = styled("input")`
     color: #99A3BA;
     background: #fff;
     transition: border .3s ease;
+    width: 150px;
 `;
 
 export const TypeSpan = styled("span")`
@@ -46,9 +50,16 @@ export const TypeSpan = styled("span")`
 
 export const InputContainer = styled('div')`
     display: flex;
+    height: 45px;
+    margin-right: 20px;
+
 `;
 
 export const ExportWrapper = styled('div')`
     display: flex;
 `;
-// export const
+
+export const Message = styled('p')<ExportModalType>`
+    color:  ${props => props.error ? `#ff0000` : `#2ecc71`};
+    font-weight: 700;
+`;

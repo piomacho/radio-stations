@@ -7,11 +7,12 @@ interface ButtonType {
     colorHover?: string;
     backColor?: string;
     backColorHover?: string;
+    disabled?: boolean;
 }
 
 export const Wrapper = styled('div')<ButtonType>`
-    width: ${props => props.width ?  props.width : '40'}px;
-    height: ${props => props.height ?  props.height : '40'}px;
+    width: ${props => props.width ?  `${props.width}px` : 'auto'};
+    height: ${props => props.height ?  `${props.width}px` : 'auto'};
 `;
 
 export const SubmitButton = styled('a')<ButtonType>`
@@ -32,6 +33,11 @@ export const SubmitButton = styled('a')<ButtonType>`
         box-shadow: 5px 40px -10px rgba(0,0,0,0.57);
         transition: all 0.4s ease 0s;
     }
+
+    ${props => props.disabled && `
+        background-color: gray;
+        pointer-events: none;
+    `}
 `;
 
 export const ButtonWrapper = styled("div")`

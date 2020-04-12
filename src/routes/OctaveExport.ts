@@ -19,20 +19,12 @@ const formatCoordinates = (coords: any) => {
 
 router.post('/send/', async (req: Request, res: Response) => {
     try {
-        // const coordinates = req.params.coordinates;
         const coordinates = formatCoordinates(req.body.coordinates);
-        console.log("-- ", coordinates);
-        var xls = json2xls(coordinates
-            // [data, text] = xlsread('dat2a.xlsx');
-        //     {
-        //     fields: ['latitude',  'longitude', 'elevation']
-        // }
-        );
-
-        fs.writeFileSync('dat2a.xlsx', xls, 'binary');
-
-        return res.send("ok");
-    // });
+        const xls = json2xls(coordinates);
+        fs.writeFileSync(`${req.body.fileName}.xlsx`, xls, 'binary');
+        return res.status(200).json({
+            message: "Success",
+        });
 
     } catch (err) {
         return res.status(404).json({
@@ -42,3 +34,4 @@ router.post('/send/', async (req: Request, res: Response) => {
 });
 
 export default router;
+            // [data, text] = xlsread('dat2a.xlsx');
