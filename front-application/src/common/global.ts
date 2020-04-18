@@ -21,7 +21,6 @@ export const generateTrialCoordinates = (x0: number, y0:number, range: number): 
 
      for(let x = 0; x < range/2; x++ ) {
        for(let y = 0; y < range/2; y++) {
-        //  measureDistance(0, 1, 1, 1 );
          cArray.push({latitude: Math.round(((x0 + 0.001 * x) + Number.EPSILON) * 1000) / 1000, longitude: Math.round(((y0 + 0.001 * y) + Number.EPSILON) * 1000) / 1000 })
        }
      }
@@ -29,14 +28,12 @@ export const generateTrialCoordinates = (x0: number, y0:number, range: number): 
 
      for(let x = 0; x < range/2; x++ ) {
       for(let y = 0; y < range/2; y++) {
-       //  measureDistance(0, 1, 1, 1 );
         cArray.push({latitude: Math.round(((x0 - 0.001 * x) + Number.EPSILON) * 1000) / 1000, longitude: Math.round(((y0 + 0.001 * y) + Number.EPSILON) * 1000) / 1000 })
       }
     }
 
     for(let x = 0; x < range/2; x++ ) {
       for(let y = 0; y < range/2; y++) {
-       //  measureDistance(0, 1, 1, 1 );
         cArray.push({latitude: Math.round(((x0 - 0.001 * x) + Number.EPSILON) * 1000) / 1000, longitude: Math.round(((y0 - 0.001 * y) + Number.EPSILON) * 1000) / 1000 })
       }
     }
@@ -44,7 +41,6 @@ export const generateTrialCoordinates = (x0: number, y0:number, range: number): 
 
     for(let x = 0; x < range/2; x++ ) {
       for(let y = 0; y < range/2; y++) {
-       //  measureDistance(0, 1, 1, 1 );
         cArray.push({latitude: Math.round(((x0 + 0.001 * x) + Number.EPSILON) * 1000) / 1000, longitude: Math.round(((y0 - 0.001 * y) + Number.EPSILON) * 1000) / 1000 })
       }
     }

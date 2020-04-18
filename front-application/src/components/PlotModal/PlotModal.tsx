@@ -20,8 +20,6 @@ const format = (coords: Array<CoordinatesType>): Array<Array<number>> => {
   for (let i = 0; i < 5; i++) {
     secondArr = [];
     for (let j = 0; j < 5; j++) {
-      // secondArr.push(j)
-      // console.log("coords[j]", coords[j]);
       secondArr.push(coords[j] && coords[j].elevation);
     }
     arr.push(secondArr);
@@ -31,7 +29,7 @@ const format = (coords: Array<CoordinatesType>): Array<Array<number>> => {
 
 const PlotModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
-  const [coordinates, setCoordinates] = useGlobalState("coordinates");
+  const [coordinates] = useGlobalState("coordinates");
 
   var data = [
     {

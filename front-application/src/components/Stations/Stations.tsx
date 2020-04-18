@@ -3,7 +3,6 @@ import { callApiFetch } from '../../common/global';
 import SelectBox from '../SelectBox/SelectBox';
 import store from '../../Store/Store';
 
-
 interface ProgramType{
     id_program: string;
     nazwa: string;
@@ -16,7 +15,7 @@ interface OptionType {
 
 const setParameters = (programs: Array<ProgramType>): Array<OptionType> => {
     return programs.map((program: ProgramType) => {
-        return { value: program.id_program, label: program.nazwa} 
+        return { value: program.id_program, label: program.nazwa}
     });
 }
 
@@ -33,7 +32,7 @@ const Stations = () => {
         .catch(err => console.log(err));
       }, [])
 
- 
+
     return (
     stations &&
       <SelectBox
@@ -42,7 +41,7 @@ const Stations = () => {
         selectedValue={station}
       />
     );
-  
+
 }
 
 export default Stations;

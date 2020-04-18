@@ -12,7 +12,6 @@ class OpenElevationRestClient extends React.Component {
 
     constructor(domain: string) {
         super({}, {})
-        // let domain = (typeof options === 'object') ? options.domain : options;
         this.domain = domain ? domain : 'http://localhost/api/v1';
         if (this.domain.length === 0) {
             throw new Error('Domain parameter must be specified as a string.');
@@ -55,26 +54,7 @@ class OpenElevationRestClient extends React.Component {
         if (body && !Object.keys(body).length) {
             body = undefined;
         }
-        let bodyProper = JSON.stringify({
-            "locations":
-            [
-            {
-            "latitude": 10,
-            "longitude": 10
-            },
-            {
-            "latitude":20,
-            "longitude": 20
-            },
-            {
-            "latitude":41.161758,
-            "longitude":-8.583933
-            }
-            ]
-            
-            });
-            
-         console.log("url ", urlWithParams)
+
         fetch(urlWithParams, {
             method,
             headers,
@@ -88,11 +68,11 @@ class OpenElevationRestClient extends React.Component {
         });
     };
     /**
-     * 
+     *
      * @method
      * @name OpenElevationRestClient#postLookupNew
      * @param {object} parameters - method options and parameters
-     
+
      */
     postLookupNew = (parameters : any) => {
         if (parameters === undefined) {
@@ -108,12 +88,10 @@ class OpenElevationRestClient extends React.Component {
             console.log("parameters ", parameters);
         headers["Accept"] = ["application/json"];
         headers["Content-Type"] = ["application/json"];
-        // adapterLongitude: +adapter.dlugosc, adapterLatitude: 
         if (parameters['adapterLongitude'] !== undefined && parameters['adapterLatitude'] !== undefined && parameters['range'] !== undefined) {
             body = {"adapterLongitude": parameters['adapterLongitude'], adapterLatitude: parameters['adapterLatitude'], range: parameters['range'] };
-            
+
         }
-        console.log("body ", domain + path);
 
         queryParameters = this.mergeQueryParams(parameters, queryParameters);
 
@@ -123,7 +101,7 @@ class OpenElevationRestClient extends React.Component {
     };
 
     /**
-     * 
+     *
      * @method
      * @name OpenElevationRestClient#postLookup
      * @param {object} parameters - method options and parameters
@@ -146,9 +124,8 @@ class OpenElevationRestClient extends React.Component {
 
         if (parameters['locations'] !== undefined) {
             body = {"locations": parameters['locations'] };
-            
+
         }
-        // console.log("body ", body,' domain',domain + path," parameters", parameters, "bdody,", body,'head', headers, "query",  queryParameters, "form,", form, "deff", deferred);    
 
         queryParameters = this.mergeQueryParams(parameters, queryParameters);
 

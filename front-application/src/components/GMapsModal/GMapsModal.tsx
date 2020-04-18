@@ -12,18 +12,7 @@ interface PlotModalType {
 }
 
 const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
-  var layout = {
-    title: "Google Maps comparison",
-    autosize: false,
-    width: 800,
-    height: 800,
-    margin: {
-      l: 90,
-      r: 90,
-      b: 90,
-      t: 90
-    }
-  };
+
   return (
     <Modal
       isOpen={modalVisiblity}
@@ -35,8 +24,6 @@ const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       <Button
         onClick={showModal(false, "maps")}
         label={"Close"}
-
-        
         height={30}
         width={50}
         backColorHover={"#ff7979"}

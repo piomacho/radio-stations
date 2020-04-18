@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { callApiFetch } from '../../common/global';
-
 
 interface SelectBoxType{
     options: Array<OptionType>;
@@ -15,7 +13,7 @@ interface OptionType {
 }
 
 const SelectBox = ({ options, setSelectedOption, selectedValue }: SelectBoxType) => {
-    
+
     useEffect(() => {
         setSelectedOption(selectedValue)
     }, []);
@@ -27,7 +25,7 @@ const SelectBox = ({ options, setSelectedOption, selectedValue }: SelectBoxType)
         options={options}
       />
     );
-  
+
 }
 
 export default SelectBox;

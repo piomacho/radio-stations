@@ -45,9 +45,8 @@ const MapWithAMarker = compose(
     }
       return str;
     }
-    
+
   useEffect(() => {
-    // setLoading(true);
     console.info(
       "Odległość między punktami: ,",
       measureDistance(+adapter.szerokosc, +adapter.dlugosc, 0.001)
@@ -56,7 +55,6 @@ const MapWithAMarker = compose(
 
     callApiFetch(`api/gmaps/all/${formattedCoords}`)
       .then(response => setGMapsElevation(response))
-      // .then(adapters =>  { setAdapters(adapters); setAdapter(adapters[0]);  setLoading(false); })
       .catch(err => console.log(err));
   }, []);
 
@@ -74,7 +72,6 @@ const MapWithAMarker = compose(
         ANTENTA
       </Marker>
       {elevationResults.map((marker, iterator) => {
-          // console.log("marker ,", iterator)
         const onClick = props.onClick.bind(this, marker);
         return (
           <Marker
@@ -104,7 +101,6 @@ export default class ShelterMap extends Component {
   }
 
   handleClick = (marker, event) => {
-    // console.log({ marker })
     this.setState({ selectedMarker: marker });
   };
   render() {
@@ -121,5 +117,3 @@ export default class ShelterMap extends Component {
     );
   }
 }
-
-// export default Map;

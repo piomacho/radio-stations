@@ -1,15 +1,13 @@
-import React, { useState, useCallback, memo, useEffect } from "react";
+import React, { useState, useCallback, memo } from "react";
 import Stations from "../Stations/Stations";
 import Adapters from "../Adapters/Adapters";
 import {
   Wrapper,
   ButtonWrapper,
   LoaderOverLay,
-  LoaderWrapper,
 } from "./SelectionPanel.styles";
 import Button from "../Button/Button";
 import PlotModal from "../PlotModal/PlotModal";
-import { generateTrialCoordinates } from "../../common/global";
 import store, { CoordinatesType } from "../../Store/Store";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
 import Loader from "react-loader-spinner";
@@ -57,7 +55,6 @@ const format = (
   coords: Array<CoordinatesType>,
   range: number
 ): Array<Array<number>> => {
-  // const arr = [];
   const secondArr: Array<Array<any>> = [[]];
   for (let i = 0; i < range; i++) {
     secondArr[i] = [];
@@ -84,7 +81,6 @@ const SelectionPanel = () => {
     "elevationResults"
   );
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
-  let gowno: any;
 
   const getCoordinates = () => {
     setLoading(true);
