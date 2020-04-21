@@ -20,6 +20,7 @@ export const InputWrapper = styled("div")`
     justify-content: center;
     align-items: center;
     padding-top: 60px;
+    flex-direction: column;
 `;
 
 export const Input = styled("input")`
@@ -62,4 +63,27 @@ export const ExportWrapper = styled('div')`
 export const Message = styled('p')<ExportModalType>`
     color:  ${props => props.error ? `#ff0000` : `#2ecc71`};
     font-weight: 700;
+`;
+
+export const AdapterCoordsWrapper = styled('div')`
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+
+`;
+export const Coord = styled('div')`
+    font-weight: 700;
+    color: #2980b9;
+`;
+
+export const AdaptersHeader = styled('div')`
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 18px;
+    margin-bottom: 20px;
+`;
+
+export const ExportInputWrapper = styled('div')`
+    display: flex;
+    align-items: center;
 `;

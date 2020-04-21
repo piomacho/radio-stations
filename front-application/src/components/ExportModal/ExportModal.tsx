@@ -9,10 +9,14 @@ import {
   Input,
   InputContainer,
   ExportWrapper,
-  Message
+  Message,
+  AdapterCoordsWrapper,
+  Coord,
+  AdaptersHeader,
+  ExportInputWrapper
 } from "./ExportModal.style";
 import { ButtonWrapper } from "../Button/Button.styles";
-import { callApiFetch } from "../../common/global";
+import { callApiFetch, lineFromPoints } from "../../common/global";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -22,9 +26,12 @@ interface PlotModalType {
 const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
   const [elevationResults] = useGlobalState("elevationResults");
+  const [adapter] = useGlobalState('adapter');
   const [error, setError] = useState("");
   const [allowedName, setAllowedName] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [x, setX] = useState("");
+  const [y, setY] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +49,30 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     }
   };
 
+  const handleChangeX = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const rg = /^[+-]?\d+(\.\d+)?$/; // forbidden file names
+    const isAllowed = rg.test(value);
+    setAllowedName(isAllowed);
+    if (!isAllowed) {
+      setError("X is not allowed.");
+    }
+
+    setX(value);
+  }
+
+  const handleChangeY = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const rg = /^[+-]?\d+(\.\d+)?$/; // forbidden file names
+    const isAllowed = rg.test(value);
+    setAllowedName(isAllowed);
+    if (!isAllowed) {
+      setError("Y is not allowed.");
+    }
+
+    setY(value);
+  }
+
   const handleExport = () => {
     const requestOptions = {
       method: "POST",
@@ -51,6 +82,16 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         fileName: fileName
       })
     };
+
+    // todo please refactor
+    const adapterX = +(+adapter.szerokosc).toFixed(2);
+    const adapterY = +(+adapter.dlugosc).toFixed(2);
+    console.log("X ", adapterX, "Y ", adapterY);
+
+    // lineFromPoints({x: adapterX, y: adapterY}, {x: +x, y: +y});
+    lineFromPoints({x: 3, y: 4}, {x: 4, y: 3});
+
+
     if (allowedName) {
       callApiFetch(`api/export-octave/send/`, requestOptions)
         .then(() => {
@@ -70,19 +111,31 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     >
       <FloppyIcon />
       <InputWrapper>
-        <InputContainer>
-          <Input onChange={handleChange} placeholder="Enter file name:" />
-          <TypeSpan>.csv</TypeSpan>
-        </InputContainer>
-        <ExportWrapper>
-          <Button
-            onClick={handleExport}
-            label={"Export"}
-            backColor={"#7bed9f"}
-            backColorHover={"#2ed573"}
-            disabled={!allowedName}
-          />
-        </ExportWrapper>
+        <AdapterCoordsWrapper>
+          <AdaptersHeader>Adapter locations:</AdaptersHeader>
+            <Coord>x: {(+adapter.dlugosc).toFixed(2)}</Coord>
+            <Coord>y: {(+adapter.szerokosc).toFixed(2)}</Coord>
+        </AdapterCoordsWrapper>
+        <AdapterCoordsWrapper>
+          <AdaptersHeader>Input coordinates:</AdaptersHeader>
+            <Coord><Input onChange={handleChangeX} placeholder="x: " /></Coord>
+            <Coord><Input onChange={handleChangeY} placeholder="y: " /></Coord>
+        </AdapterCoordsWrapper>
+        <ExportInputWrapper>
+          <InputContainer>
+            <Input onChange={handleChange} placeholder="Enter file name:" />
+            <TypeSpan>.csv</TypeSpan>
+          </InputContainer>
+          <ExportWrapper>
+            <Button
+              onClick={handleExport}
+              label={"Export"}
+              backColor={"#7bed9f"}
+              backColorHover={"#2ed573"}
+              disabled={!allowedName}
+            />
+          </ExportWrapper>
+        </ExportInputWrapper>
       </InputWrapper>
       {!allowedName && fileName.length > 0 && (
         <Message error={true}>{error}</Message>

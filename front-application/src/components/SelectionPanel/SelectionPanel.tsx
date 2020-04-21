@@ -5,8 +5,10 @@ import {
   Wrapper,
   ButtonWrapper,
   LoaderOverLay,
+  SubmitPlotMemoButton,
+  SubmitMapsButton,
+  SendToOctaveButton,
 } from "./SelectionPanel.styles";
-import Button from "../Button/Button";
 import PlotModal from "../PlotModal/PlotModal";
 import store, { CoordinatesType } from "../../Store/Store";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
@@ -14,42 +16,8 @@ import Loader from "react-loader-spinner";
 import { LoaderContainer } from "../Adapters/Adapters.style";
 import GMapsModal from "../GMapsModal/GMapsModal";
 import ExportModal from "../ExportModal/ExportModal";
+import { lineFromPoints } from "../../common/global";
 
-const SubmitPlotButton = ({ callback }: any) => (
-  <Button
-    width={150}
-    height={50}
-    backColor={"#686de0"}
-    backColorHover={"#30336b"}
-    label={"Create plot"}
-    onClick={callback}
-  />
-);
-
-const SubmitMapsButton = ({ callback }: any) => (
-  <Button
-    width={150}
-    height={50}
-    backColor={"#2ecc71"}
-    backColorHover={"#27ae60"}
-    label={"Show Google Maps"}
-    onClick={callback}
-  />
-);
-
-const SendToOctaveButton = ({ callback }: any) => (
-  <Button
-    width={150}
-    height={50}
-    backColor={"#ff7675"}
-    backColorHover={"#d63031"}
-    label={"Send to Octave"}
-    onClick={callback}
-  />
-);
-
-const SubmitPlotMemoButton = memo(SubmitPlotButton);
-const SubmitMapsMemoButton = memo(SubmitMapsButton);
 // todo refactor to see proper plot
 const format = (
   coords: Array<CoordinatesType>,
@@ -77,11 +45,10 @@ const SelectionPanel = () => {
   const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
   const [adapter, setAdapter] = useGlobalState("adapter");
   const [coordinates, setCoordinates] = useGlobalState("coordinates");
-  const [elevationResults, setElevationResults] = useGlobalState(
-    "elevationResults"
-  );
+  const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
+  // lineFromPoints({x: 3, y: 2}, {x: 2, y: 6});
   const getCoordinates = () => {
     setLoading(true);
 

@@ -7,6 +7,11 @@ interface LocationsType {
     locations: Array<LocationType>
 }
 
+interface PointType {
+  x: number;
+  y: number;
+}
+
 export const callApiFetch = async (api: string, params?: any) => {
     const response = await fetch(api, params);
     const body = await response.json();
@@ -48,15 +53,39 @@ export const generateTrialCoordinates = (x0: number, y0:number, range: number): 
      return cArray;
    }
 
+const degrees_to_radians = (degrees: number) =>
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
+}
 
-export const measureDistance = (lat1: number , lon1: number, step: number): number => {
-    const R = 6378.137; // Radius of earth in KM
-    const dLat = (lat1 + step) * Math.PI / 180 - lat1 * Math.PI / 180;
-    const dLon = (lon1 + step) * Math.PI / 180 - lon1 * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos((lat1 + step) * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = R * c;
-    return d * 1000; // meters
+export const measureDistance = (lat1: number , lon1: number, lat2: number , lon2: number): number => {
+  const R = 6371e3; // metres
+  const q1 = degrees_to_radians(lat1);
+  const q2 = degrees_to_radians(lat2);
+  const dq = degrees_to_radians(lat2-lat1);
+  const da = degrees_to_radians(lon2-lon1);
+
+  const a = Math.sin(dq/2) * Math.sin(dq/2) +
+          Math.cos(q1) * Math.cos(q2) *
+          Math.sin(da/2) * Math.sin(da/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  const d = R * c;
+
+  return d;
+}
+
+
+
+
+
+
+export const lineFromPoints = (P: PointType, Q: PointType) =>
+{
+    const a = Q.y - P.y;
+    const b = P.x - Q.x;
+
+    const c = a*(P.x) + b*(P.y);
+    console.log(a,"x + ",b," = ", c);
 }
