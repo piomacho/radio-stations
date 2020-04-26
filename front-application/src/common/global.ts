@@ -73,7 +73,7 @@ export const measureDistance = (lat1: number , lon1: number, lat2: number , lon2
 
   const d = R * c;
 
-  return d;
+  return d / 1000;
 }
 
 
@@ -81,11 +81,15 @@ export const measureDistance = (lat1: number , lon1: number, lat2: number , lon2
 
 
 
-export const lineFromPoints = (P: PointType, Q: PointType) =>
+export const lineFromPoints = (P: PointType, Q: PointType, ) =>
 {
     const a = Q.y - P.y;
     const b = P.x - Q.x;
 
-    const c = a*(P.x) + b*(P.y);
-    console.log(a,"x + ",b," = ", c);
+    const c =  a*(P.x) + b*(P.y);
+// y = ax + b
+    // return (c - a * x) / b
+    console.log(a,"x + ",b,"y = ", c);
+
+    return {intercept: c/b ,direction: (- a /b)}
 }

@@ -100,6 +100,52 @@ class OpenElevationRestClient extends React.Component {
         return deferred.promise;
     };
 
+   /**
+     *
+     * @method
+     * @name OpenElevationRestClient#postLookupNew
+     * @param {object} parameters - method options and parameters
+
+     */
+    postLookupLine = (parameters : any) => {
+        if (parameters === undefined) {
+            parameters = {};
+        }
+        let deferred = Q.defer();
+        let domain = this.domain,
+            path = '/lookup-line';
+        let body: Record<string, any> = {},
+            queryParameters: Record<string, any> = {},
+            headers: Record<string, any> = {},
+            form: Record<string, any> = {};
+            console.log("parameters ", parameters);
+        headers["Accept"] = ["application/json"];
+        headers["Content-Type"] = ["application/json"];
+
+
+        if (parameters['adapterLatitude'] !== undefined &&
+            parameters['range'] !== undefined &&
+            parameters['numberOfPoints'] !== undefined &&
+            parameters['intercept'] !== undefined &&
+            parameters['direction'] !== undefined) {
+
+            body = {
+                adapterLatitude: parameters['adapterLatitude'],
+                numberOfPoints: parameters['numberOfPoints'],
+                range: parameters['range'],
+                intercept: parameters['intercept'],
+                direction: parameters['direction']
+            };
+        }
+
+        queryParameters = this.mergeQueryParams(parameters, queryParameters);
+
+        this.makeRequest('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+        return deferred.promise;
+    };
+
+
     /**
      *
      * @method

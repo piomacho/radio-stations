@@ -19,7 +19,7 @@ export const InputWrapper = styled("div")`
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 60px;
+    padding-top: 25px;
     flex-direction: column;
 `;
 
@@ -35,13 +35,14 @@ export const Input = styled("input")`
     color: #99A3BA;
     background: #fff;
     transition: border .3s ease;
-    width: 150px;
+    width: 120px;
+    margin-bottom: 5px;
 `;
 
 export const TypeSpan = styled("span")`
     text-align: center;
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 9px 10px;
+    margin-bottom: 5px;
     line-height: 25px;
     color: #99A3BA;
     background: #EEF4FF;
@@ -52,12 +53,13 @@ export const TypeSpan = styled("span")`
 export const InputContainer = styled('div')`
     display: flex;
     height: 45px;
-    margin-right: 20px;
-
+    /* margin-right: 20px; */
+    align-items: center;
 `;
 
 export const ExportWrapper = styled('div')`
     display: flex;
+    margin-left: 20px;
 `;
 
 export const Message = styled('p')<ExportModalType>`
@@ -68,22 +70,29 @@ export const Message = styled('p')<ExportModalType>`
 export const AdapterCoordsWrapper = styled('div')`
     display: flex;
     flex-direction: column;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 
 `;
 export const Coord = styled('div')`
     font-weight: 700;
     color: #2980b9;
+    text-align: center;
 `;
 
 export const AdaptersHeader = styled('div')`
     font-weight: 700;
     color: #2c3e50;
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-size: 20px;
+    margin-bottom: 10px;
 `;
 
 export const ExportInputWrapper = styled('div')`
     display: flex;
     align-items: center;
+    flex-direction: column;
+`;
+
+export const DistanceDisplay = styled('p')`
+    font-weight: 700;
+    margin-bottom: 30px;
 `;

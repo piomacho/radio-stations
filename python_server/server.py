@@ -1,6 +1,7 @@
 import sys
 import json
 import bottle
+import math
 from bottle import route, run, request, response, hook
 
 from gdal_interfaces import GDALTileInterface
@@ -100,6 +101,15 @@ def body_to_locations():
 
     return latlng
 
+def newCoordinates(latitude, longitude, dy, dx):
+    r_earth = 6378.137
+    new_latitude  = latitude  + (dy / r_earth) * (180 / math.pi)
+    new_longitude = longitude + (dx / r_earth) * (180 / math.pi) / math.cos(latitude * math.pi/180)
+    d = dict()
+    d['lat'] = new_latitude
+    d['lon'] = new_longitude
+    return d
+
 def generateCoordinates(range1, x0, y0):
 
     cArray = []
@@ -120,12 +130,22 @@ def generateCoordinates(range1, x0, y0):
             cArray += [{"latitude": round(((x0 + 0.001 * x3) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 - 0.001 * y3) + sys.float_info.epsilon) * 1000) / 1000 }]
     return cArray
 
+def generateCoordinatesNew(range1, numberOfPoints, x0, intercept, direction):
+    unit = float(range1)/int(numberOfPoints)
+
+    cArray = []
+    for x in range(int(numberOfPoints)):
+            newX = unit * (x + 1)
+            newY = float(intercept) -  float(direction) * newX
+            cArray += [{"latitude": round(((x0 + newX) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((newY) + sys.float_info.epsilon) * 1000) / 1000 }]
+
+    return cArray
+
 def body_to_adapter():
     try:
         adapterLatitude = request.json.get('adapterLatitude', None)
         adapterLongitude = request.json.get('adapterLongitude', None)
         rangePar = request.json.get('range', None)
-        print("range ", rangePar)
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -136,7 +156,7 @@ def body_to_adapter():
     if not rangePar:
         raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
 
-    locations = generateCoordinates(rangePar, adapterLatitude, adapterLongitude);
+    locations = generateCoordinates(rangePar, adapterLatitude, adapterLongitude)
     latlng = [];
 
     for l in locations:
@@ -144,6 +164,43 @@ def body_to_adapter():
             latlng += [ (l['latitude'],l['longitude']) ]
         except KeyError:
             raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
+
+    return latlng
+
+def body_to_line():
+    try:
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        numberOfPoints = request.json.get('numberOfPoints', None)
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        intercept = request.json.get('intercept', None)
+        direction = request.json.get('direction', None)
+        rangePar = request.json.get('range', None)
+
+    except Exception:
+        raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
+
+    if not adapterLatitude:
+        raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
+    # if not adapterLongitude:
+    #     raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    if not rangePar:
+        raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
+    if not numberOfPoints:
+        raise InternalException(json.dumps({'error': '"numberOfPoints" is required in the body.'}))
+    if not intercept:
+        raise InternalException(json.dumps({'error': '"intercept" is required in the body.'}))
+    if not direction:
+        raise InternalException(json.dumps({'error': '"direction" is required in the body.'}))
+
+
+    locations = generateCoordinatesNew(rangePar, numberOfPoints, adapterLatitude, intercept, direction)
+    latlng = [];
+    print("COOL IT WORKS !!!");
+    # for l in locations:
+    #     try:
+    #         latlng += [ (l['latitude'],l['longitude']) ]
+    #     except KeyError:
+    #         raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
     return latlng
 
@@ -220,5 +277,21 @@ def post_lookup_new():
         :return:
         """
     return do_lookup(body_to_adapter)
+
+# Base Endpoint
+URL_ENDPOINT_LINE = '/api/v1/lookup-line'
+
+# For CORS
+@route(URL_ENDPOINT_LINE, method=['OPTIONS'])
+def cors_handler():
+    return {}
+
+@route(URL_ENDPOINT_LINE, method=['POST'])
+def post_lookup_line():
+    """
+        GET method. Uses body_to_locations.
+        :return:
+        """
+    return do_lookup(body_to_line)
 
 run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)
