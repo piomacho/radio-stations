@@ -130,14 +130,16 @@ def generateCoordinates(range1, x0, y0):
             cArray += [{"latitude": round(((x0 + 0.001 * x3) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 - 0.001 * y3) + sys.float_info.epsilon) * 1000) / 1000 }]
     return cArray
 
-def generateCoordinatesNew(range1, numberOfPoints, x0, intercept, direction):
-    unit = float(range1)/int(numberOfPoints)
+def generateCoordinatesNew(range1, numberOfPoints, x0, y0, intercept, direction):
+    print("range1", range1)
+    unitX = float(range1)/int(numberOfPoints)
 
     cArray = []
     for x in range(int(numberOfPoints)):
-            newX = unit * (x + 1)
-            newY = float(intercept) -  float(direction) * newX
-            cArray += [{"latitude": round(((x0 + newX) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((newY) + sys.float_info.epsilon) * 1000) / 1000 }]
+            deltaX = unitX * (x + 1)
+            deltaY = float(intercept) -  float(direction) * deltaX
+            newCords = newCoordinates(x0, y0, deltaX, deltaY)
+            cArray += [{"latitude": round((newCords['lat'] + sys.float_info.epsilon) * 1000) / 1000 , "longitude": round((newCords['lon'] + sys.float_info.epsilon) * 1000) / 1000}]
 
     return cArray
 
@@ -159,6 +161,7 @@ def body_to_adapter():
     locations = generateCoordinates(rangePar, adapterLatitude, adapterLongitude)
     latlng = [];
 
+    print("COOL IT WORKS 22", locations);
     for l in locations:
         try:
             latlng += [ (l['latitude'],l['longitude']) ]
@@ -170,6 +173,7 @@ def body_to_adapter():
 def body_to_line():
     try:
         adapterLatitude = request.json.get('adapterLatitude', None)
+        adapterLongitude = request.json.get('adapterLongitude', None)
         numberOfPoints = request.json.get('numberOfPoints', None)
         adapterLatitude = request.json.get('adapterLatitude', None)
         intercept = request.json.get('intercept', None)
@@ -181,8 +185,8 @@ def body_to_line():
 
     if not adapterLatitude:
         raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
-    # if not adapterLongitude:
-    #     raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    if not adapterLongitude:
+        raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
     if not rangePar:
         raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
     if not numberOfPoints:
@@ -193,14 +197,14 @@ def body_to_line():
         raise InternalException(json.dumps({'error': '"direction" is required in the body.'}))
 
 
-    locations = generateCoordinatesNew(rangePar, numberOfPoints, adapterLatitude, intercept, direction)
+    locations = generateCoordinatesNew(rangePar, numberOfPoints, adapterLatitude, adapterLongitude, intercept, direction)
     latlng = [];
-    print("COOL IT WORKS !!!");
-    # for l in locations:
-    #     try:
-    #         latlng += [ (l['latitude'],l['longitude']) ]
-    #     except KeyError:
-    #         raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
+    print("COOL IT WORKS !!!", locations);
+    for l in locations:
+        try:
+            latlng += [ (l['latitude'],l['longitude']) ]
+        except KeyError:
+            raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
     return latlng
 

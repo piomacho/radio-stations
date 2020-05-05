@@ -114,18 +114,14 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
       return OEClient.postLookupLine({
         adapterLatitude: +adapter.szerokosc,
-        range: measureDistance(adapter.szerokosc, adapter.dlugosc, +x, +y).toFixed(2),
+        adapterLongitude: +adapter.dlugosc,
+        range: measureDistance(adapterX, adapterY, +y, +x).toFixed(2),
         numberOfPoints: points,
         intercept: lineDetails.intercept,
         direction: lineDetails.direction
       })
         .then((results: any) => {
-          // setTrialCoords(results.results);
-          // const result = format(results.results, 60);
-          // setPlotData(results.results);
-          // setCoordinates(result);
-          // setElevationResults(results.results);
-          // setLoading(false);
+          handleExport(results);
           return true;
         })
         .catch((error: any) => {
@@ -134,25 +130,17 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         });
   }
 
-  const handleExport = () => {
+  const handleExport = (results: any) => {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        coordinates: elevationResults,
+        coordinates: results.results,
         fileName: fileName
       })
     };
 
-    // todo please refactor
-
-    // console.log("X ", adapterX, "Y ", adapterY);
-
-
-    // lineFromPoints({x: 3, y: 4}, {x: 4, y: 3});
-
-
-    if (allowedName) {
+    if (true) {
       callApiFetch(`api/export-octave/send/`, requestOptions)
         .then(() => {
           setSuccessMessage("File saved succcessfully!");
@@ -161,8 +149,10 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         .catch(err => setError(err));
     }
   };
-  console.log("error ", error);
+
   const allowedSubmit = Object.values(error).every(x => (x === null));
+  const adapterX = +(+adapter.dlugosc).toFixed(2);
+  const adapterY = +(+adapter.szerokosc).toFixed(2);
   return (
     <Modal
       isOpen={modalVisiblity}
@@ -184,8 +174,8 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             <Coord><Input onChange={handleChangePoints} placeholder="points: " /></Coord>
         </AdapterCoordsWrapper>
         <ExportInputWrapper>
-          <DistanceDisplay>{ x !== "" && y !== "" &&  `Distance: ${measureDistance(50, 20, +x, +y).toFixed(2)} km`}</DistanceDisplay>
-          <DistanceDisplay>{ x !== "" && y !== "" && points !== '' && `Unit distance: ${(measureDistance(50, 20, +x, +y)/+points).toFixed(2)} km`}</DistanceDisplay>
+          <DistanceDisplay>{ x !== "" && y !== "" &&  `Distance: ${measureDistance(adapterX, adapterY, +x, +y).toFixed(2)} km`}</DistanceDisplay>
+          <DistanceDisplay>{ x !== "" && y !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +x, +y)/+points).toFixed(2)} km`}</DistanceDisplay>
           <InputContainer>
             <Input onChange={handleChange} placeholder="Enter file name:" />
             <TypeSpan>.csv</TypeSpan>

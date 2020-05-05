@@ -77,19 +77,12 @@ export const measureDistance = (lat1: number , lon1: number, lat2: number , lon2
 }
 
 
-
-
-
-
 export const lineFromPoints = (P: PointType, Q: PointType, ) =>
 {
     const a = Q.y - P.y;
     const b = P.x - Q.x;
 
     const c =  a*(P.x) + b*(P.y);
-// y = ax + b
-    // return (c - a * x) / b
-    console.log(a,"x + ",b,"y = ", c);
 
     return {intercept: c/b ,direction: (- a /b)}
 }
