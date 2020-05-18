@@ -48,7 +48,6 @@ const SelectionPanel = () => {
   const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
-  // lineFromPoints({x: 3, y: 2}, {x: 2, y: 6});
   const getCoordinates = () => {
     setLoading(true);
 
@@ -85,9 +84,9 @@ const SelectionPanel = () => {
   };
 
   const showModal = useCallback(
-    (value: boolean, type: string) => () => {
+    (value: boolean, type: string, query: boolean) => () => {
       triggerState(value, type);
-      if (value) {
+      if (value && query) {
         getCoordinates();
       }
     },
@@ -99,13 +98,13 @@ const SelectionPanel = () => {
       <Stations />
       <Adapters />
       <ButtonWrapper>
-        <SubmitPlotMemoButton callback={showModal(true, "plot")} />
+        <SubmitPlotMemoButton callback={showModal(true, "plot", true)} />
       </ButtonWrapper>
       <ButtonWrapper>
-        <SubmitMapsButton callback={showModal(true, "maps")} />
+        <SubmitMapsButton callback={showModal(true, "maps", true)} />
       </ButtonWrapper>
       <ButtonWrapper>
-        <SendToOctaveButton callback={showModal(true, "export")} />
+        <SendToOctaveButton callback={showModal(true, "export", false)} />
       </ButtonWrapper>
       {loading ? (
         <LoaderOverLay>
@@ -120,12 +119,12 @@ const SelectionPanel = () => {
       {coordinates.length > 0 ? (
         <GMapsModal showModal={showModal} modalVisiblity={mapsModalVisiblity} />
       ) : null}
-      {coordinates.length > 0 ? (
+      {/* {coordinates.length > 0 ? ( */}
         <ExportModal
           showModal={showModal}
           modalVisiblity={exportModalVisiblity}
         />
-      ) : null}
+      {/* ) : null} */}
     </Wrapper>
   );
 };

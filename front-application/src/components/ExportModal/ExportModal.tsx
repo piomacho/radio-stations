@@ -22,7 +22,7 @@ import OpenElevationClient from "../../OECient/OpenElevationClient";
 
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string) => any;
+  showModal: (value: boolean, type: string, query: boolean) => any;
 }
 
 interface ErrorsType {
@@ -45,8 +45,8 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [error, setError] = useState(EmptyError);
   const [allowedName, setAllowedName] = useState(false);
   const [fileName, setFileName] = useState("");
-  const [x, setX] = useState("");
-  const [y, setY] = useState("");
+  const [recLongitude, setRecLongitude] = useState("");
+  const [recLatitude, setRecLatitude] = useState("");
   const [points, setPoints] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
@@ -74,10 +74,10 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const isAllowed = rg.test(value);
     // setAllowedName(isAllowed);
     if (!isAllowed) {
-      setError({...error, xError: "X is not allowed !"});
+      setError({...error, xError: "Logitude is not allowed !"});
     }
 
-    setX(value);
+    setRecLongitude(value);
   }
 
   const handleChangePoints = (e: ChangeEvent<HTMLInputElement>) => {
@@ -100,25 +100,25 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const isAllowed = rg.test(value);
     // setAllowedName(isAllowed);
     if (!isAllowed) {
-      setError({...error, yError: "X is not allowed !"});
+      setError({...error, yError: "Latitude is not allowed !"});
     }
 
-    setY(value);
+    setRecLatitude(value);
   }
 
-  const handleExportTemp = () => {
+  const handleExportClick = () => {
     // TODO please refactor
       const adapterX = +(+adapter.szerokosc).toFixed(2);
       const adapterY = +(+adapter.dlugosc).toFixed(2);
-      const lineDetails = lineFromPoints({x: adapterX, y: adapterY}, {x: +x, y: +y});
-
+      const lineDetails = lineFromPoints({x: adapterX, y: adapterY}, {x: +recLongitude, y: +recLatitude});
+      console.log("!!!!!", measureDistance( adapterY, adapterX,  +recLatitude, +recLongitude,).toFixed(2));
       return OEClient.postLookupLine({
-        adapterLatitude: +adapter.szerokosc,
-        adapterLongitude: +adapter.dlugosc,
-        range: measureDistance(adapterX, adapterY, +y, +x).toFixed(2),
+        adapterLongitude: +adapterX,
+        adapterLatitude: +adapterY,
+        range: measureDistance( adapterY, adapterX, +recLatitude, +recLongitude).toFixed(2),
         numberOfPoints: points,
-        intercept: lineDetails.intercept,
-        direction: lineDetails.direction
+        receiverLongitude:  +recLongitude,
+        receiverLatitude:  +recLatitude
       })
         .then((results: any) => {
           handleExport(results);
@@ -136,7 +136,9 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         coordinates: results.results,
-        fileName: fileName
+        fileName: fileName,
+        adapter: { latitude: adapterX, longitude: adapterY},
+        receiver: { latitude: +recLatitude, longitude: +recLongitude }
       })
     };
 
@@ -151,12 +153,12 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   };
 
   const allowedSubmit = Object.values(error).every(x => (x === null));
-  const adapterX = +(+adapter.dlugosc).toFixed(2);
-  const adapterY = +(+adapter.szerokosc).toFixed(2);
+  const adapterX = +(+adapter.szerokosc).toFixed(2);
+  const adapterY = +(+adapter.dlugosc).toFixed(2);
   return (
     <Modal
       isOpen={modalVisiblity}
-      onRequestClose={showModal(false, "export")}
+      onRequestClose={showModal(false, "export", false)}
       ariaHideApp={false}
       contentLabel="Export Modal"
     >
@@ -164,25 +166,24 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       <InputWrapper>
         <AdapterCoordsWrapper>
           <AdaptersHeader>Adapter locations:</AdaptersHeader>
-            <Coord>x: {(+adapter.dlugosc).toFixed(2)}</Coord>
-            <Coord>y: {(+adapter.szerokosc).toFixed(2)}</Coord>
+            <Coord>Longitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
+            <Coord>Latitude: {(+adapter.dlugosc).toFixed(2)}</Coord>
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
           <AdaptersHeader>Input coordinates:</AdaptersHeader>
-            <Coord><Input onChange={handleChangeX} placeholder="x: " /></Coord>
-            <Coord><Input onChange={handleChangeY} placeholder="y: " /></Coord>
-            <Coord><Input onChange={handleChangePoints} placeholder="points: " /></Coord>
+            <Coord><Input onChange={handleChangeX} placeholder="Receiver longitude: " /></Coord>
+            <Coord><Input onChange={handleChangeY} placeholder="Receiver latitude: " /></Coord>
+            <Coord><Input onChange={handleChangePoints} placeholder="Number of points: " /></Coord>
         </AdapterCoordsWrapper>
         <ExportInputWrapper>
-          <DistanceDisplay>{ x !== "" && y !== "" &&  `Distance: ${measureDistance(adapterX, adapterY, +x, +y).toFixed(2)} km`}</DistanceDisplay>
-          <DistanceDisplay>{ x !== "" && y !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +x, +y)/+points).toFixed(2)} km`}</DistanceDisplay>
+          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterY, adapterX, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
+          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterY, adapterX, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
           <InputContainer>
             <Input onChange={handleChange} placeholder="Enter file name:" />
             <TypeSpan>.csv</TypeSpan>
             <ExportWrapper>
             <Button
-              // onClick={handleExport}
-              onClick={handleExportTemp}
+              onClick={handleExportClick}
               label={"Export"}
               backColor={"#7bed9f"}
               backColorHover={"#2ed573"}
@@ -199,7 +200,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       {successMessage && <Message>{successMessage}</Message>}
       <ButtonWrapper>
         <Button
-          onClick={showModal(false, "export")}
+          onClick={showModal(false, "export", false)}
           label={"Close"}
           backColorHover={"#ff7979"}
         />

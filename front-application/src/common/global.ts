@@ -82,7 +82,10 @@ export const lineFromPoints = (P: PointType, Q: PointType, ) =>
     const a = Q.y - P.y;
     const b = P.x - Q.x;
 
+    const slope = (Q.y - P.y) / (Q.x - P.x);
+
+
     const c =  a*(P.x) + b*(P.y);
 
-    return {intercept: c/b ,direction: (- a /b)}
+    return {intercept: c/b ,direction: slope}
 }

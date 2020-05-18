@@ -7,7 +7,7 @@ import Map from '../Map/Map'
 
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string) => any;
+  showModal: (value: boolean, type: string, query: boolean) => any;
 
 }
 
@@ -16,13 +16,13 @@ const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   return (
     <Modal
       isOpen={modalVisiblity}
-      onRequestClose={showModal(false, "maps")}
+      onRequestClose={showModal(false, "maps", false)}
       ariaHideApp={false}
       contentLabel="Example Modal"
     >
       <Map />
       <Button
-        onClick={showModal(false, "maps")}
+        onClick={showModal(false, "maps", false)}
         label={"Close"}
         height={30}
         width={50}

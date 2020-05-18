@@ -118,7 +118,6 @@ class OpenElevationRestClient extends React.Component {
             queryParameters: Record<string, any> = {},
             headers: Record<string, any> = {},
             form: Record<string, any> = {};
-            console.log("parameters ", parameters);
         headers["Accept"] = ["application/json"];
         headers["Content-Type"] = ["application/json"];
 
@@ -127,16 +126,16 @@ class OpenElevationRestClient extends React.Component {
             parameters['adapterLongitude'] !== undefined &&
             parameters['range'] !== undefined &&
             parameters['numberOfPoints'] !== undefined &&
-            parameters['intercept'] !== undefined &&
-            parameters['direction'] !== undefined) {
+            parameters['receiverLatitude'] !== undefined &&
+            parameters['receiverLongitude'] !== undefined) {
 
             body = {
                 adapterLatitude: parameters['adapterLatitude'],
                 adapterLongitude: parameters['adapterLongitude'],
                 numberOfPoints: parameters['numberOfPoints'],
                 range: parameters['range'],
-                intercept: parameters['intercept'],
-                direction: parameters['direction']
+                receiverLatitude: parameters['receiverLatitude'],
+                receiverLongitude: parameters['receiverLongitude']
             };
         }
 

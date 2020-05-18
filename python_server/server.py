@@ -1,3 +1,4 @@
+# coding: utf-8
 import sys
 import json
 import bottle
@@ -101,7 +102,32 @@ def body_to_locations():
 
     return latlng
 
+
+def degrees_to_radians(degrees):
+    pi = math.pi
+    return degrees * (pi/180)
+
+def radians_to_degrees(radians):
+    return radians * (180 / math.pi)
+
+
+def measureDistance(lat1, lon1, lat2, lon2):
+    R = 6371000
+    q1 = degrees_to_radians(lat1)
+    q2 = degrees_to_radians(lat2)
+    dq = degrees_to_radians(lat2-lat1)
+    da = degrees_to_radians(lon2-lon1)
+
+    a = math.sin(dq/2) * math.sin(dq/2) + math.cos(q1) * math.cos(q2) * math.sin(da/2) * math.sin(da/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+    d = R * c
+
+    return d / 1000
+
+
 def newCoordinates(latitude, longitude, dy, dx):
+    print("OLD lat", latitude, "Long ", longitude, " y | ", dy, "dx - ",dx)
     r_earth = 6378.137
     new_latitude  = latitude  + (dy / r_earth) * (180 / math.pi)
     new_longitude = longitude + (dx / r_earth) * (180 / math.pi) / math.cos(latitude * math.pi/180)
@@ -109,6 +135,83 @@ def newCoordinates(latitude, longitude, dy, dx):
     d['lat'] = new_latitude
     d['lon'] = new_longitude
     return d
+
+def getPoint(adapterX, adapterY, distance, m):
+    point_b = (adapterX+dx(distance,m), adapterY+dy(distance,m))
+    other_possible_point_b = (adapterX-dx(distance,m), adapterY-dy(distance,m)) # going the other way
+    return point_b
+
+
+def dy(distance, m):
+    return m*dx(distance, m)
+
+def dx(distance, m):
+    return math.sqrt(distance/(m**2+1))
+
+def calculate_initial_compass_bearing(adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
+    # if (type(pointA) != tuple) or (type(pointB) != tuple):
+    #     raise TypeError("Only tuples are supported as arguments")
+
+    lat1 = math.radians(adapterLatitude)
+    lat2 = math.radians(receiverLatitude)
+
+    diffLong = math.radians(adapterLongitude - receiverLongitude)
+
+    x = math.sin(diffLong) * math.cos(lat2)
+    y = math.cos(lat1) * math.sin(lat2) - (math.sin(lat1)
+            * math.cos(lat2) * math.cos(diffLong))
+
+    initial_bearing = math.atan2(x, y)
+
+    initial_bearing = math.degrees(initial_bearing)
+    compass_bearing = (initial_bearing + 360) % 360
+
+    return compass_bearing
+
+
+
+def calculateBearing(adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
+    print("AD Long ", adapterLongitude, " AD LAT", adapterLatitude, " REC long", receiverLongitude, " REC lat ", receiverLatitude)
+    print("cos(", receiverLatitude,")*sin(", receiverLongitude - adapterLongitude,")")
+    X = math.cos(receiverLatitude) * math.sin(receiverLongitude - adapterLongitude)
+    Y = math.cos(adapterLatitude) * math.sin(receiverLatitude) - math.sin(adapterLatitude) * math.cos(receiverLatitude) * math.cos(receiverLongitude - adapterLongitude)
+    B = math.atan2(X,Y)
+
+    print("B ", radians_to_degrees(B))
+    return B
+
+def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
+
+    d = float(range1)/int(numberOfPoints)
+    brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receiverLongitude), degrees_to_radians(receiverLatitude))
+
+    R = 6378.1 #Radius of the Earth
+
+    lat1 = math.radians(adapterLongitude) #Current lat point converted to radians
+    lon1 = math.radians(adapterLatitude) #Current long point converted to radians
+
+    lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
+        math.cos(lat1)*math.sin(d/R)*math.cos(brng))
+
+    lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
+                math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
+
+    lat2 = math.degrees(lat2)
+    lon2 = math.degrees(lon2)
+
+    print("LAT ",lat2)
+    print("LON", lon2)
+    # print("D", d, "LONG ", lo2, " LATIT ", la2)
+    # for x in range(int(numberOfPoints) + 1):
+            # deltaX = unitX * x
+
+            # new_point = getPoint(x0, y0, deltaX, direction)
+            # xDelta = new_point[0] -
+            # newCords = newCoordinates( y0,x0, new_point[1] - y0, new_point[0] - x0)
+
+            # cArray += [{"distance": measureDistance(y0, x0, round((newCords['lat'] + sys.float_info.epsilon) * 1000) / 1000 , round((newCords['lon'] + sys.float_info.epsilon) * 1000) / 1000 ),"latitude": round((newCords['lat'] + sys.float_info.epsilon) * 1000) / 1000 , "longitude": round((newCords['lon'] + sys.float_info.epsilon) * 1000) / 1000}]
+
+    return []
 
 def generateCoordinates(range1, x0, y0):
 
@@ -128,19 +231,6 @@ def generateCoordinates(range1, x0, y0):
     for x3 in range(range1):
         for y3 in range(range1):
             cArray += [{"latitude": round(((x0 + 0.001 * x3) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 - 0.001 * y3) + sys.float_info.epsilon) * 1000) / 1000 }]
-    return cArray
-
-def generateCoordinatesNew(range1, numberOfPoints, x0, y0, intercept, direction):
-    print("range1", range1)
-    unitX = float(range1)/int(numberOfPoints)
-
-    cArray = []
-    for x in range(int(numberOfPoints)):
-            deltaX = unitX * (x + 1)
-            deltaY = float(intercept) -  float(direction) * deltaX
-            newCords = newCoordinates(x0, y0, deltaX, deltaY)
-            cArray += [{"latitude": round((newCords['lat'] + sys.float_info.epsilon) * 1000) / 1000 , "longitude": round((newCords['lon'] + sys.float_info.epsilon) * 1000) / 1000}]
-
     return cArray
 
 def body_to_adapter():
@@ -176,8 +266,8 @@ def body_to_line():
         adapterLongitude = request.json.get('adapterLongitude', None)
         numberOfPoints = request.json.get('numberOfPoints', None)
         adapterLatitude = request.json.get('adapterLatitude', None)
-        intercept = request.json.get('intercept', None)
-        direction = request.json.get('direction', None)
+        receiverLatitude = request.json.get('receiverLatitude', None)
+        receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
 
     except Exception:
@@ -191,22 +281,22 @@ def body_to_line():
         raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
     if not numberOfPoints:
         raise InternalException(json.dumps({'error': '"numberOfPoints" is required in the body.'}))
-    if not intercept:
-        raise InternalException(json.dumps({'error': '"intercept" is required in the body.'}))
-    if not direction:
-        raise InternalException(json.dumps({'error': '"direction" is required in the body.'}))
+    if not receiverLatitude:
+        raise InternalException(json.dumps({'error': '"receiverLatitude" is required in the body.'}))
+    if not receiverLongitude:
+        raise InternalException(json.dumps({'error': '"receiverLongitude" is required in the body.'}))
 
 
-    locations = generateCoordinatesNew(rangePar, numberOfPoints, adapterLatitude, adapterLongitude, intercept, direction)
+    locations = generateCoordinatesNew(rangePar, numberOfPoints, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude);
     latlng = [];
     print("COOL IT WORKS !!!", locations);
-    for l in locations:
-        try:
-            latlng += [ (l['latitude'],l['longitude']) ]
-        except KeyError:
-            raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
+    # for l in locations:
+    #     try:
+    #         latlng += [ (l['latitude'],l['longitude']) ]
+    #     except KeyError:
+    #         raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
-    return latlng
+    # return latlng
 
 
 
