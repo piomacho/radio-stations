@@ -88,7 +88,6 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     setError({...error, pointsError: null});
     const rg = /^[0-9]+$/;
     const isAllowed = rg.test(value);
-    console.log("====--- ", isAllowed)
     if (!isAllowed) {
       setError({...error, pointsError: "Points quantity is invalid !"});
     }
@@ -148,15 +147,13 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       callApiFetch(`api/export-octave/send/`, requestOptions)
         .then(() => {
           setSuccessMessage("File saved succcessfully!");
-          setFileName("");
+          // setFileName("");
         })
         .catch(err => setError(err));
     }
   };
 
-  const allowedSubmit = Object.values(error).every(x => (x === null));
-  console.log("error ", Object.values(error));
-  // const errors = error.filter()
+  const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0;
   const adapterX = +(+adapter.szerokosc).toFixed(2);
   const adapterY = +(+adapter.dlugosc).toFixed(2);
 

@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import superagent from 'superagent';
-import { getFieldsFromObject } from 'src/common/global';
+import { getFieldsFromObject } from '../common/global';
 
 const router = Router();
 
