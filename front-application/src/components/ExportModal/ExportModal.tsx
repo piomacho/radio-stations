@@ -1,6 +1,7 @@
 import React, { useState, ChangeEvent } from "react";
 import Modal from "react-modal";
 import store, { CoordinatesType } from "../../Store/Store";
+
 import Button from "../Button/Button";
 import {
   FloppyIcon,
@@ -43,10 +44,6 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
   const [error, setError] = useState(EmptyError);
-  // const [allowedName, setAllowedName] = useState(false);
-  // const [allowedY, setAllowedY] = useState(false);
-  // const [allowedX, setAllowedX] = useState(false);
-  // const [allowedPoints, setAllowedPoints] = useState(false);
   const [fileName, setFileName] = useState("");
   const [recLongitude, setRecLongitude] = useState("");
   const [recLatitude, setRecLatitude] = useState("");
@@ -118,8 +115,8 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         adapterLatitude: +adapterX,
         range: measureDistance( adapterX, adapterY, +recLatitude, +recLongitude).toFixed(2),
         numberOfPoints: points,
-        receiverLongitude:  +recLongitude,
-        receiverLatitude:  +recLatitude
+        receiverLongitude: +recLongitude,
+        receiverLatitude: +recLatitude
       })
         .then((results: any) => {
           handleExport(results);
@@ -138,7 +135,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       body: JSON.stringify({
         coordinates: results.results,
         fileName: fileName,
-        adapter: { latitude: adapterX, longitude: adapterY},
+        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm},
         receiver: { latitude: +recLatitude, longitude: +recLongitude }
       })
     };
@@ -147,7 +144,6 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       callApiFetch(`api/export-octave/send/`, requestOptions)
         .then(() => {
           setSuccessMessage("File saved succcessfully!");
-          // setFileName("");
         })
         .catch(err => setError(err));
     }
@@ -174,7 +170,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       <FloppyIcon />
       <InputWrapper>
         <AdapterCoordsWrapper>
-          <AdaptersHeader>Adapter locations:</AdaptersHeader>
+          <AdaptersHeader>Transmitter locations:</AdaptersHeader>
             <Coord>Longitude: {(+adapter.dlugosc).toFixed(2)} </Coord>
             <Coord>Latitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
         </AdapterCoordsWrapper>
@@ -189,7 +185,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
           <InputContainer>
             <Input onChange={handleChange} placeholder="Enter file name:" />
-            <TypeSpan>.csv</TypeSpan>
+            <TypeSpan>.xlsx</TypeSpan>
             <ExportWrapper>
             <Button
               onClick={allowedSubmit ? handleExportClick : null}

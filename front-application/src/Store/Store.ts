@@ -1,5 +1,5 @@
 import { createStore } from 'react-hooks-global-state';
- 
+
 export interface CoordinatesType {
     latitude: number;
     elevation: number;
@@ -16,6 +16,7 @@ interface InitialStateType {
         label: string;
         dlugosc: string;
         szerokosc: string;
+        wys_npm: number | undefined
     },
     // todo remove any
     coordinates: Array<Array<number>>,
@@ -23,11 +24,10 @@ interface InitialStateType {
     elevationResults: Array<CoordinatesType>
 }
 
-const initialState: InitialStateType = { station: {value: '', label: ''},  adapter: {value: '', label: '', dlugosc: '', szerokosc: ''}, coordinates: [], trialCoords: [], elevationResults: []}; 
+const initialState: InitialStateType = { station: {value: '', label: ''},  adapter: {value: '', label: '', dlugosc: '', szerokosc: '', wys_npm: undefined}, coordinates: [], trialCoords: [], elevationResults: []};
 
 // router dom issue
-  //@ts-ignore 
+  //@ts-ignore
 const store = createStore(null, initialState);
 
 export default store;
- 

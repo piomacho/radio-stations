@@ -46,9 +46,11 @@ router.post('/send/', async (req: Request, res: Response) => {
         const coordinates = formatCoordinates(req.body.coordinates);
         const adapterLon = req.body.adapter.longitude;
         const adapterLat = req.body.adapter.latitude;
+        const height = req.body.adapter.height;
         const receiverLon = req.body.receiver.longitude;
         const receiverLat = req.body.receiver.latitude;
         const fName = req.body.fileName;
+        console.log("REE ", req.body);
 
         fs.writeFile('./validation_results/prof_b2iseac.m', `function [d,h,z] = prof_b2iseac()\r\na=[ ...\r\n${coordinates1.join("\r\n")}];\r\nd = a(:,1);\r\n
         h = a(:,2);\r\n
@@ -56,7 +58,7 @@ router.post('/send/', async (req: Request, res: Response) => {
         \r\n
         end`, function (err: any) {
           if (err) return console.log(err);
-          const ls = execFile("octave", ["-i", "--persist", "validate_p2001_b2iseac.m", adapterLon, adapterLat, receiverLon, receiverLat, fName]);
+          const ls = execFile("octave", ["-i", "--persist", "validate_p2001_b2iseac.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height]);
 
           ls.stdout.on("data", (data: string) => {
               console.log(data);

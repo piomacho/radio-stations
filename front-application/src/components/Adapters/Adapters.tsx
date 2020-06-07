@@ -11,6 +11,7 @@ interface AdapterType{
     dlugosc: string;
     szerokosc: string;
     id_obiekt: string;
+    wys_npm: string;
 }
 
 interface OptionType {
@@ -20,7 +21,7 @@ interface OptionType {
 
 const setParameters = (adapters: Array<AdapterType>): Array<OptionType> => {
     return adapters.map((adapter: AdapterType) => {
-        return { value: adapter.id_obiekt, label: adapter.obiekt, szerokosc: adapter.szerokosc, dlugosc: adapter.dlugosc} 
+        return { value: adapter.id_obiekt, label: adapter.obiekt, szerokosc: adapter.szerokosc, dlugosc: adapter.dlugosc, wys_npm: adapter.wys_npm}
     });
 }
 
@@ -40,7 +41,7 @@ const Adapters = () => {
       }, [station])
 
     return (
-    
+
     <SelectContainer>
       {loading ? <LoaderContainer><Loader type="Circles" color="#22a6b3" height={40} width={40}/></LoaderContainer>:
       <SelectBox
@@ -50,7 +51,7 @@ const Adapters = () => {
       />}
     </SelectContainer>
     );
-  
+
 }
 
 export default Adapters;
