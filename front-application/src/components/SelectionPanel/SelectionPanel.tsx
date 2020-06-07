@@ -8,6 +8,8 @@ import {
   SubmitPlotMemoButton,
   SubmitMapsButton,
   SendToOctaveButton,
+  NavigationPanel,
+  NavigationWrapper
 } from "./SelectionPanel.styles";
 import PlotModal from "../PlotModal/PlotModal";
 import store, { CoordinatesType } from "../../Store/Store";
@@ -54,7 +56,7 @@ const SelectionPanel = () => {
     return OEClient.postLookupNew({
       adapterLongitude: +adapter.dlugosc,
       adapterLatitude: +adapter.szerokosc,
-      range: 12,
+      range: 10,
     })
       .then((results: any) => {
         setTrialCoords(results.results);
@@ -97,15 +99,19 @@ const SelectionPanel = () => {
     <Wrapper>
       <Stations />
       <Adapters />
-      <ButtonWrapper>
-        <SubmitPlotMemoButton callback={showModal(true, "plot", true)} />
-      </ButtonWrapper>
-      <ButtonWrapper>
-        <SubmitMapsButton callback={showModal(true, "maps", true)} />
-      </ButtonWrapper>
-      <ButtonWrapper>
-        <SendToOctaveButton callback={showModal(true, "export", false)} />
-      </ButtonWrapper>
+      <NavigationWrapper>
+        <NavigationPanel>
+          <ButtonWrapper>
+            <SubmitPlotMemoButton callback={showModal(true, "plot", true)} />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <SubmitMapsButton callback={showModal(true, "maps", true)} />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <SendToOctaveButton callback={showModal(true, "export", false)} />
+          </ButtonWrapper>
+        </NavigationPanel>
+      </NavigationWrapper>
       {loading ? (
         <LoaderOverLay>
           <LoaderContainer>

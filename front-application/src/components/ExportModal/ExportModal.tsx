@@ -43,7 +43,10 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
   const [error, setError] = useState(EmptyError);
-  const [allowedName, setAllowedName] = useState(false);
+  // const [allowedName, setAllowedName] = useState(false);
+  // const [allowedY, setAllowedY] = useState(false);
+  // const [allowedX, setAllowedX] = useState(false);
+  // const [allowedPoints, setAllowedPoints] = useState(false);
   const [fileName, setFileName] = useState("");
   const [recLongitude, setRecLongitude] = useState("");
   const [recLatitude, setRecLatitude] = useState("");
@@ -62,7 +65,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const rg3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; // forbidden file names
     const isAllowed = rg1.test(value) && !rg2.test(value) && !rg3.test(value);
     // setAllowedName(isAllowed);
-    if (!isAllowed) {
+    if (!isAllowed && value.length > 0) {
       setError({...error, fileNameError: "Name is not allowed !"});
     }
   };
@@ -74,10 +77,10 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const isAllowed = rg.test(value);
     // setAllowedName(isAllowed);
     if (!isAllowed) {
-      setError({...error, xError: "Logitude is not allowed !"});
+      setError({...error, xError: "Latitude is not allowed !"});
     }
 
-    setRecLongitude(value);
+    setRecLatitude(value);
   }
 
   const handleChangePoints = (e: ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +88,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     setError({...error, pointsError: null});
     const rg = /^[0-9]+$/;
     const isAllowed = rg.test(value);
+    console.log("====--- ", isAllowed)
     if (!isAllowed) {
       setError({...error, pointsError: "Points quantity is invalid !"});
     }
@@ -98,24 +102,22 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     setError({...error, yError: null});
     const rg = /^[+-]?\d+(\.\d+)?$/;
     const isAllowed = rg.test(value);
-    // setAllowedName(isAllowed);
     if (!isAllowed) {
-      setError({...error, yError: "Latitude is not allowed !"});
+      setError({...error, yError: "Longitude is not allowed !"});
     }
 
-    setRecLatitude(value);
+    setRecLongitude(value);
   }
 
   const handleExportClick = () => {
     // TODO please refactor
       const adapterX = +(+adapter.szerokosc).toFixed(2);
       const adapterY = +(+adapter.dlugosc).toFixed(2);
-      const lineDetails = lineFromPoints({x: adapterX, y: adapterY}, {x: +recLongitude, y: +recLatitude});
-      console.log("!!!!!", measureDistance( adapterY, adapterX,  +recLatitude, +recLongitude,).toFixed(2));
+      // const lineDetails = lineFromPoints({x: adapterX, y: adapterY}, {x: +recLongitude, y: +recLatitude});
       return OEClient.postLookupLine({
-        adapterLongitude: +adapterX,
-        adapterLatitude: +adapterY,
-        range: measureDistance( adapterY, adapterX, +recLatitude, +recLongitude).toFixed(2),
+        adapterLongitude: +adapterY,
+        adapterLatitude: +adapterX,
+        range: measureDistance( adapterX, adapterY, +recLatitude, +recLongitude).toFixed(2),
         numberOfPoints: points,
         receiverLongitude:  +recLongitude,
         receiverLatitude:  +recLatitude
@@ -153,37 +155,47 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   };
 
   const allowedSubmit = Object.values(error).every(x => (x === null));
+  console.log("error ", Object.values(error));
+  // const errors = error.filter()
   const adapterX = +(+adapter.szerokosc).toFixed(2);
   const adapterY = +(+adapter.dlugosc).toFixed(2);
+
+  const customStyles = {
+    content : {
+      backgroundColor: '#FBE9EB',
+    }
+  };
+
   return (
     <Modal
       isOpen={modalVisiblity}
       onRequestClose={showModal(false, "export", false)}
       ariaHideApp={false}
       contentLabel="Export Modal"
+      style={ customStyles }
     >
       <FloppyIcon />
       <InputWrapper>
         <AdapterCoordsWrapper>
           <AdaptersHeader>Adapter locations:</AdaptersHeader>
-            <Coord>Longitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
-            <Coord>Latitude: {(+adapter.dlugosc).toFixed(2)}</Coord>
+            <Coord>Longitude: {(+adapter.dlugosc).toFixed(2)} </Coord>
+            <Coord>Latitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
           <AdaptersHeader>Input coordinates:</AdaptersHeader>
-            <Coord><Input onChange={handleChangeX} placeholder="Receiver longitude: " /></Coord>
-            <Coord><Input onChange={handleChangeY} placeholder="Receiver latitude: " /></Coord>
+            <Coord><Input onChange={handleChangeY} placeholder="Receiver longitude: " /></Coord>
+            <Coord><Input onChange={handleChangeX} placeholder="Receiver latitude: " /></Coord>
             <Coord><Input onChange={handleChangePoints} placeholder="Number of points: " /></Coord>
         </AdapterCoordsWrapper>
         <ExportInputWrapper>
-          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterY, adapterX, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
-          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterY, adapterX, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
+          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
+          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
           <InputContainer>
             <Input onChange={handleChange} placeholder="Enter file name:" />
             <TypeSpan>.csv</TypeSpan>
             <ExportWrapper>
             <Button
-              onClick={handleExportClick}
+              onClick={allowedSubmit ? handleExportClick : null}
               label={"Export"}
               backColor={"#7bed9f"}
               backColorHover={"#2ed573"}
@@ -194,9 +206,9 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
         </ExportInputWrapper>
       </InputWrapper>
-      {!allowedName && fileName.length > 0 && (
-        <Message error={true}>{error.fileNameError}</Message>
-      )}
+      {!allowedSubmit &&  Object.values(error).map(error => (
+        <Message error={true}>{error}</Message>
+      ))}
       {successMessage && <Message>{successMessage}</Message>}
       <ButtonWrapper>
         <Button

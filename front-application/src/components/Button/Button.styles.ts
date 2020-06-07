@@ -25,6 +25,11 @@ export const SubmitButton = styled('a')<ButtonType>`
     border: none;
     transition: all 0.4s ease 0s;
     cursor: pointer;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    font-weight: 700;
+    text-align: center;
 
     &:hover {
         background: ${props => props.backColorHover ?  props.backColorHover : '#fff'};
@@ -42,6 +47,6 @@ export const SubmitButton = styled('a')<ButtonType>`
 
 export const ButtonWrapper = styled("div")`
     position: absolute;
-    bottom: 45px;
+    bottom: -20px;
     right: 50px;
 `;

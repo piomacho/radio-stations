@@ -6,7 +6,7 @@ interface ExportModalType {
 }
 
 export const FloppyIcon = styled('div')`
-    background-color: #fff;
+    background-color: #FBE9EB;
     background-image: url(${Floppy});
     background-position: center;
     background-repeat: no-repeat;

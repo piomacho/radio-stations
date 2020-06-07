@@ -42,13 +42,13 @@ const PlotModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     title: "Elevation around adapter",
     autosize: false,
     width: 800,
-    height: 800,
+    height: 600,
     margin: {
-      l: 90,
-      r: 90,
+      l: 50,
+      r: 50,
 
-      b: 90,
-      t: 90
+      b: 30,
+      t: 30
     }
   };
   return (
@@ -69,7 +69,7 @@ const PlotModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           onClick={showModal(false, "plot")}
           label={"Close"}
           height={30}
-          width={50}
+          width={100}
           backColorHover={"#ff7979"}
         />
       </ButtonWrapper>

@@ -11,7 +11,7 @@ export const Wrapper = styled('div')`
 `;
 
 export const ButtonWrapper = styled('div')`
-    margin-top: 20px;
+    margin: 20px 10px 0 0;
     display: flex;
     justify-content: center;
 `;
@@ -33,9 +33,19 @@ export const LoaderWrapper = styled('div')`
     z-index: 200;
 `;
 
+export const NavigationWrapper = styled('div')`
+    display: flex;
+    justify-content: center;
+`
+export const NavigationPanel = styled('div')`
+    display: flex;
+    justify-content: space-between;
+    margin-top: 150px;
+`;
+
 export const SubmitPlotButton = ({ callback }: any) => (
     <Button
-      width={150}
+      width={180}
       height={50}
       backColor={"#686de0"}
       backColorHover={"#30336b"}
@@ -46,7 +56,7 @@ export const SubmitPlotButton = ({ callback }: any) => (
 
   export const SubmitMapsButton = ({ callback }: any) => (
     <Button
-      width={150}
+      width={180}
       height={50}
       backColor={"#2ecc71"}
       backColorHover={"#27ae60"}
@@ -57,7 +67,7 @@ export const SubmitPlotButton = ({ callback }: any) => (
 
   export const SendToOctaveButton = ({ callback }: any) => (
     <Button
-      width={150}
+      width={180}
       height={50}
       backColor={"#ff7675"}
       backColorHover={"#d63031"}

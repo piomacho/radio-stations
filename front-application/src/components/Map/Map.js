@@ -7,6 +7,7 @@ import {
   Marker,
   InfoWindow
 } from "react-google-maps";
+import { GMapsSpan, OESpan } from "./Map.style";
 import store from "../../Store/Store";
 import { callApiFetch } from "../../common/global";
 import { measureDistance } from "../../common/global";
@@ -28,14 +29,14 @@ const MapWithAMarker = compose(
   const icon = {
     url:
       "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png",
-    size: { width: 160, height: 200 },
+    size: { width: 140, height: 160 },
     anchor: { x: 15, y: 50 },
     scaledSize: { width: 30, height: 50 }
   };
 
   const generateApiParameter = () => {
     let str = "";
-    for(let i = 0; i < trialCoords.length; i++) {
+    for(let i = 0; i < trialCoords.length ; i++) {
       if(i !== trialCoords.length -1) {
         str = `${str}${trialCoords[i].latitude},${trialCoords[i].longitude}%7C`;
       }
@@ -60,17 +61,14 @@ const MapWithAMarker = compose(
 
   return (
     <GoogleMap
-      defaultZoom={8}
+      defaultZoom={11}
       defaultCenter={{ lat: +adapter.szerokosc, lng: +adapter.dlugosc }}
       defaultMapTypeId="terrain"
     >
       <Marker
-        // onClick={onClick}
         icon={icon}
         position={{ lat: +adapter.szerokosc, lng: +adapter.dlugosc }}
-      >
-        ANTENTA
-      </Marker>
+      />
       {elevationResults.map((marker, iterator) => {
         const onClick = props.onClick.bind(this, marker);
         return (
@@ -79,9 +77,9 @@ const MapWithAMarker = compose(
             onClick={onClick}
             position={{ lat: marker.latitude, lng: marker.longitude }}
           >
-            {props.selectedMarker === marker && (
+            {props.selectedMarker === marker && marker && gMapsElevation[iterator] && (
               <InfoWindow>
-                <div>{marker.elevation} | {gMapsElevation[iterator].elevation}</div>
+                <div><GMapsSpan>GMaps: <b>{gMapsElevation[iterator].elevation}</b></GMapsSpan> | <OESpan>Open Elevation: <b>{marker.elevation}</b></OESpan></div>
               </InfoWindow>
             )}
           </Marker>

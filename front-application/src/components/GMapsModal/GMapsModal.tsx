@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { callApiFetch } from '../../common/global';
+import React from "react";
 import Modal from "react-modal";
-import store, { CoordinatesType } from "../../Store/Store";
 import Button from "../Button/Button";
 import Map from '../Map/Map'
+import { ButtonWrapper } from "./GMapsModal.style";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -21,13 +20,15 @@ const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       contentLabel="Example Modal"
     >
       <Map />
-      <Button
-        onClick={showModal(false, "maps", false)}
-        label={"Close"}
-        height={30}
-        width={50}
-        backColorHover={"#ff7979"}
-      />
+      <ButtonWrapper>
+        <Button
+          onClick={showModal(false, "maps", false)}
+          label={"Close"}
+          height={30}
+          width={80}
+          backColorHover={"#ff7979"}
+        />
+      </ButtonWrapper>
     </Modal>
   );
 };
