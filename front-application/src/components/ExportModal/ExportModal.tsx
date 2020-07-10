@@ -119,6 +119,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         receiverLatitude: +recLatitude
       })
         .then((results: any) => {
+          // console.log("fajne ", results);
           handleExport(results);
           return true;
         })
@@ -143,7 +144,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     if (true) {
       callApiFetch(`api/export-octave/send/`, requestOptions)
         .then(() => {
-          setSuccessMessage("File saved succcessfully!");
+          setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
         })
         .catch(err => setError(err));
     }

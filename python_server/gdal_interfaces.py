@@ -65,11 +65,12 @@ class GDALInterface(object):
             u = xgeo - self.geo_transform_inv[0]
             v = ygeo - self.geo_transform_inv[3]
             # FIXME this int() is probably bad idea, there should be half cell size thing needed
-            xpix = int(self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
-            ylin = int(self.geo_transform_inv[4] * u + self.geo_transform_inv[5] * v)
-
+            xpix = float(self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
+            ylin = float(self.geo_transform_inv[4] * u + self.geo_transform_inv[5] * v)
+            print("1. ",self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
             # look the value up
             v = self.points_array[ylin, xpix]
+            print("2 ", v)
 
             return v if v != -32768 else self.SEA_LEVEL
         except Exception as e:
@@ -163,7 +164,9 @@ class GDALTileInterface(object):
             coords = nearest[0].object
 
             gdal_interface = self._open_gdal_interface(coords['file'])
-            return int(gdal_interface.lookup(lat, lng))
+            # return int(gdal_interface.lookup(lat, lng))
+            print("--- ",gdal_interface.lookup(lat, lng) )
+            return float(gdal_interface.lookup(lat, lng))
 
     def _build_index(self):
         index_id = 1

@@ -37,6 +37,22 @@ const format = (
   return secondArr;
 };
 
+const formatDistance = (
+  coords: Array<CoordinatesType>,
+  range: number
+): Array<Array<number>> => {
+  const secondArr: Array<Array<any>> = [[]];
+  for (let i = 0; i < range; i++) {
+    secondArr[i] = [];
+    for (let j = 0; j < range; j++) {
+      secondArr[i].push(
+        coords[i * range + j] && coords[i * range + j].distance
+      );
+    }
+  }
+  return secondArr;
+};
+
 const SelectionPanel = () => {
   const { useGlobalState } = store;
   const [plotModalVisiblity, setPlotModalVisiblity] = useState(false);
@@ -53,16 +69,20 @@ const SelectionPanel = () => {
   const getCoordinates = () => {
     setLoading(true);
 
+
     return OEClient.postLookupNew({
       adapterLongitude: +adapter.dlugosc,
       adapterLatitude: +adapter.szerokosc,
-      range: 10,
+      range: 12,
     })
-      .then((results: any) => {
-        setTrialCoords(results.results);
-        const result = format(results.results, 60);
+      .then(async(results: any) => {
+        // setTrialCoords(results.results);
+        // console.log("--->  rezultaty", results.results);
+        const elevations = await format(results.results, 30);
+        // console.log("elevations ", elevations );
+        const distances = await formatDistance(results.results, 30);
         setPlotData(results.results);
-        setCoordinates(result);
+        setCoordinates({elevations: elevations, distances: distances });
         setElevationResults(results.results);
         setLoading(false);
         return true;
@@ -119,10 +139,10 @@ const SelectionPanel = () => {
           </LoaderContainer>
         </LoaderOverLay>
       ) : null}
-      {coordinates.length > 0 ? (
+      {plotData.length > 0 ? (
         <PlotModal showModal={showModal} modalVisiblity={plotModalVisiblity} />
       ) : null}
-      {coordinates.length > 0 ? (
+      {coordinates.elevations.length > 0 ? (
         <GMapsModal showModal={showModal} modalVisiblity={mapsModalVisiblity} />
       ) : null}
       {/* {coordinates.length > 0 ? ( */}

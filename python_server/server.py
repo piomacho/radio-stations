@@ -36,7 +36,6 @@ def get_elevation(lat, lng):
             'longitude': lng,
             'error': 'No such coordinate (%s, %s)' % (lat, lng)
         }
-
     return {
         'latitude': lat,
         'longitude': lng,
@@ -212,7 +211,6 @@ def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLati
 
     for x in range(int(numberOfPoints)):
         d = (float(range1)/int(numberOfPoints)) * x
-        print("DDD ", d)
 
         R = 6378.1 #Radius of the Earth
 
@@ -236,23 +234,31 @@ def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLati
     return cArray
 
 def generateCoordinates(range1, x0, y0):
-
+    unitDistance = 0.005
     cArray = []
     for x in range(range1):
         for y in range(range1):
-            cArray += [{"latitude": round(((x0 + 0.001 * x) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 + 0.001 * y) + sys.float_info.epsilon) * 1000) / 1000 }]
+            latitudeNew = round(((x0 + unitDistance * x) + sys.float_info.epsilon) * 1000) / 1000
+            longitudeNew =  round(((y0 + unitDistance * y) + sys.float_info.epsilon) * 1000) / 1000
+            cArray += [{"latitude": latitudeNew, "longitude": longitudeNew, "distance": measureDistance( x0, y0, latitudeNew, longitudeNew ) }]
 
     for x1 in range(range1):
         for y1 in range(range1):
-            cArray += [{"latitude": round(((x0 - 0.001 * x1) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 + 0.001 * y1) + sys.float_info.epsilon) * 1000) / 1000 }]
+            latitudeNew = round(((x0 - unitDistance * x1) + sys.float_info.epsilon) * 1000) / 1000
+            longitudeNew =  round(((y0 + unitDistance * y1) + sys.float_info.epsilon) * 1000) / 1000
+            cArray += [{"latitude": latitudeNew, "longitude": longitudeNew, "distance": measureDistance( x0, y0, latitudeNew, longitudeNew ) }]
 
     for x2 in range(range1):
         for y2 in range(range1):
-            cArray += [{"latitude": round(((x0 - 0.001 * x2) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 - 0.001 * y2) + sys.float_info.epsilon) * 1000) / 1000 }]
+            latitudeNew = round(((x0 - unitDistance * x2) + sys.float_info.epsilon) * 1000) / 1000
+            longitudeNew =  round(((y0 - unitDistance * y2) + sys.float_info.epsilon) * 1000) / 1000
+            cArray += [{"latitude": latitudeNew, "longitude": longitudeNew, "distance": measureDistance( x0, y0, latitudeNew, longitudeNew )}]
 
     for x3 in range(range1):
         for y3 in range(range1):
-            cArray += [{"latitude": round(((x0 + 0.001 * x3) + sys.float_info.epsilon) * 1000) / 1000, "longitude": round(((y0 - 0.001 * y3) + sys.float_info.epsilon) * 1000) / 1000 }]
+            latitudeNew = round(((x0 + unitDistance * x3) + sys.float_info.epsilon) * 1000) / 1000
+            longitudeNew =  round(((y0 - unitDistance * y3) + sys.float_info.epsilon) * 1000) / 1000
+            cArray += [{"latitude": latitudeNew, "longitude": longitudeNew, "distance": measureDistance( x0, y0, latitudeNew, longitudeNew ) }]
     return cArray
 
 def body_to_adapter():
@@ -273,10 +279,9 @@ def body_to_adapter():
     locations = generateCoordinates(rangePar, adapterLatitude, adapterLongitude)
     latlng = [];
 
-    # print("COOL IT WORKS 22", locations);
     for l in locations:
         try:
-            latlng += [ (l['latitude'],l['longitude']) ]
+            latlng += [ (l['latitude'],l['longitude'], l['distance']) ]
         except KeyError:
             raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
@@ -329,7 +334,7 @@ def do_lookup(get_locations_func):
     """
     try:
         locations = get_locations_func()
-        return {'results': [get_elevation(lat, lng) for (lat, lng) in locations]}
+        return {'results': [get_elevation_distance(lat, lng, dst) for (lat, lng, dst) in locations]}
     except InternalException as e:
         response.status = 400
         response.content_type = 'application/json'
