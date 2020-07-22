@@ -6,6 +6,7 @@ npm-debug.log
 
 *.csv
 *.xlsx
+*.hgt
 
 /node_modules
 /.pnp

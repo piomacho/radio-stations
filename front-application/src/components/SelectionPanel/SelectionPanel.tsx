@@ -76,10 +76,7 @@ const SelectionPanel = () => {
       range: 12,
     })
       .then(async(results: any) => {
-        // setTrialCoords(results.results);
-        // console.log("--->  rezultaty", results.results);
         const elevations = await format(results.results, 30);
-        // console.log("elevations ", elevations );
         const distances = await formatDistance(results.results, 30);
         setPlotData(results.results);
         setCoordinates({elevations: elevations, distances: distances });

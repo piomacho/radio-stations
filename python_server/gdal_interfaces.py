@@ -1,4 +1,5 @@
 import gdal, osr
+import numpy as np
 from lazy import lazy
 from pprint import pprint
 from os import listdir
@@ -49,6 +50,7 @@ class GDALInterface(object):
     @lazy
     def points_array(self):
         b = self.src.GetRasterBand(1)
+        print("RasterBand", b.GetStatistics(True, True));
         return b.ReadAsArray()
 
     def print_statistics(self):
@@ -67,10 +69,12 @@ class GDALInterface(object):
             # FIXME this int() is probably bad idea, there should be half cell size thing needed
             xpix = float(self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
             ylin = float(self.geo_transform_inv[4] * u + self.geo_transform_inv[5] * v)
-            print("1. ",self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
+            # print("1. ",self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
             # look the value up
             v = self.points_array[ylin, xpix]
-            print("2 ", v)
+
+            print("2 ", self.points_array)
+            print("3 ", self.points_array[ylin, xpix])
 
             return v if v != -32768 else self.SEA_LEVEL
         except Exception as e:
@@ -164,8 +168,6 @@ class GDALTileInterface(object):
             coords = nearest[0].object
 
             gdal_interface = self._open_gdal_interface(coords['file'])
-            # return int(gdal_interface.lookup(lat, lng))
-            print("--- ",gdal_interface.lookup(lat, lng) )
             return float(gdal_interface.lookup(lat, lng))
 
     def _build_index(self):
