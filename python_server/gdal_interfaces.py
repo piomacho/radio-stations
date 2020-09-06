@@ -50,7 +50,6 @@ class GDALInterface(object):
     @lazy
     def points_array(self):
         b = self.src.GetRasterBand(1)
-        print("RasterBand", b.GetStatistics(True, True));
         return b.ReadAsArray()
 
     def print_statistics(self):
@@ -72,9 +71,6 @@ class GDALInterface(object):
             # print("1. ",self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
             # look the value up
             v = self.points_array[ylin, xpix]
-
-            print("2 ", self.points_array)
-            print("3 ", self.points_array[ylin, xpix])
 
             return v if v != -32768 else self.SEA_LEVEL
         except Exception as e:

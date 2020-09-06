@@ -234,7 +234,7 @@ def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLati
     return cArray
 
 def generateCoordinates(range1, x0, y0):
-    unitDistance = 0.005
+    unitDistance = 0.007
     cArray = []
     for x in range(range1):
         for y in range(range1):

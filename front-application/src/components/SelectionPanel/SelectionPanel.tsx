@@ -73,7 +73,7 @@ const SelectionPanel = () => {
     return OEClient.postLookupNew({
       adapterLongitude: +adapter.dlugosc,
       adapterLatitude: +adapter.szerokosc,
-      range: 12,
+      range: 10,
     })
       .then(async(results: any) => {
         const elevations = await format(results.results, 30);
@@ -81,6 +81,7 @@ const SelectionPanel = () => {
         setPlotData(results.results);
         setCoordinates({elevations: elevations, distances: distances });
         setElevationResults(results.results);
+        setTrialCoords(results.results);
         setLoading(false);
         return true;
       })

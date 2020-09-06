@@ -62,7 +62,8 @@ export const MyResponsiveHeatMap = () => {
         indexBy="latitude"
         margin={{ top: 100, right: 10, bottom: 60, left: 10 }}
         forceSquare={true}
-        axisTop={{ orient: 'top', tickSize: 5, tickPadding: 5, tickRotation: -90, legend: '', legendOffset: 36 }}
+        axisTop={{ orient: 'top', tickSize: 5, tickPadding: 5, tickRotation: -90, legend: 'longitude →',
+        legendPosition: 'start',  legendOffset: -80 }}
         axisRight={null}
         axisBottom={null}
         axisLeft={{
@@ -70,8 +71,8 @@ export const MyResponsiveHeatMap = () => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: 'latitude',
-            legendPosition: 'middle',
+            legend: '← latitude',
+            legendPosition: 'end',
             legendOffset: -80
         }}
         cellOpacity={1}

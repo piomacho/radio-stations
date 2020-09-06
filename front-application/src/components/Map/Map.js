@@ -13,7 +13,7 @@ import { callApiFetch } from "../../common/global";
 import { measureDistance } from "../../common/global";
 import Keys from "../../keys"
 
-const MapWithAMarker = compose(
+const MapWithMarker = compose(
   withScriptjs,
   withGoogleMap
 )(props => {
@@ -48,14 +48,15 @@ const MapWithAMarker = compose(
     }
 
   useEffect(() => {
+    // console.log("======> ", +adapter.szerokosc, "- ", +adapter.dlugosc) lat1: number , lon1: number, lat2: number , lon2: number)
     console.info(
       "Odległość między punktami: ,",
-      measureDistance(+adapter.szerokosc, +adapter.dlugosc, 0.001)
+      measureDistance(+trialCoords[0].latitude, +trialCoords[0].longitude, +trialCoords[1].latitude, +trialCoords[1].longitude)
     );
     const formattedCoords =  generateApiParameter(trialCoords);
 
     callApiFetch(`api/gmaps/all/${formattedCoords}`)
-      .then(response => setGMapsElevation(response))
+      .then(response =>  setGMapsElevation(response))
       .catch(err => console.log(err));
   }, []);
 
@@ -103,13 +104,13 @@ export default class ShelterMap extends Component {
   };
   render() {
     return (
-      <MapWithAMarker
+      <MapWithMarker
         selectedMarker={this.state.selectedMarker}
         // markers={this.state.shelters}
         onClick={this.handleClick}
         googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${Keys.mapsKey}&v=3.exp&libraries=geometry,drawing,places`}
         loadingElement={<div style={{ height: `100%` }} />}
-        containerElement={<div style={{ height: `800px` }} />}
+        containerElement={<div style={{ height: `550px` }} />}
         mapElement={<div style={{ height: `100%` }} />}
       />
     );
