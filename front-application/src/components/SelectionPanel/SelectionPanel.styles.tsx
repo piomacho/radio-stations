@@ -71,7 +71,18 @@ export const SubmitPlotButton = ({ callback }: any) => (
       height={50}
       backColor={"#ff7675"}
       backColorHover={"#d63031"}
-      label={"Send to Octave"}
+      label={"Calculate one point"}
+      onClick={callback}
+    />
+  );
+
+  export const SendAllToOctaveButton = ({ callback }: any) => (
+    <Button
+      width={180}
+      height={50}
+      backColor={"#000f18"}
+      backColorHover={"#005482"}
+      label={"Get full calculation"}
       onClick={callback}
     />
   );

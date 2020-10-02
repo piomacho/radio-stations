@@ -47,6 +47,6 @@ export const SubmitButton = styled('a')<ButtonType>`
 
 export const ButtonWrapper = styled("div")`
     position: absolute;
-    bottom: -20px;
+    bottom: 20px;
     right: 50px;
 `;

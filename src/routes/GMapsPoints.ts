@@ -29,12 +29,17 @@ router.get('/all/:coordinates', async (req: Request, res: Response) => {
 router.post('/excel-send', async (req: Request, res: Response) => {
     try {
         const coordinates = req.body.coordinates;
+        const coordinatesGMaps = req.body.coordinatesGMaps;
+
+        ws.cell(1,1).string("Open Elevation");
+        ws.cell(1,2).string("Google Maps");
 
         for (let i = 0; i < coordinates.length; i++) {
-            ws.cell(i+ 1, 1).string(`${coordinates[i]}`);
+            ws.cell(i + 2, 1).number(coordinates[i]);
+            ws.cell(i + 2, 2).number(coordinatesGMaps[i]);
         }
 
-        wb.write(`results.xlsx`);
+        wb.write(`results_wyzyny_szc.xlsx`);
         return res.status(200).json({
             message: "Success",
         });

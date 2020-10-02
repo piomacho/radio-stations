@@ -12,6 +12,7 @@ interface AdapterType{
     szerokosc: string;
     id_obiekt: string;
     wys_npm: string;
+    czestotliwosc: string;
 }
 
 interface OptionType {
@@ -21,7 +22,14 @@ interface OptionType {
 
 const setParameters = (adapters: Array<AdapterType>): Array<OptionType> => {
     return adapters.map((adapter: AdapterType) => {
-        return { value: adapter.id_obiekt, label: adapter.obiekt, szerokosc: adapter.szerokosc, dlugosc: adapter.dlugosc, wys_npm: adapter.wys_npm}
+        return {
+          value: adapter.id_obiekt,
+          label: adapter.obiekt,
+          szerokosc: adapter.szerokosc,
+          dlugosc: adapter.dlugosc,
+          wys_npm: adapter.wys_npm,
+          czestotliwosc: adapter.czestotliwosc
+        }
     });
 }
 

@@ -16,7 +16,7 @@ import {
   AdaptersHeader,
   ExportInputWrapper,
   DistanceDisplay
-} from "./ExportModal.style";
+} from "./ExportAllModal.style";
 import { ButtonWrapper } from "../Button/Button.styles";
 import { callApiFetch, lineFromPoints, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
@@ -39,15 +39,15 @@ const EmptyError: ErrorsType = { xError: null,
   fileNameError: null
 }
 
-const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
+const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
   const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
   const [error, setError] = useState(EmptyError);
   const [fileName, setFileName] = useState("");
   const [recLongitude, setRecLongitude] = useState("");
-  const [recLatitude, setRecLatitude] = useState("");
-  const [points, setPoints] = useState("");
+  const [radius, setRadius] = useState("");
+  const [pointsDistance, setPointsDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
@@ -67,29 +67,29 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     }
   };
 
-  const handleChangeX = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRadius = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setError({...error, xError: null});
-    const rg = /^[+-]?\d+(\.\d+)?$/; // forbidden file names
+    const rg = /^[0-9]+$/;
     const isAllowed = rg.test(value);
     // setAllowedName(isAllowed);
     if (!isAllowed) {
-      setError({...error, xError: "Latitude is not allowed !"});
+      setError({...error, xError: "Radius value is not allowed !"});
     }
 
-    setRecLatitude(value);
+    setRadius(value);
   }
 
-  const handleChangePoints = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChangePointsDistance = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setError({...error, pointsError: null});
     const rg = /^[0-9]+$/;
     const isAllowed = rg.test(value);
     if (!isAllowed) {
-      setError({...error, pointsError: "Points quantity is invalid !"});
+      setError({...error, pointsError: "Points distance is invalid !"});
     }
 
-    setPoints(value);
+    setPointsDistance(value);
 
   }
 
@@ -108,16 +108,16 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const handleExportClick = () => {
       const adapterX = +(+adapter.szerokosc).toFixed(2);
       const adapterY = +(+adapter.dlugosc).toFixed(2);
-      return OEClient.postLookupLine({
+      console.log("EXPORT ", radius);
+      return OEClient.postLookupCoordsWeb({
         adapterLongitude: +adapterY,
         adapterLatitude: +adapterX,
-        range: measureDistance( adapterX, adapterY, +recLatitude, +recLongitude).toFixed(2),
-        numberOfPoints: points,
-        receiverLongitude: +recLongitude,
-        receiverLatitude: +recLatitude
+        range: +radius,
+        distanceBetweenPoints: +pointsDistance
       })
         .then((results: any) => {
-          handleExport(results);
+          // handleExport(results);
+          console.log("WYNik ", results);
           return true;
         })
         .catch((error: any) => {
@@ -126,25 +126,25 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         });
   }
 
-  const handleExport = (results: any) => {
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        coordinates: results.results,
-        fileName: fileName,
-        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-        receiver: { latitude: +recLatitude, longitude: +recLongitude }
-      })
-    };
-    if (true) {
-      callApiFetch(`api/export-octave/send/`, requestOptions)
-        .then(() => {
-          setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
-        })
-        .catch(err => setError(err));
-    }
-  };
+  // const handleExport = (results: any) => {
+  //   const requestOptions = {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       coordinates: results.results,
+  //       fileName: fileName,
+  //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+  //       receiver: { latitude: +recLatitude, longitude: +recLongitude }
+  //     })
+  //   };
+  //   if (true) {
+  //     callApiFetch(`api/export-octave/send/`, requestOptions)
+  //       .then(() => {
+  //         setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
+  //       })
+  //       .catch(err => setError(err));
+  //   }
+  // };
 
   const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0;
   const adapterX = +(+adapter.szerokosc).toFixed(2);
@@ -152,7 +152,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   const customStyles = {
     content : {
-      backgroundColor: '#FBE9EB',
+      backgroundColor: '#cad7dd',
     }
   };
 
@@ -172,14 +172,16 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             <Coord>Latitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
-          <AdaptersHeader>Input coordinates:</AdaptersHeader>
-            <Coord><Input onChange={handleChangeY} placeholder="Receiver longitude: " /></Coord>
-            <Coord><Input onChange={handleChangeX} placeholder="Receiver latitude: " /></Coord>
-            <Coord><Input onChange={handleChangePoints} placeholder="Number of points: " /></Coord>
+          <AdaptersHeader>Input radius value:</AdaptersHeader>
+            <Coord><Input onChange={handleChangeRadius} placeholder="Radius: " /></Coord>
+        </AdapterCoordsWrapper>
+        <AdapterCoordsWrapper>
+          <AdaptersHeader>Input wanted distance between points:</AdaptersHeader>
+            <Coord><Input onChange={handleChangePointsDistance} placeholder="Distance between points: " /></Coord>
         </AdapterCoordsWrapper>
         <ExportInputWrapper>
-          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
-          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
+          {/* <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
+          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay> */}
           <InputContainer>
             <Input onChange={handleChange} placeholder="Enter file name:" />
             <TypeSpan>.xlsx</TypeSpan>
@@ -202,7 +204,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       {successMessage && <Message>{successMessage}</Message>}
       <ButtonWrapper>
         <Button
-          onClick={showModal(false, "export", false)}
+          onClick={showModal(false, "export-all", false)}
           label={"Close"}
           backColorHover={"#ff7979"}
         />
@@ -211,4 +213,4 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   );
 };
 
-export default ExportModal;
+export default ExportAllModal;

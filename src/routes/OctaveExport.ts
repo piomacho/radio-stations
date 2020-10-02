@@ -42,6 +42,9 @@ router.post('/send/', async (req: Request, res: Response) => {
         const receiverLon = req.body.receiver.longitude;
         const receiverLat = req.body.receiver.latitude;
         const fName = req.body.fileName;
+        const frequency = Number(req.body.frequency)/100;
+
+        const frequencyStr = frequency.toString();
 
         fs.writeFile('./validation_results/prof_b2iseac.m', `function [d,h,z] = prof_b2iseac()\r\na=[ ...\r\n${coordinates1.join("\r\n")}];\r\nd = a(:,1);\r\n
         h = a(:,2);\r\n
@@ -49,7 +52,7 @@ router.post('/send/', async (req: Request, res: Response) => {
         \r\n
         end`, function (err: any) {
           if (err) return console.log(err);
-          const ls = execFile("octave", ["-i", "--persist", "validate_p2001_b2iseac.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height]);
+          const ls = execFile("octave", ["-i", "--persist", "validate_p2001_b2iseac.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr]);
 
           ls.stdout.on("data", (data: string) => {
               console.log(data);

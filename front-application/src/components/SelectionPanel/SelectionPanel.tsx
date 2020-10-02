@@ -9,7 +9,7 @@ import {
   SubmitMapsButton,
   SendToOctaveButton,
   NavigationPanel,
-  NavigationWrapper
+  NavigationWrapper, SendAllToOctaveButton
 } from "./SelectionPanel.styles";
 import PlotModal from "../PlotModal/PlotModal";
 import store, { CoordinatesType } from "../../Store/Store";
@@ -19,6 +19,7 @@ import { LoaderContainer } from "../Adapters/Adapters.style";
 import GMapsModal from "../GMapsModal/GMapsModal";
 import ExportModal from "../ExportModal/ExportModal";
 import { lineFromPoints } from "../../common/global";
+import ExportAllModal from "../ExportAllModal/ExportAllModal";
 
 // todo refactor to see proper plot
 const format = (
@@ -58,6 +59,7 @@ const SelectionPanel = () => {
   const [plotModalVisiblity, setPlotModalVisiblity] = useState(false);
   const [mapsModalVisiblity, setMapsModalVisiblity] = useState(false);
   const [exportModalVisiblity, setExportModalVisiblity] = useState(false);
+  const [exportAllModalVisiblity, setExportAllModalVisiblity] = useState(false);
   const [loading, setLoading] = useState(false);
   const [plotData, setPlotData] = useState<Array<any>>([]);
   const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
@@ -76,6 +78,7 @@ const SelectionPanel = () => {
       range: 10,
     })
       .then(async(results: any) => {
+        console.log("tu jest ")
         const elevations = await format(results.results, 30);
         const distances = await formatDistance(results.results, 30);
         setPlotData(results.results);
@@ -99,6 +102,8 @@ const SelectionPanel = () => {
         return setMapsModalVisiblity(value);
       case "export":
         return setExportModalVisiblity(value);
+      case "export-all":
+          return setExportAllModalVisiblity(value);
         return;
     }
   };
@@ -128,6 +133,9 @@ const SelectionPanel = () => {
           <ButtonWrapper>
             <SendToOctaveButton callback={showModal(true, "export", false)} />
           </ButtonWrapper>
+          <ButtonWrapper>
+            <SendAllToOctaveButton callback={showModal(true, "export-all", false)} />
+          </ButtonWrapper>
         </NavigationPanel>
       </NavigationWrapper>
       {loading ? (
@@ -147,6 +155,10 @@ const SelectionPanel = () => {
         <ExportModal
           showModal={showModal}
           modalVisiblity={exportModalVisiblity}
+        />
+        <ExportAllModal
+          showModal={showModal}
+          modalVisiblity={exportAllModalVisiblity}
         />
       {/* ) : null} */}
     </Wrapper>

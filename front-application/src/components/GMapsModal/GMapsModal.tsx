@@ -4,7 +4,7 @@ import Button from "../Button/Button";
 import Map from '../Map/Map'
 import { ButtonWrapper, Message } from "./GMapsModal.style";
 import { callApiFetch } from "../../common/global";
-import store, { CoordinatesType } from "../../Store/Store";
+import store, { CoordinatesType, GMapsCoordinatesType } from "../../Store/Store";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -16,13 +16,15 @@ const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [successMessage, setSuccessMessage] = useState("");
   const { useGlobalState } = store;
   const [elevationResults] = useGlobalState("elevationResults");
-// console.log("ER ",elevationResults);
+  const [gMapsElevation] = useGlobalState("gmapsCoordinates");
+
   const handleExport = () => {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        coordinates: elevationResults.map((result: CoordinatesType) => result.elevation)
+        coordinates: elevationResults.map((result: CoordinatesType) => result.elevation),
+        coordinatesGMaps: gMapsElevation.map((res: GMapsCoordinatesType) => Math.round(res.elevation))
       })
     };
 
