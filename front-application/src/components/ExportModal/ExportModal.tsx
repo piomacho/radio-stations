@@ -127,9 +127,26 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExport = (results: any) => {
+    const bodyObject =  JSON.stringify( {
+      fileName: fileName,
+      data:
+        [
+          {
+            coordinates: results.results,
+            adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+            receiver: { latitude: +recLatitude, longitude: +recLongitude }
+          },
+          {
+            coordinates: results.results,
+            adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+            receiver: { latitude: +recLatitude, longitude: +recLongitude }
+          }
+        ]
+    });
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      // body: bodyObject
       body: JSON.stringify({
         coordinates: results.results,
         fileName: fileName,
@@ -138,7 +155,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       })
     };
     if (true) {
-      callApiFetch(`api/export-octave/send/`, requestOptions)
+      callApiFetch(`api/export-octave/send-all/`, requestOptions)
         .then(() => {
           setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
         })

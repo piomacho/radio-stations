@@ -396,21 +396,21 @@ def post_lookup():
         :return:
         """
     return do_lookup(body_to_locations)
-# Base Endpoint
-URL_ENDPOINT_WEB = '/api/v1/lookup-web'
+# # Base Endpoint
+# URL_ENDPOINT_WEB = '/api/v1/lookup-web'
 
-# For CORS
-@route(URL_ENDPOINT_NEW, method=['OPTIONS'])
-def cors_handler():
-    return {}
+# # For CORS
+# @route(URL_ENDPOINT_WEB, method=['OPTIONS'])
+# def cors_handler():
+#     return {}
 
-@route(URL_ENDPOINT_NEW, method=['POST'])
-def post_lookup_new():
-    """
-        GET method. Uses body_to_locations.
-        :return:
-        """
-    return do_lookup(body_to_adapter)
+# @route(URL_ENDPOINT_NEW, method=['POST'])
+# def post_lookup_new():
+#     """
+#         GET method. Uses body_to_locations.
+#         :return:
+#         """
+#     return do_lookup(body_to_adapter)
 
 
 # Base Endpoint

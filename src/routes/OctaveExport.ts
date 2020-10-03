@@ -82,4 +82,47 @@ router.post('/send/', async (req: Request, res: Response) => {
     }
 });
 
+
+router.post('/send-all/', async (req: Request, res: Response) => {
+    try {
+        const coordinates1 = formatCoordinates1(req.body.coordinates);
+        // const coordinatesArray = req.body.data;
+        const adapterLon = req.body.adapter.longitude;
+        const adapterLat = req.body.adapter.latitude;
+        const height = req.body.adapter.height;
+        const receiverLon = req.body.receiver.longitude;
+        const receiverLat = req.body.receiver.latitude;
+        const fName = req.body.fileName;
+        const frequency = Number(req.body.frequency)/100;
+
+        const frequencyStr = frequency.toString();
+        const ls = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr]);
+
+        ls.stdout.on("data", (data: string) => {
+            console.log(data);
+        });
+
+        ls.stderr.on("data", (data: string) => {
+            console.log(`stderr: ${data}`);
+        });
+
+        ls.on('error', (error: { message: string }) => {
+            console.log(`error: ${error.message}`);
+        });
+
+        ls.on("close", (code: string) => {
+            console.log(`child process exited with code ${code}`);
+        })
+
+        return res.status(200).json({
+            message: "Success",
+        });
+
+    } catch (err) {
+        return res.status(404).json({
+            error: err.message,
+        });
+    }
+});
+
 export default router;

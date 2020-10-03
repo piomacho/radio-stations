@@ -56,7 +56,7 @@ export const InputContainer = styled('div')`
     /* margin-right: 20px; */
     align-items: center;
     position: absolute;
-    bottom: 30%;
+    bottom: 15%;
 `;
 
 export const ExportWrapper = styled('div')`

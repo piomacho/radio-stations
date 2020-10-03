@@ -83,7 +83,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const handleChangePointsDistance = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setError({...error, pointsError: null});
-    const rg = /^[0-9]+$/;
+    const rg = /.*/;
     const isAllowed = rg.test(value);
     if (!isAllowed) {
       setError({...error, pointsError: "Points distance is invalid !"});
@@ -106,15 +106,21 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExportClick = () => {
-      const adapterX = +(+adapter.szerokosc).toFixed(2);
-      const adapterY = +(+adapter.dlugosc).toFixed(2);
+      const adapterLatitude = +(+adapter.szerokosc).toFixed(2);
+      const adapterLongitude = +(+adapter.dlugosc).toFixed(2);
       console.log("EXPORT ", radius);
-      return OEClient.postLookupCoordsWeb({
-        adapterLongitude: +adapterY,
-        adapterLatitude: +adapterX,
-        range: +radius,
-        distanceBetweenPoints: +pointsDistance
-      })
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adapterLatitude: adapterLatitude,
+          adapterLongitude: adapterLongitude,
+          radius: Number(radius),
+          pointsDistance: Number(pointsDistance)
+        })
+      };
+
+    callApiFetch(`api/coordinates/generate`, requestOptions)
         .then((results: any) => {
           // handleExport(results);
           console.log("WYNik ", results);
