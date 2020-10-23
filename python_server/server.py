@@ -344,7 +344,13 @@ def body_to_line_distance():
         except KeyError:
             raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
-    return latlng
+    d = dict();
+    d['results'] = latlng
+    d['receiverLatitude']   = receiverLatitude
+    d['receiverLongitude']   = receiverLongitude
+
+
+    return d
 
 
 def body_to_line():
@@ -423,8 +429,12 @@ def do_lookup_line_distance(get_locations_func):
     :return:
     """
     try:
-        locations = get_locations_func()
-        return {'results': [get_elevation_distance(lat, lng, dst) for (lat, lng, dst) in locations]}
+        # print(get_locations_func())
+        # allData = get_locations_func();
+        locations = get_locations_func()['results']
+        latitude = get_locations_func()['receiverLatitude']
+        longitude = get_locations_func()['receiverLongitude']
+        return {'results': [get_elevation_distance(lat, lng, dst) for (lat, lng, dst) in locations], 'receiver': {'latitude': latitude, 'longitude': longitude }}
     except InternalException as e:
         response.status = 400
         response.content_type = 'application/json'

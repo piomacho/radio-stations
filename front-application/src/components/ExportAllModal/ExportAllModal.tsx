@@ -47,13 +47,25 @@ interface ResultType {
   latitude: number;
 }
 
+interface ElevationSegmentType {
+  latitude: number,
+  longitude: number,
+  elevation: number,
+  distance: number
+}
+
+interface SegmentResultType {
+  results: Array<ElevationSegmentType>
+}
+
+
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
   const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
   const [error, setError] = useState(EmptyError);
   const [fileName, setFileName] = useState("");
-  const [recLongitude, setRecLongitude] = useState("");
+  const [segmentsElevations, setSegmentsElevations] = useState<Array<SegmentResultType>>([]);
   const [radius, setRadius] = useState("");
   const [pointsDistance, setPointsDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -104,7 +116,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const handleExportClick = () => {
       const adapterLatitude = +(+adapter.szerokosc).toFixed(2);
       const adapterLongitude = +(+adapter.dlugosc).toFixed(2);
-      console.log("EXPORT ", radius);
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -118,17 +129,36 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
-          console.log("WYNik ", results);
           handleExport(results, Number(pointsDistance)).then(data => {
-            console.log(" *****", data)
-          })
-          return true;
+            console.log("WYNik ", data);
+            //@ts-ignore
+            setSegmentsElevations(data);
+            exportToOctave();
+          });
         })
         .catch((error: any) => {
           console.log("Error postLookupLine:" + error);
-          return false;
         });
   }
+
+  const exportToOctave = () => {
+    const bodyObject =  JSON.stringify( {
+      fileName: fileName,
+      // data:
+      //   [
+      //     {
+      //       coordinates: results.results,
+      //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+      //       receiver: { latitude: +recLatitude, longitude: +recLongitude }
+      //     },
+      //     {
+      //       coordinates: results.results,
+      //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+      //       receiver: { latitude: +recLatitude, longitude: +recLongitude }
+      //     }
+      //   ]
+    });
+  };
 
   const getLineInfo = (result: ResultType, distance: number) => {
     return OEClient.postLookupLineDistance({
@@ -139,6 +169,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         receiverLongitude: result.longitude,
         receiverLatitude: result.latitude
       }).then(async function(results) {
+        // console.log("myk");
         return Promise.resolve(results)
       });
   }
