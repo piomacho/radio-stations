@@ -152,7 +152,6 @@ def measureDistance(lat1, lon1, lat2, lon2):
 
 
 def newCoordinates(latitude, longitude, dy, dx):
-    # print("OLD lat", latitude, "Long ", longitude, " y | ", dy, "dx - ",dx)
     r_earth = 6378.137
     new_latitude  = latitude  + (dy / r_earth) * (180 / math.pi)
     new_longitude = longitude + (dx / r_earth) * (180 / math.pi) / math.cos(latitude * math.pi/180)
@@ -196,13 +195,10 @@ def calculate_initial_compass_bearing(adapterLongitude, adapterLatitude, receive
 
 
 def calculateBearing(adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
-    # print("AD Long ", adapterLongitude, " AD LAT", adapterLatitude, " REC long", receiverLongitude, " REC lat ", receiverLatitude)
-    # print("cos(", receiverLatitude,")*sin(", receiverLongitude - adapterLongitude,")")
     X = math.cos(receiverLatitude) * math.sin(receiverLongitude - adapterLongitude)
     Y = math.cos(adapterLatitude) * math.sin(receiverLatitude) - math.sin(adapterLatitude) * math.cos(receiverLatitude) * math.cos(receiverLongitude - adapterLongitude)
     B = math.atan2(X,Y)
 
-    # print("B ", radians_to_degrees(B))
     return B
 
 def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
@@ -226,8 +222,33 @@ def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLati
         lat2 = math.degrees(lat2)
         lon2 = math.degrees(lon2)
 
-        # print("LAT ",lat2)
-        # print("adapterLatitude ", adapterLatitude, "adapterLongitude ", adapterLongitude, " lat 2", lat2, " lon2 ", lon2)
+        cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
+
+    return cArray
+
+
+def generateCoordinatesDistance(range1, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
+    cArray = []
+    brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receiverLongitude), degrees_to_radians(receiverLatitude))
+
+    numberOfPoints = float(range1)/int(distance);
+
+    for x in range(int(numberOfPoints)):
+        d = (float(range1)/int(numberOfPoints)) * x
+
+        R = 6378.1 #Radius of the Earth
+
+        lat1 = math.radians(adapterLatitude) #Current lat point converted to radians
+        lon1 = math.radians(adapterLongitude) #Current long point converted to radians
+
+        lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
+            math.cos(lat1)*math.sin(d/R)*math.cos(brng))
+
+        lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
+                    math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
+
+        lat2 = math.degrees(lat2)
+        lon2 = math.degrees(lon2)
 
         cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
 
@@ -286,6 +307,45 @@ def body_to_adapter():
             raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
     return latlng
+# Tu trzeba skopiowac elegancko
+def body_to_line_distance():
+    try:
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        adapterLongitude = request.json.get('adapterLongitude', None)
+        distance = request.json.get('distance', None)
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        receiverLatitude = request.json.get('receiverLatitude', None)
+        receiverLongitude = request.json.get('receiverLongitude', None)
+        rangePar = request.json.get('range', None)
+
+
+    except Exception:
+        raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
+
+    if not adapterLatitude:
+        raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
+    if not adapterLongitude:
+        raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    if not rangePar:
+        raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
+    if not distance:
+        raise InternalException(json.dumps({'error': '"distance" is required in the body.'}))
+    if not receiverLatitude:
+        raise InternalException(json.dumps({'error': '"receiverLatitude" is required in the body.'}))
+    if not receiverLongitude:
+        raise InternalException(json.dumps({'error': '"receiverLongitude" is required in the body.'}))
+    # GENEROWANIE SIATKI PUNKTOW
+    locations = generateCoordinatesDistance(rangePar, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude)
+    # print(locations)
+    latlng = [];
+    for l in locations:
+        try:
+            latlng += [ (l['latitude'],l['longitude'],l['distance']) ]
+        except KeyError:
+            raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
+
+    return latlng
+
 
 def body_to_line():
     try:
@@ -315,7 +375,6 @@ def body_to_line():
 
     locations = generateCoordinatesNew(rangePar, numberOfPoints, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude)
     latlng = [];
-    # print("COOL IT WORKS !!!", locations);
     for l in locations:
         try:
             latlng += [ (l['latitude'],l['longitude'],l['distance']) ]
@@ -357,6 +416,20 @@ def do_lookup_distance(get_locations_func):
         return e.args[0]
 
 
+def do_lookup_line_distance(get_locations_func):
+    """
+    Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
+    and returns an answer ready to go to the client.
+    :return:
+    """
+    try:
+        locations = get_locations_func()
+        return {'results': [get_elevation_distance(lat, lng, dst) for (lat, lng, dst) in locations]}
+    except InternalException as e:
+        response.status = 400
+        response.content_type = 'application/json'
+        return e.args[0]
+
 def do_lookup_new(get_locations_func):
     """
     Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
@@ -364,7 +437,6 @@ def do_lookup_new(get_locations_func):
     :return:
     """
     try:
-	# print("du lukap new ")
         locations = get_locations_func()
         return {'results': locations}
     except InternalException as e:
@@ -445,4 +517,22 @@ def post_lookup_line():
         """
     return do_lookup_distance(body_to_line)
 
+
+# Base Endpoint
+URL_ENDPOINT_LINE_DISTANCE = '/api/v1/lookup-line-distance'
+
+# For CORS
+@route(URL_ENDPOINT_LINE_DISTANCE, method=['OPTIONS'])
+def cors_handler():
+    return {}
+
+@route(URL_ENDPOINT_LINE_DISTANCE, method=['POST'])
+def post_lookup_line_distance():
+    """
+        GET method. Uses body_to_locations.
+        :return:
+        """
+    return do_lookup_line_distance(body_to_line_distance)
+
 run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)
+

@@ -7,8 +7,14 @@ const router = Router();
 router.get('/all', async (req: Request, res: Response) => {
     try {
         superagent.get('https://mapy.radiopolska.pl/api/programAll/PL').end((err, response) => {
-        const programArray = getFieldsFromObject(response.body.data, ['nazwa', 'id_program']);
-        return res.send(programArray);
+            if(response) {
+                const programArray = getFieldsFromObject(response.body.data, ['nazwa', 'id_program']);
+                return res.send(programArray);
+
+            }
+            return res.status(404).json({
+                error: "Connection error",
+            });
     });
 
     } catch (err) {

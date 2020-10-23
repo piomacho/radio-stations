@@ -39,6 +39,14 @@ const EmptyError: ErrorsType = { xError: null,
   fileNameError: null
 }
 
+interface ResultCoordinateType {
+  coordinates: Array<ResultType>
+}
+interface ResultType {
+  longitude: number;
+  latitude: number;
+}
+
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
   const [elevationResults] = useGlobalState("elevationResults");
@@ -93,18 +101,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   }
 
-  const handleChangeY = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setError({...error, yError: null});
-    const rg = /^[+-]?\d+(\.\d+)?$/;
-    const isAllowed = rg.test(value);
-    if (!isAllowed) {
-      setError({...error, yError: "Longitude is not allowed !"});
-    }
-
-    setRecLongitude(value);
-  }
-
   const handleExportClick = () => {
       const adapterLatitude = +(+adapter.szerokosc).toFixed(2);
       const adapterLongitude = +(+adapter.dlugosc).toFixed(2);
@@ -121,9 +117,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       };
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
-        .then((results: any) => {
-          // handleExport(results);
+        .then(async(results: ResultCoordinateType) => {
           console.log("WYNik ", results);
+          handleExport(results, Number(pointsDistance)).then(data => {
+            console.log(" *****", data)
+          })
           return true;
         })
         .catch((error: any) => {
@@ -132,25 +130,25 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         });
   }
 
-  // const handleExport = (results: any) => {
-  //   const requestOptions = {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       coordinates: results.results,
-  //       fileName: fileName,
-  //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-  //       receiver: { latitude: +recLatitude, longitude: +recLongitude }
-  //     })
-  //   };
-  //   if (true) {
-  //     callApiFetch(`api/export-octave/send/`, requestOptions)
-  //       .then(() => {
-  //         setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
-  //       })
-  //       .catch(err => setError(err));
-  //   }
-  // };
+  const getLineInfo = (result: ResultType, distance: number) => {
+    return OEClient.postLookupLineDistance({
+        adapterLongitude: +adapterY,
+        adapterLatitude: +adapterX,
+        range: measureDistance( +adapterX, +adapterY, result.latitude, result.longitude).toFixed(2),
+        distance: distance,
+        receiverLongitude: result.longitude,
+        receiverLatitude: result.latitude
+      }).then(async function(results) {
+        return Promise.resolve(results)
+      });
+  }
+  const handleLinePromises = async (item: ResultType, distance: number) => {
+    return getLineInfo(item, distance)
+  }
+
+  const handleExport = async(results: ResultCoordinateType, distance: number) => {
+    return Promise.all( results.coordinates.map(async(result: ResultType) => handleLinePromises(result, distance)));
+  }
 
   const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0;
   const adapterX = +(+adapter.szerokosc).toFixed(2);

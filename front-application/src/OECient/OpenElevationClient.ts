@@ -133,6 +133,51 @@ class OpenElevationRestClient extends React.Component {
    /**
      *
      * @method
+     * @name postLookupLineDistance
+     * @param {object} parameters - method options and parameters
+
+     */
+    postLookupLineDistance = (parameters : any) => {
+        if (parameters === undefined) {
+            parameters = {};
+        }
+        let deferred = Q.defer();
+        let domain = this.domain,
+            path = '/lookup-line-distance';
+        let body: Record<string, any> = {},
+            queryParameters: Record<string, any> = {},
+            headers: Record<string, any> = {},
+            form: Record<string, any> = {};
+        headers["Accept"] = ["application/json"];
+        headers["Content-Type"] = ["application/json"];
+        // /api/v1/lookup-line-distance
+
+        if (parameters['adapterLatitude'] !== undefined &&
+            parameters['adapterLongitude'] !== undefined &&
+            parameters['range'] !== undefined &&
+            parameters['distance'] !== undefined &&
+            parameters['receiverLatitude'] !== undefined &&
+            parameters['receiverLongitude'] !== undefined) {
+
+            body = {
+                adapterLatitude: parameters['adapterLatitude'],
+                adapterLongitude: parameters['adapterLongitude'],
+                distance: parameters['distance'],
+                range: parameters['range'],
+                receiverLatitude: parameters['receiverLatitude'],
+                receiverLongitude: parameters['receiverLongitude']
+            };
+        }
+
+        queryParameters = this.mergeQueryParams(parameters, queryParameters);
+
+        this.makeRequest('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+        return deferred.promise;
+    };
+   /**
+     *
+     * @method
      * @name OpenElevationRestClient#postLookupNew
      * @param {object} parameters - method options and parameters
 
