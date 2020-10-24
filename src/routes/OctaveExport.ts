@@ -17,6 +17,20 @@ export interface CoordinatesType {
     distance: number;
 }
 
+interface ElevationSegmentType {
+    latitude: number,
+    longitude: number,
+    elevation: number,
+    distance: number
+  }
+
+  interface SegmentResultType {
+    coordinates: Array<ElevationSegmentType>
+    receiver: {
+      longitude: number,
+      latitude: number
+    }
+  }
 const router = Router();
 
 const formatCoordinates = (coords: any) => {
@@ -93,16 +107,24 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const adapterLon = req.body.adapter.longitude;
         const adapterLat = req.body.adapter.latitude;
         const height = req.body.adapter.height;
-        const receiverLon = req.body.receiver.longitude;
-        const receiverLat = req.body.receiver.latitude;
+
         const fName = req.body.fileName;
         const frequency = Number(req.body.frequency)/100;
 
         const frequencyStr = frequency.toString();
 
-        const pyk: Array<string> = [];
 
-        pyk.push(
+
+        const receiverLon = req.body.data[0].receiver.longitude;
+        const receiverLat = req.body.data[0].receiver.latitude;
+        const segmentsArray: Array<string> = [];
+        let receivers = '';
+        const receiversArray = coordinatesArray.map((c: SegmentResultType) => {
+            receivers += `${c.receiver.latitude} ${c.receiver.longitude};
+            `
+        });
+
+        segmentsArray.push(
             ` 0 109 4;
             108.00357002869112 115 4;
             216.0071400573855 118 4;
@@ -117,7 +139,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             400 104 4;`
         );
 
-        pyk.push(
+        segmentsArray.push(
             ` 0 111 4;
             108.00357002869112 105 4;
             216.0071400573855 118 4;
@@ -131,23 +153,23 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             380 102 4;
             400 104 4;`
         );
-        let pykStr = '';
+        let segmentsArrayStr = '';
 
-        for(let i = 0; i <  pyk.length; i++) {
-            if(i !== pyk.length -1) {
-                pykStr += `[${pyk[i]}], `;
+        for(let i = 0; i <  segmentsArray.length; i++) {
+            if(i !== segmentsArray.length -1) {
+                segmentsArrayStr += `[${segmentsArray[i]}], `;
             } else {
-                pykStr += `[${pyk[i]}]`;
+                segmentsArrayStr += `[${segmentsArray[i]}]`;
             }
         }
 
 
-        fs.writeFile('./validation_results/prof_b2iseac2.m', `function f = prof_b2iseac2()\r\nf=cat(${pyk.length + 1}, ${pykStr})\r\n
+        fs.writeFile('./validation_results/prof_b2iseac2.m', `function f = prof_b2iseac2()\r\nf=cat(${segmentsArray.length + 1}, ${segmentsArrayStr})\r\n
         end`, function (err: any) {
 
-        // console.error("=============>> ", `function f = prof_b2iseac2()\r\nf=cat(${pyk.length + 1}, ${pykStr})\r\n
+        // console.error("=============>> ", `function f = prof_b2iseac2()\r\nf=cat(${segmentsArray.length + 1}, ${segmentsArrayStr})\r\n
         // end`);
-        const ls = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, pyk]);
+        const ls = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, receivers]);
 
             ls.stdout.on("data", (data: string) => {
                 console.log(data);

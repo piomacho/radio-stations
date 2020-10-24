@@ -155,7 +155,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       })
     };
     if (true) {
-      callApiFetch(`api/export-octave/send-all/`, requestOptions)
+      callApiFetch(`api/export-octave/send`, requestOptions)
         .then(() => {
           setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
         })

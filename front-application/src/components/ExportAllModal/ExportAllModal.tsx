@@ -56,6 +56,10 @@ interface ElevationSegmentType {
 
 interface SegmentResultType {
   results: Array<ElevationSegmentType>
+  receiver: {
+    longitude: number,
+    latitude: number
+  }
 }
 
 
@@ -129,11 +133,12 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
-          handleExport(results, Number(pointsDistance)).then(data => {
+          //@ts-ignore
+          handleExport(results, Number(pointsDistance)).then((data: Array<SegmentResultType>) => {
             console.log("WYNik ", data);
             //@ts-ignore
             setSegmentsElevations(data);
-            exportToOctave();
+            exportToOctave(data);
           });
         })
         .catch((error: any) => {
@@ -141,23 +146,38 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         });
   }
 
-  const exportToOctave = () => {
+  const exportToOctave = (data: Array<SegmentResultType>) => {
     const bodyObject =  JSON.stringify( {
       fileName: fileName,
-      // data:
-      //   [
-      //     {
-      //       coordinates: results.results,
-      //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-      //       receiver: { latitude: +recLatitude, longitude: +recLongitude }
-      //     },
-      //     {
-      //       coordinates: results.results,
-      //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-      //       receiver: { latitude: +recLatitude, longitude: +recLongitude }
-      //     }
-      //   ]
+      adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+      data:
+        [
+          {
+            coordinates: data[2].results,
+            receiver: { latitude: +data[2].receiver.latitude, longitude: +data[2].receiver.longitude }
+          },
+          {
+            coordinates: data[3].results,
+            receiver: { latitude: +data[3].receiver.latitude, longitude: +data[3].receiver.longitude }
+          },
+          {
+            coordinates: data[4].results,
+            adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+            receiver: { latitude: +data[4].receiver.latitude, longitude: +data[4].receiver.longitude }
+          }
+        ]
     });
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: bodyObject
+    };
+
+      callApiFetch(`api/export-octave/send-all/`, requestOptions)
+        .then(() => {
+          setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
+        })
+        .catch(err => setError(err));
   };
 
   const getLineInfo = (result: ResultType, distance: number) => {
