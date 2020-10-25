@@ -120,9 +120,12 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const segmentsArray: Array<string> = [];
         let receivers = '';
         const receiversArray = coordinatesArray.map((c: SegmentResultType) => {
-            receivers += `${c.receiver.latitude} ${c.receiver.longitude};
-            `
+            receivers += `${c.receiver.latitude},${c.receiver.longitude};`
         });
+
+        const receiversArrayStr = `[${receivers}]`;
+
+        console.log("receibers", receiversArrayStr )
 
         segmentsArray.push(
             ` 0 109 4;

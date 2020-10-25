@@ -9,13 +9,13 @@ npm-debug.log
 *.hgt
 
 /node_modules
+/octave-src
 /.pnp
 .pnp.js
 
 /server-side/keys.ts
 /src
 *.gz
-*.m
 *.xlsx#
 
 # testing
