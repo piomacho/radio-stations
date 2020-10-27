@@ -119,13 +119,43 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const receiverLat = req.body.data[0].receiver.latitude;
         const segmentsArray: Array<string> = [];
         let receivers = '';
-        const receiversArray = coordinatesArray.map((c: SegmentResultType) => {
+
+        // Coordinates length must be higher than 10
+        coordinatesArray.map((c: SegmentResultType) => {
+            // console.log("1 =-=-=> ", c.coordinates)
+
+        });
+        // console.log("1 ", coordinatesArray)
+        const filteredCoordintesArray = coordinatesArray.filter((coords: SegmentResultType) => coords.coordinates.length > 10)
+
+        filteredCoordintesArray.map((c: SegmentResultType) => {
+            // console.log("2 --> ", c)
             receivers += `${c.receiver.latitude},${c.receiver.longitude};`
         });
 
+
+
+        // filteredCoordintesArray.map((coordinateData: SegmentResultType) => {
+        //     let segment = ' ';
+        //     coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
+        //         // console.log("iterator ", iterator,"====>", c)
+        //         // segment='\n';
+        //         if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
+        //             segment += `\t    ${c.distance} ${c.elevation} 4;`;
+        //             segment += '\n';
+        //         } else if(iterator === 0) {
+        //             segment += `${c.distance} ${c.elevation} 4;\n`;
+        //         } else {
+        //             segment += `\t    ${c.distance} ${c.elevation} 4;`
+        //         }
+
+        //     })
+        //     if(segment !== '' && segment !== '\n') {
+        //         segmentsArray.push(segment);
+        //     }
+        // });
         const receiversArrayStr = `[${receivers}]`;
 
-        console.log("receibers", receiversArrayStr )
 
         segmentsArray.push(
             ` 0 109 4;
@@ -142,36 +172,53 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             400 104 4;`
         );
 
+
         segmentsArray.push(
-            ` 0 111 4;
-            108.00357002869112 105 4;
+            ` 0 109 4;
+            108.00357002869112 115 4;
             216.0071400573855 118 4;
-            250 19 4;
-            266 19 4;
-            280 11 4;
-            300 121 4;
+            250 119 4;
+            266 119 4;
+            267 102 4;
+            268 104 4;
+            276 119 4;
+            280 111 4;
+            300 101 4;
             330 111 4;
             350 111 4;
             370 123 4;
             380 102 4;
-            400 104 4;`
+            400 104 4;
+            566 119 4;
+            580 111 4;
+            600 101 4;
+            630 111 4;
+            650 111 4;
+            670 123 4;
+            680 102 4;
+            700 104 4;
+            766 119 4;
+            780 111 4;
+            800 101 4;
+            830 111 4;
+            850 111 4;
+            870 123 4;`
         );
+
         let segmentsArrayStr = '';
 
         for(let i = 0; i <  segmentsArray.length; i++) {
             if(i !== segmentsArray.length -1) {
-                segmentsArrayStr += `[${segmentsArray[i]}], `;
+                segmentsArrayStr += `[${segmentsArray[i]}]; `;
             } else {
-                segmentsArrayStr += `[${segmentsArray[i]}]`;
+                segmentsArrayStr += `[${segmentsArray[i]}];`;
             }
         }
 
 
-        fs.writeFile('./validation_results/prof_b2iseac2.m', `function f = prof_b2iseac2()\r\nf=cat(${segmentsArray.length + 1}, ${segmentsArrayStr})\r\n
+        fs.writeFile('./validation_results/prof_b2iseac2.m', `function f = prof_b2iseac2()\r\nf={${segmentsArrayStr}}\r\n
         end`, function (err: any) {
 
-        // console.error("=============>> ", `function f = prof_b2iseac2()\r\nf=cat(${segmentsArray.length + 1}, ${segmentsArrayStr})\r\n
-        // end`);
         const ls = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, receivers]);
 
             ls.stdout.on("data", (data: string) => {
@@ -199,6 +246,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             error: err.message,
         });
     }
+    // }
 });
 
 export default router;

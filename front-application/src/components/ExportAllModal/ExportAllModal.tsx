@@ -146,27 +146,26 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         });
   }
 
+  const constructDataForOctave = (data: Array<SegmentResultType>):any  => {
+    const resultArray:any  = [];
+    data.map((element:SegmentResultType, iterator: number) => {
+      resultArray.push({
+        coordinates: element.results,
+        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+        receiver:  { latitude: +element.receiver.latitude, longitude: element.receiver.longitude }
+      });
+    });
+
+    return resultArray;
+  }
+
   const exportToOctave = (data: Array<SegmentResultType>) => {
     const bodyObject =  JSON.stringify( {
       fileName: fileName,
       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-      data:
-        [
-          {
-            coordinates: data[2].results,
-            receiver: { latitude: +data[2].receiver.latitude, longitude: +data[2].receiver.longitude }
-          },
-          {
-            coordinates: data[3].results,
-            receiver: { latitude: +data[3].receiver.latitude, longitude: +data[3].receiver.longitude }
-          },
-          {
-            coordinates: data[4].results,
-            adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-            receiver: { latitude: +data[4].receiver.latitude, longitude: +data[4].receiver.longitude }
-          }
-        ]
+      data: constructDataForOctave(data)
     });
+
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },

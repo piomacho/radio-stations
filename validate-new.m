@@ -78,9 +78,9 @@ end
 
         Data_array = prof_b2iseac2();
 
-        for index = 1:length(Data_array(1, 1, :))
+        for index = 1:length(Data_array)
 
-            retrieved = Data_array(:,:,index);
+            retrieved = Data_array{index};
             d = retrieved(:,1);
             h = retrieved(:,2);
             z = retrieved(:,3);
