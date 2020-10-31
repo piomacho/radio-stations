@@ -47,6 +47,8 @@ interface ResultType {
   latitude: number;
 }
 
+
+
 interface ElevationSegmentType {
   latitude: number,
   longitude: number,
@@ -60,6 +62,14 @@ interface SegmentResultType {
     longitude: number,
     latitude: number
   }
+}
+
+interface SegmentFullResultType {
+  receiver: {
+    longitude: number,
+    latitude: number
+  },
+  points: Array<ElevationSegmentType>
 }
 
 
@@ -134,23 +144,45 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
           //@ts-ignore
-          handleExport(results, Number(pointsDistance)).then((data: Array<SegmentResultType>) => {
-            console.log("WYNik ", data);
-            //@ts-ignore
-            setSegmentsElevations(data);
-            exportToOctave(data);
-          });
+          // handleExport(results, Number(pointsDistance)).then((data: Array<SegmentResultType>) => {
+          //   console.log("WYNik ", data);
+          //   //@ts-ignore
+
+          // });
+          handleExportFull(results, Number(pointsDistance)).then((data: any) => {
+           try {
+             console.log("===  ", data);
+              const parsedResult = JSON.parse(data.results);
+              setSegmentsElevations(parsedResult);
+              exportToOctave(parsedResult);
+
+            } catch (e) {
+              console.error("Parsing error ->", e);
+            }
+          })
         })
         .catch((error: any) => {
           console.log("Error postLookupLine:" + error);
         });
   }
 
-  const constructDataForOctave = (data: Array<SegmentResultType>):any  => {
+  // const constructDataForOctave = (data: Array<SegmentResultType>):any  => {
+  //   const resultArray:any  = [];
+  //   data.map((element:SegmentResultType, iterator: number) => {
+  //     resultArray.push({
+  //       coordinates: element.results,
+  //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+  //       receiver:  { latitude: +element.receiver.latitude, longitude: element.receiver.longitude }
+  //     });
+  //   });
+
+  //   return resultArray;
+  // }
+  const constructDataForOctave = (data: Array<SegmentFullResultType>):any  => {
     const resultArray:any  = [];
-    data.map((element:SegmentResultType, iterator: number) => {
+    data.map((element:SegmentFullResultType, iterator: number) => {
       resultArray.push({
-        coordinates: element.results,
+        coordinates: element.points,
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
         receiver:  { latitude: +element.receiver.latitude, longitude: element.receiver.longitude }
       });
@@ -159,11 +191,12 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return resultArray;
   }
 
-  const exportToOctave = (data: Array<SegmentResultType>) => {
+  const exportToOctave = (data: Array<SegmentFullResultType>) => {
     const bodyObject =  JSON.stringify( {
       fileName: fileName,
       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
       data: constructDataForOctave(data)
+      // data: constructDataForOctave(data)
     });
 
     const requestOptions = {
@@ -192,12 +225,31 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         return Promise.resolve(results)
       });
   }
+
+  const getLineInfoFull = (results: ResultCoordinateType, distance: number) => {
+    return OEClient.postLookupLineDistanceAll({
+      adapterLongitude: +adapterY,
+      adapterLatitude: +adapterX,
+      // range: measureDistance( +adapterX, +adapterY, result.latitude, result.longitude).toFixed(2),
+      distance: distance,
+      receivers: results.coordinates
+      // receiverLongitude: result.longitude,
+      // receiverLatitude: result.latitude
+    }).then(async function(results) {
+      return Promise.resolve(results)
+    });
+  };
+
   const handleLinePromises = async (item: ResultType, distance: number) => {
     return getLineInfo(item, distance)
   }
 
   const handleExport = async(results: ResultCoordinateType, distance: number) => {
     return Promise.all( results.coordinates.map(async(result: ResultType) => handleLinePromises(result, distance)));
+  }
+
+  const handleExportFull = async(results: ResultCoordinateType, distance: number) => {
+    return await getLineInfoFull(results, distance);
   }
 
   const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0;

@@ -7,6 +7,7 @@ from bottle import route, run, request, response, hook
 
 from gdal_interfaces import GDALTileInterface
 
+import jsonpickle
 
 class InternalException(ValueError):
     """
@@ -50,6 +51,7 @@ def get_elevation_distance(lat, lng, distance):
     :return:
     """
     try:
+        # print("lat ", lat, " long", lng)
         elevation = interface.lookup(lat, lng)
     except:
         return {
@@ -63,6 +65,31 @@ def get_elevation_distance(lat, lng, distance):
         'longitude': lng,
         'elevation': elevation,
         'distance': distance
+    }
+
+def get_elevation_distance_all(point):
+    """
+    Get the elevation at point (lat,lng) using the currently opened interface
+    :param lat:
+    :param lng:
+    :return:
+
+    """
+    try:
+        # print("point ", point)
+        elevation = interface.lookup(point['latitude'], point['longitude'])
+    except:
+        return {
+            'latitude': point['latitude'],
+            'longitude': point['longitude'],
+            'error': 'No such coordinate (%s, %s)' % (point['latitude'], point['longitude'])
+        }
+
+    return {
+        'latitude': point['latitude'],
+        'longitude': point['longitude'],
+        'elevation': elevation,
+        'distance': point['distance']
     }
 
 @hook('after_request')
@@ -225,7 +252,53 @@ def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLati
         cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
 
     return cArray
+class result:
+    def __init__(self, coords, points):
+        self.coords = coords
+        self.points = points
 
+class fullResult:
+    def __init__(self, coords, points):
+        self.receiver = coords
+        self.points = points
+
+def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers):
+    cArray = []
+    resultArray=[]
+    print("WTF !!@!@!@!@ @")
+    print(len(receivers))
+    for i in range(int(len(receivers))):
+        cArray = []
+
+        brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receivers[i]['longitude']), degrees_to_radians(receivers[i]['latitude']))
+        range1 = measureDistance(adapterLatitude, adapterLongitude, receivers[i]['latitude'], receivers[i]['longitude'])
+        numberOfPoints = float(range1)/float(distance)
+        print("---->> ", numberOfPoints)
+        for x in range(int(numberOfPoints)):
+            d = (float(range1)/int(numberOfPoints)) * x
+
+            R = 6378.1 #Radius of the Earth
+
+            lat1 = math.radians(adapterLatitude) #Current lat point converted to radians
+            lon1 = math.radians(adapterLongitude) #Current long point converted to radians
+
+            lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
+                math.cos(lat1)*math.sin(d/R)*math.cos(brng))
+
+            lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
+                        math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
+
+            lat2 = math.degrees(lat2)
+            lon2 = math.degrees(lon2)
+            cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
+            # print("X ", x, ' range ', int(numberOfPoints))
+            # {"coords": {"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']} ,"points": cArray}
+            if(x == int(numberOfPoints) - 1):
+                resultArray.append(result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray))
+
+    # for obj in resultArray:
+    #     print( obj.coords," !!!!!!!!!!!!!!!!?????!?!??!?!!?? POINTS", obj.points)
+    return resultArray
 
 def generateCoordinatesDistance(range1, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
     cArray = []
@@ -352,6 +425,56 @@ def body_to_line_distance():
 
     return d
 
+def body_to_line_distance_all():
+    try:
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        adapterLongitude = request.json.get('adapterLongitude', None)
+        distance = request.json.get('distance', None)
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        receivers = request.json.get('receivers', None)
+        # rangePar = request.json.get('range', None)
+
+    except Exception:
+        raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
+
+    if not adapterLatitude:
+        raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
+    if not adapterLongitude:
+        raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    # if not rangePar:
+    #     raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
+    if not distance:
+        raise InternalException(json.dumps({'error': '"distance" is required in the body.'}))
+    if not receivers:
+        raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
+    # if not receiverLongitude:
+    #     raise InternalException(json.dumps({'error': '"receiverLongitude" is required in the body.'}))
+    # GENEROWANIE SIATKI PUNKTOW
+    locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
+    # print(locations)
+    # {"coords": {"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']} ,"points": cArray})
+    latlng = []
+    latLngFull = []
+    # print(locations)
+
+
+    # for l in locations:
+    #     # print( obj.coords," !!!!!!!!!!!!!!!!?????!?!??!?!!?? POINTS", obj.points)
+    #     try:
+
+    #         for p in range(len(l.points)):
+    #             latlng += [(l.points[p]['latitude'],l.points[p]['longitude'],l.points[p]['distance']) ]
+    #         latLngFull.append({"coords": l.coords, "points": latlng})
+    # except KeyError:
+            # raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
+
+    d = dict();
+    # d['results'] = latLngFull
+    # d['receiverLatitude'] = receiverLatitude
+    # d['receiverLongitude'] = receiverLongitude
+    # d = dict();
+
+    return locations
 
 def body_to_line():
     try:
@@ -435,6 +558,28 @@ def do_lookup_line_distance(get_locations_func):
         latitude = get_locations_func()['receiverLatitude']
         longitude = get_locations_func()['receiverLongitude']
         return {'results': [get_elevation_distance(lat, lng, dst) for (lat, lng, dst) in locations], 'receiver': {'latitude': latitude, 'longitude': longitude }}
+    except InternalException as e:
+        response.status = 400
+        response.content_type = 'application/json'
+        return e.args[0]
+
+def do_lookup_line_distance_all(get_locations_func):
+    """
+    Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
+    and returns an answer ready to go to the client.
+    :return:
+    """
+    try:
+        # return {}
+        resultArray = []
+        # print(get_locations_func())
+        allData = get_locations_func();
+        print("HALKO")
+        for data in allData:
+            # print("==== ", data.points)
+            resultArray.append(fullResult({'latitude': data.coords['latitude'], 'longitude': data.coords['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data.points] ))
+        finalResult = jsonpickle.encode(resultArray, unpicklable=False)
+        return {'results': finalResult}
     except InternalException as e:
         response.status = 400
         response.content_type = 'application/json'
@@ -543,6 +688,23 @@ def post_lookup_line_distance():
         :return:
         """
     return do_lookup_line_distance(body_to_line_distance)
+
+
+# Base Endpoint
+URL_ENDPOINT_LINE_DISTANCE_ALL = '/api/v1/lookup-line-distance-all'
+
+# For CORS
+@route(URL_ENDPOINT_LINE_DISTANCE_ALL, method=['OPTIONS'])
+def cors_handler():
+    return {}
+
+@route(URL_ENDPOINT_LINE_DISTANCE_ALL, method=['POST'])
+def post_lookup_line_distance_all():
+    """
+        GET method. Uses body_to_locations.
+        :return:
+        """
+    return do_lookup_line_distance_all(body_to_line_distance_all)
 
 run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)
 

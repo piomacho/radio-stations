@@ -81,6 +81,7 @@ end
         for index = 1:length(Data_array)
 
             retrieved = Data_array{index};
+
             d = retrieved(:,1);
             h = retrieved(:,2);
             z = retrieved(:,3);
