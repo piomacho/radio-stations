@@ -121,10 +121,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         let receivers = '';
 
         // Coordinates length must be higher than 10
-        coordinatesArray.map((c: SegmentResultType) => {
-            console.log("1 =-=-=> ", c.coordinates)
 
-        });
         const filteredCoordintesArray = coordinatesArray.filter((coords: SegmentResultType) => coords.coordinates.length > 10)
 
         filteredCoordintesArray.map((c: SegmentResultType) => {
@@ -213,8 +210,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             }
         }
 
-        console.log("seGm ", segmentsArray);
-        fs.writeFile('./validation_results/prof_b2iseac2.m', `function f = prof_b2iseac2()\r\nf={${segmentsArrayStr}}\r\n
+        fs.writeFile('./validation_results/prof_b2iseac2.m', `function f = prof_b2iseac2()\r\nf={${segmentsArrayStr}};\r\n
         end`, function (err: any) {
 
         const ls = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, receivers]);

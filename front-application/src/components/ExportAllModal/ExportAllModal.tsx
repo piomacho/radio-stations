@@ -151,7 +151,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           // });
           handleExportFull(results, Number(pointsDistance)).then((data: any) => {
            try {
-             console.log("===  ", data);
               const parsedResult = JSON.parse(data.results);
               setSegmentsElevations(parsedResult);
               exportToOctave(parsedResult);

@@ -88,7 +88,7 @@ end
             %[d,h,z]
             Tpc = Tpc_array(tpccnt);
             receiver = strsplit(ReceiversData, ';');
-            r1 = receiver{1,index}
+            r1 = receiver{1,index};
             r2 =  strsplit(r1, ',');
             receiverLatitude = str2double(r2{1, 1});
             receiverLongitude =  str2double(r2{1, 2});
