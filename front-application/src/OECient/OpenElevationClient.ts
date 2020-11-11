@@ -54,16 +54,19 @@ class OpenElevationRestClient extends React.Component {
         if (body && !Object.keys(body).length) {
             body = undefined;
         }
-
+        // console.log("_--=-=- > ", JSON.stringify(body))
         fetch(urlWithParams, {
             method,
             headers,
             body: JSON.stringify(body)
         }).then((response) => {
+            console.log("1  ")
             return response.json() ;
         }).then((body) => {
+            console.log("2  ")
             deferred.resolve(body);
         }).catch((error) => {
+            console.log("3  ", error);
             deferred.reject(error);
         });
     };
@@ -153,17 +156,17 @@ class OpenElevationRestClient extends React.Component {
         // /api/v1/lookup-line-distance
         if (parameters['adapterLatitude'] !== undefined &&
             parameters['adapterLongitude'] !== undefined &&
-            // parameters['range'] !== undefined &&
             parameters['distance'] !== undefined &&
-            parameters['receivers'] !== undefined) {
+            parameters['receivers'] !== undefined
+            ) {
 
             body = {
                 adapterLatitude: parameters['adapterLatitude'],
                 adapterLongitude: parameters['adapterLongitude'],
                 distance: parameters['distance'],
-                // range: parameters['range'],
                 receivers: parameters['receivers'],
             };
+            console.log("body", parameters['receivers']);
         }
         queryParameters = this.mergeQueryParams(parameters, queryParameters);
 

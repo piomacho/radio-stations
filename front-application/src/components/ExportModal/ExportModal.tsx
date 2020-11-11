@@ -213,8 +213,8 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
         </ExportInputWrapper>
       </InputWrapper>
-      {!allowedSubmit &&  Object.values(error).map(error => (
-        <Message error={true}>{error}</Message>
+      {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
+        <Message key={idx} error={true}>{error}</Message>
       ))}
       {successMessage && <Message>{successMessage}</Message>}
       <ButtonWrapper>

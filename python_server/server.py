@@ -3,6 +3,7 @@ import sys
 import json
 import bottle
 import math
+import numpy
 from bottle import route, run, request, response, hook
 
 from gdal_interfaces import GDALTileInterface
@@ -265,7 +266,6 @@ class fullResult:
 def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers):
     cArray = []
     resultArray=[]
-    print("WTF !!@!@!@!@ @")
     print(len(receivers))
     for i in range(int(len(receivers))):
         cArray = []
@@ -273,7 +273,6 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
         brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receivers[i]['longitude']), degrees_to_radians(receivers[i]['latitude']))
         range1 = measureDistance(adapterLatitude, adapterLongitude, receivers[i]['latitude'], receivers[i]['longitude'])
         numberOfPoints = float(range1)/float(distance)
-        print("---->> ", numberOfPoints)
         for x in range(int(numberOfPoints)):
             d = (float(range1)/int(numberOfPoints)) * x
 
@@ -291,8 +290,6 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
             lat2 = math.degrees(lat2)
             lon2 = math.degrees(lon2)
             cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
-            # print("X ", x, ' range ', int(numberOfPoints))
-            # {"coords": {"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']} ,"points": cArray}
             if(x == int(numberOfPoints) - 1):
                 resultArray.append(result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray))
 
@@ -430,9 +427,7 @@ def body_to_line_distance_all():
         adapterLatitude = request.json.get('adapterLatitude', None)
         adapterLongitude = request.json.get('adapterLongitude', None)
         distance = request.json.get('distance', None)
-        adapterLatitude = request.json.get('adapterLatitude', None)
         receivers = request.json.get('receivers', None)
-        # rangePar = request.json.get('range', None)
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -441,38 +436,19 @@ def body_to_line_distance_all():
         raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
     if not adapterLongitude:
         raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
-    # if not rangePar:
-    #     raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
     if not distance:
         raise InternalException(json.dumps({'error': '"distance" is required in the body.'}))
     if not receivers:
         raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
-    # if not receiverLongitude:
-    #     raise InternalException(json.dumps({'error': '"receiverLongitude" is required in the body.'}))
+
     # GENEROWANIE SIATKI PUNKTOW
+
     locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
-    # print(locations)
-    # {"coords": {"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']} ,"points": cArray})
+
     latlng = []
     latLngFull = []
-    # print(locations)
-
-
-    # for l in locations:
-    #     # print( obj.coords," !!!!!!!!!!!!!!!!?????!?!??!?!!?? POINTS", obj.points)
-    #     try:
-
-    #         for p in range(len(l.points)):
-    #             latlng += [(l.points[p]['latitude'],l.points[p]['longitude'],l.points[p]['distance']) ]
-    #         latLngFull.append({"coords": l.coords, "points": latlng})
-    # except KeyError:
-            # raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
     d = dict();
-    # d['results'] = latLngFull
-    # d['receiverLatitude'] = receiverLatitude
-    # d['receiverLongitude'] = receiverLongitude
-    # d = dict();
 
     return locations
 
@@ -574,7 +550,6 @@ def do_lookup_line_distance_all(get_locations_func):
         resultArray = []
         # print(get_locations_func())
         allData = get_locations_func();
-        print("HALKO")
         for data in allData:
             # print("==== ", data.points)
             resultArray.append(fullResult({'latitude': data.coords['latitude'], 'longitude': data.coords['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data.points] ))

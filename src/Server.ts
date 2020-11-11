@@ -14,8 +14,8 @@ app.use(logger('dev'));
 // app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
-app.use(bodyParser.json({limit: '5mb'}));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: '500mb'}));
+app.use(bodyParser.urlencoded({ extended: true, parameterLimit:500000 }));
 
 app.use('/api', BaseRouter);
 

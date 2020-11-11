@@ -1,6 +1,7 @@
 import React, { useState, ChangeEvent } from "react";
 import Modal from "react-modal";
 import store, { CoordinatesType } from "../../Store/Store";
+import sizeof from 'object-sizeof'
 
 import Button from "../Button/Button";
 import {
@@ -20,6 +21,7 @@ import {
 import { ButtonWrapper } from "../Button/Button.styles";
 import { callApiFetch, lineFromPoints, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
+import { chunkArray } from "./chunkArray";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -143,17 +145,13 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
-          //@ts-ignore
-          // handleExport(results, Number(pointsDistance)).then((data: Array<SegmentResultType>) => {
-          //   console.log("WYNik ", data);
-          //   //@ts-ignore
-
-          // });
+          // const resultsChunked = chunkArray(results, 20, true);
           handleExportFull(results, Number(pointsDistance)).then((data: any) => {
            try {
-              const parsedResult = JSON.parse(data.results);
-              setSegmentsElevations(parsedResult);
-              exportToOctave(parsedResult);
+            console.log("pozniej", data);
+              // const parsedResult = JSON.parse(data.results);
+              setSegmentsElevations(data);
+              exportToOctave(data);
 
             } catch (e) {
               console.error("Parsing error ->", e);
@@ -179,7 +177,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   // }
   const constructDataForOctave = (data: Array<SegmentFullResultType>):any  => {
     const resultArray:any  = [];
-    data.map((element:SegmentFullResultType, iterator: number) => {
+    console.log("===== ",data);
+    data && data.map((element:SegmentFullResultType, iterator: number) => {
       resultArray.push({
         coordinates: element.points,
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
@@ -190,26 +189,76 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return resultArray;
   }
 
-  const exportToOctave = (data: Array<SegmentFullResultType>) => {
-    const bodyObject =  JSON.stringify( {
-      fileName: fileName,
-      adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-      data: constructDataForOctave(data)
-      // data: constructDataForOctave(data)
-    });
+  const exportToOctave = async(data: Array<SegmentFullResultType>) => {
+    // console.log('data', data);
+    const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
+    // const numberOfCalls = 20;
+    const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, 20, true);
+    // console.log(" ======= >>>  :))" , sizeof(bodyObject))
+
+
+
+
+
+
+    let numberOfCalls = chunkedArray.length;
+
+    console.log(" Xd", chunkedArray.length, "------ ", chunkedArray);
+    while(numberOfCalls > 0){
+
+      const bodyObject =  JSON.stringify( {
+        fileName: fileName,
+        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+        data: chunkedArray[numberOfCalls - 1],
+        postNumber: numberOfCalls
+
+      });
+      console.log("TU ", numberOfCalls);
+      //@ts-ignore
+      const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, numberOfCalls);
+      numberOfCalls = numberOfCalls - 1;
+
+      if(awaited) {
+        try {
+
+
+          // console.log("PROMIŚ ->  node -> ", numberOfCalls);
+
+          // const parsedResponse = JSON.parse(awaited.results);
+          // resultArray.push(...parsedResponse);
+        } catch(err) {
+          console.error("getLineInfoFull() -> parsing error: ", err);
+        }
+
+      }
+    }
+  };
+
+
+  const fireOctaveExport = async(data: Array<SegmentFullResultType>, postNumber: number) => {
 
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: bodyObject
+      body: data,
     };
 
-      callApiFetch(`api/export-octave/send-all/`, requestOptions)
-        .then(() => {
-          setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
+    return new Promise(resolve => {
+        resolve(
+          callApiFetch(`api/export-octave/send-all/`, requestOptions)
+        .then(async() => {
+          console.log("poszlo do node -> ", postNumber)
+          return postNumber;
+          // setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
         })
-        .catch(err => setError(err));
-  };
+        .catch(err => setError(err))
+        );
+    });
+
+
+
+  }
+
 
   const getLineInfo = (result: ResultType, distance: number) => {
     return OEClient.postLookupLineDistance({
@@ -225,15 +274,40 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       });
   }
 
-  const getLineInfoFull = (results: ResultCoordinateType, distance: number) => {
+  interface postLookUpLineResultType {
+    results: string;
+  }
+
+  const getLineInfoFull = async(results: ResultCoordinateType, distance: number) => {
+    let numberOfCalls = 20;
+    const resultArray = [];
+    const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
+
+    while(numberOfCalls > 0){
+      //@ts-ignore
+      const awaited: postLookUpLineResultType = await postLookupDistanceForAllPoint(+adapterX, +adapterY, distance, chunkedArray[numberOfCalls - 1]);
+      if(awaited) {
+        numberOfCalls = numberOfCalls - 1;
+        try {
+          console.log("PROMIŚ -> ", numberOfCalls);
+          const parsedResponse = JSON.parse(awaited.results);
+          resultArray.push(...parsedResponse);
+        } catch(err) {
+          console.error("getLineInfoFull() -> parsing error: ", err);
+        }
+
+      }
+    }
+    console.log("RA -: ",resultArray);
+    return resultArray;
+  };
+
+  const postLookupDistanceForAllPoint = (adapterX: number, adapterY: number, distance: number, coordinates: ResultType[]) => {
     return OEClient.postLookupLineDistanceAll({
       adapterLongitude: +adapterY,
       adapterLatitude: +adapterX,
-      // range: measureDistance( +adapterX, +adapterY, result.latitude, result.longitude).toFixed(2),
       distance: distance,
-      receivers: results.coordinates
-      // receiverLongitude: result.longitude,
-      // receiverLatitude: result.latitude
+      receivers: coordinates
     }).then(async function(results) {
       return Promise.resolve(results)
     });
@@ -248,7 +322,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExportFull = async(results: ResultCoordinateType, distance: number) => {
-    return await getLineInfoFull(results, distance);
+    return getLineInfoFull(results, distance);
   }
 
   const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0;
@@ -303,8 +377,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
         </ExportInputWrapper>
       </InputWrapper>
-      {!allowedSubmit &&  Object.values(error).map(error => (
-        <Message error={true}>{error}</Message>
+      {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
+        <Message key={idx} error={true}>{error}</Message>
       ))}
       {successMessage && <Message>{successMessage}</Message>}
       <ButtonWrapper>
