@@ -197,8 +197,8 @@ function p2001 = tl_p2001(d, h, z, GHz, Tpc, Phire, Phirn, Phite, Phitn, Hrg, Ht
 
 c0 = 2.998e8;
 Re = 6371;
-printf("1 ----- %d", Phire)
-printf("2 ----- %d", Phirn)
+% printf("1 ----- %d", Phire)
+% printf("2 ----- %d", Phirn)
 %try
 
     s = pwd;

@@ -1,12 +1,11 @@
 args = argv();
-fName = strcat('validation_results/',args{5},'.xlsx');
 %fName = '/Users/piotrmachowski/Documents/octave/wyniki_orginalne.xlsx';
 %frequency = [0.03 0.2 2 20 50];
 frequency = [0.1];
 Page      = {'Page1', 'Page2', 'Page3', 'Page4', 'Page5', 'Page6'};
 Tpc_array = [50];
 
-%printf(args{6})
+printf(args{5})
 FlagVP = 1;
 Gtx = 0;
 Grx = 0;
@@ -17,18 +16,19 @@ Phirn = str2double(args{4});
 Phite = str2double(args{1});
 Phitn = str2double(args{2});
 AdapterFrequency = str2double(args{7});
-% ReceiversData = args{8};
+iterationNumber = args{8};
 Tpc = 0.001;
 Profile = 'Prof_b2iseac';
+nazwaPliku = strcat('validation_results/',args{5},'.xlsx');
 
 try
     s = pwd;
-    %pkg install -forge io;
-    %pkg install -forge windows;
+    % pkg install -forge io;
+    % pkg install -forge windows;
     pkg load io;
     pkg load windows;
-    if exist(fName, 'file')
-        delete(fName)
+    if exist(nazwaPliku, 'file')
+        delete(nazwaPliku)
     end
 
     if ~exist('prof_b2iseac2.m','file')
@@ -72,12 +72,16 @@ end
     'Reff50',	'Reffp',	'Sp',	'Thetae',	'Thetar',	'Thetarpos',	'Thetas',	'Thetat', ...
     'Thetatpos',	'Tpcp',	'Tpcq',	'Tpcscale',	'Wave',	'Wvsur',	'WvSurrx',	'WvSurtx',	'Ztropo'};
 
+
      r1 = 1;
 
      for tpccnt = 1:length(Tpc_array)
 
+        fName = strcat('prof_',iterationNumber);
+        funtionFromStr = str2func(['@(x,y,z)' fName]);
+        Data_array = funtionFromStr();
 
-        Data_array = prof_b2iseac2();
+
 
         for index = 1:length(Data_array)
 
@@ -88,15 +92,20 @@ end
             z = retrieved(:,3);
             %[d,h,z]
             Tpc = Tpc_array(tpccnt);
-            ReceiversData = get_receivers();
+
+            fNameRec = strcat('get_receivers',iterationNumber);
+            funtionFromStrReceiver = str2func(['@(x,y,z)' fNameRec]);
+            ReceiversData = funtionFromStrReceiver();
+
+            % ReceiversData = get_receivers();
             % receiver = strsplit(ReceiversData, ';');
             r1 = ReceiversData{index};
             % printf("%s", ReceiversData)
             % r2 =  strsplit(r1, ',');
             receiverLatitude = r1(:,1);
             receiverLongitude = r1(:,2);
-            printf("%d", receiverLatitude)
-            printf("%d", receiverLongitude)
+            % printf("%d", receiverLatitude)
+            % printf("%d", receiverLongitude)
 
             disp(['Processing ' num2str(tpccnt) '/' num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  'Tpc = ' num2str(Tpc) ' ...']);
 
@@ -116,12 +125,16 @@ end
                 Profile, ...
                 struct2cell(p2001).'
                 ];
-            A = [A; row];
 
+                A = [A; row];
+
+            % printf("%d - %d",length(A), length(BB));
             r1 = tpccnt + 1;
          end
      end
-    xlswrite(fName,A, pg);
+     printf("%s %s", "ZAPISTWANIE ROW", fName);
+    xlswrite(nazwaPliku,A, pg);
+
  end
 
  %write the profile file
@@ -141,9 +154,5 @@ for i = 1:length(d)
     row = {d(i), h(i), z(i)};
     B = [B; row];
 end
-
-xlswrite(fName,B, Profile);
-
-
-
-
+printf("%s", "writing !!!!!!!!!!")
+xlswrite(nazwaPliku,B, Profile);

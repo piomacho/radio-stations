@@ -79,6 +79,8 @@ export const Coord = styled('div')`
     font-weight: 700;
     color: #2980b9;
     text-align: center;
+    display: flex;
+    justify-content: center;
 `;
 
 export const AdaptersHeader = styled('div')`

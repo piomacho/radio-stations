@@ -1,6 +1,8 @@
 import React, { useState, ChangeEvent } from "react";
 import Modal from "react-modal";
 import store, { CoordinatesType } from "../../Store/Store";
+import { CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 import sizeof from 'object-sizeof'
 
 import Button from "../Button/Button";
@@ -80,6 +82,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
   const [error, setError] = useState(EmptyError);
+  const [loaderValue, setLoaderValue] = useState(0);
   const [fileName, setFileName] = useState("");
   const [segmentsElevations, setSegmentsElevations] = useState<Array<SegmentResultType>>([]);
   const [radius, setRadius] = useState("");
@@ -220,7 +223,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
       if(awaited) {
         try {
-
+          setLoaderValue(20 - numberOfCalls)
 
           // console.log("PROMIŚ ->  node -> ", numberOfCalls);
 
@@ -248,8 +251,12 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           callApiFetch(`api/export-octave/send-all/`, requestOptions)
         .then(async() => {
           console.log("poszlo do node -> ", postNumber)
+          setLoaderValue(40 - postNumber)
+          if(postNumber === 1){
+            setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
+          }
+          // <CircularProgressbar value={value} maxValue={1} text={`${value * 100}%`} />;
           return postNumber;
-          // setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
         })
         .catch(err => setError(err))
         );
@@ -359,6 +366,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             <Coord><Input onChange={handleChangePointsDistance} placeholder="Distance between points: " /></Coord>
         </AdapterCoordsWrapper>
         <ExportInputWrapper>
+        <CircularProgressbar value={loaderValue/40} maxValue={1} text={`${(loaderValue/40) * 100}%`} />;
           {/* <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
           <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay> */}
           <InputContainer>

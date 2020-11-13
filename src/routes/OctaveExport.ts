@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 // const { exec } = require("child_process");
+import {chunkArray} from './chunkArray';
 const { spawn, execFile } = require("child_process");
 
 const fs = require('fs');
@@ -128,8 +129,14 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const receiverLon = req.body.data[0].receiver.longitude;
         const receiverLat = req.body.data[0].receiver.latitude;
         const segmentsArray: Array<string> = [];
+        const segmentsArray2: Array<string> = [];
+        const segmentsArray3: Array<string> = [];
+        const segmentsArray4: Array<string> = [];
         const receiversArray: Array<string> = [];
         let receivers = '';
+        let receivers2 = '';
+        let receivers3 = '';
+        let receivers4 = '';
 
         // Coordinates length must be higher than 10
 
@@ -146,7 +153,9 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
             console.log("filter -- ", filteredCoordintesArray.length);
 
-            filteredCoordintesArray.map((c: SegmentResultType) => {
+            const chunkedFilterArray = chunkArray(filteredCoordintesArray, 4, true);
+
+            chunkedFilterArray[0].map((c: SegmentResultType) => {
                 let receivers123= ' ';
                 receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
                 receivers123 += '\n';
@@ -157,12 +166,46 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             });
 
 
+            chunkedFilterArray[1].map((c: SegmentResultType) => {
+                let receivers123= ' ';
+                receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
+                receivers123 += '\n';
 
-            filteredCoordintesArray.map((coordinateData: SegmentResultType) => {
+                if(receivers123 !== '' && receivers123 !== '\n') {
+                    receivers2 += receivers123;
+                }
+            });
+
+
+
+            chunkedFilterArray[2].map((c: SegmentResultType) => {
+                let receivers123= ' ';
+                receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
+                receivers123 += '\n';
+
+                if(receivers123 !== '' && receivers123 !== '\n') {
+                    receivers3 += receivers123;
+                }
+            });
+
+
+
+            chunkedFilterArray[3].map((c: SegmentResultType) => {
+                let receivers123= ' ';
+                receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
+                receivers123 += '\n';
+
+                if(receivers123 !== '' && receivers123 !== '\n') {
+                    receivers4 += receivers123;
+                }
+            });
+
+
+
+
+            chunkedFilterArray[0].map((coordinateData: SegmentResultType) => {
                 let segment = ' ';
                 coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
-                    // console.log("iterator ", iterator,"====>", c)
-                    // segment='\n';
                     if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
                         segment += `\t    ${c.distance} ${c.elevation} 4;`;
                         segment += '\n';
@@ -177,61 +220,64 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                     segmentsArray.push(segment);
                 }
             });
+            chunkedFilterArray[1].map((coordinateData: SegmentResultType) => {
+                let segment = ' ';
+                coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
+                    if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
+                        segment += `\t    ${c.distance} ${c.elevation} 4;`;
+                        segment += '\n';
+                    } else if(iterator === 0) {
+                        segment += `${c.distance} ${c.elevation} 4;\n`;
+                    } else {
+                        segment += `\t    ${c.distance} ${c.elevation} 4;`
+                    }
 
-            // const first = segmentsArray.slice(0, Math.round(segmentsArray.length/2) );
-            // const second = segmentsArray.slice(Math.round(segmentsArray.length/2)  + 1);
-            // const receiversArrayStr = `[${receivers}]`;
+                })
+                if(segment !== '' && segment !== '\n') {
+                    segmentsArray2.push(segment);
+                }
+            });
+            chunkedFilterArray[2].map((coordinateData: SegmentResultType) => {
+                let segment = ' ';
+                coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
+                    if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
+                        segment += `\t    ${c.distance} ${c.elevation} 4;`;
+                        segment += '\n';
+                    } else if(iterator === 0) {
+                        segment += `${c.distance} ${c.elevation} 4;\n`;
+                    } else {
+                        segment += `\t    ${c.distance} ${c.elevation} 4;`
+                    }
+
+                })
+                if(segment !== '' && segment !== '\n') {
+                    segmentsArray3.push(segment);
+                }
+            });
+            chunkedFilterArray[3].map((coordinateData: SegmentResultType) => {
+                let segment = ' ';
+                coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
+                    if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
+                        segment += `\t    ${c.distance} ${c.elevation} 4;`;
+                        segment += '\n';
+                    } else if(iterator === 0) {
+                        segment += `${c.distance} ${c.elevation} 4;\n`;
+                    } else {
+                        segment += `\t    ${c.distance} ${c.elevation} 4;`
+                    }
+
+                })
+                if(segment !== '' && segment !== '\n') {
+                    segmentsArray4.push(segment);
+                }
+            });
 
 
-            // segmentsArray.push(
-            //     ` 0 109 4;
-            //     108.00357002869112 115 4;
-            //     216.0071400573855 118 4;
-            //     250 119 4;
-            //     266 119 4;
-            //     280 111 4;
-            //     300 101 4;
-            //     330 111 4;
-            //     350 111 4;
-            //     370 123 4;
-            //     380 102 4;
-            //     400 104 4;`
-            // );
-
-
-            // segmentsArray.push(
-            //     ` 0 109 4;
-            //     108.00357002869112 115 4;
-            //     216.0071400573855 118 4;
-            //     250 119 4;
-            //     266 119 4;
-            //     267 102 4;
-            //     268 104 4;
-            //     276 119 4;
-            //     280 111 4;
-            //     300 101 4;
-            //     330 111 4;
-            //     350 111 4;
-            //     370 123 4;
-            //     380 102 4;
-            //     400 104 4;
-            //     566 119 4;
-            //     580 111 4;
-            //     600 101 4;
-            //     630 111 4;
-            //     650 111 4;
-            //     670 123 4;
-            //     680 102 4;
-            //     700 104 4;
-            //     766 119 4;
-            //     780 111 4;
-            //     800 101 4;
-            //     830 111 4;
-            //     850 111 4;
-            //     870 123 4;`
-            // );
 
             let segmentsArrayStr = '';
+            let segmentsArrayStr2 = '';
+            let segmentsArrayStr3 = '';
+            let segmentsArrayStr4 = '';
 
             for(let i = 0; i <  segmentsArray.length; i++) {
                 if(i !== segmentsArray.length -1) {
@@ -240,51 +286,162 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                     segmentsArrayStr += `[${segmentsArray[i]}];`;
                 }
             }
+            for(let i = 0; i <  segmentsArray2.length; i++) {
+                if(i !== segmentsArray2.length -1) {
+                    segmentsArrayStr2 += `[${segmentsArray2[i]}]; `;
+                } else {
+                    segmentsArrayStr2 += `[${segmentsArray2[i]}];`;
+                }
+            }
+            for(let i = 0; i <  segmentsArray3.length; i++) {
+                if(i !== segmentsArray3.length -1) {
+                    segmentsArrayStr3 += `[${segmentsArray3[i]}]; `;
+                } else {
+                    segmentsArrayStr3 += `[${segmentsArray3[i]}];`;
+                }
+            }
+            for(let i = 0; i <  segmentsArray4.length; i++) {
+                if(i !== segmentsArray4.length -1) {
+                    segmentsArrayStr4 += `[${segmentsArray4[i]}]; `;
+                } else {
+                    segmentsArrayStr4 += `[${segmentsArray4[i]}];`;
+                }
+            }
 
             if(filteredCoordintesArray.length > 0 ){
-                fs.writeFile('./validation_results/prof_b2iseac2.m', `function f = prof_b2iseac2()\r\nf={${segmentsArrayStr}};\r\n
+                fs.writeFile('./validation_results/prof_1.m', `function f = prof_1()\r\nf={${segmentsArrayStr}};\r\n
                 end`, function (err: any) {
-                    fs.writeFile('./validation_results/get_receivers.m', `function f = get_receivers()\r\nf={${receivers}};\r\n
+                    fs.writeFile('./validation_results/prof_2.m', `function f = prof_2()\r\nf={${segmentsArrayStr2}};\r\n
                     end`, function (err: any) {
+                        fs.writeFile('./validation_results/prof_3.m', `function f = prof_3()\r\nf={${segmentsArrayStr3}};\r\n
+                        end`, function (err: any) {
+                            fs.writeFile('./validation_results/prof_4.m', `function f = prof_4()\r\nf={${segmentsArrayStr4}};\r\n
+                            end`, function (err: any) {
+                                    fs.writeFile('./validation_results/get_receivers1.m', `function f = get_receivers1()\r\nf={${receivers}};\r\n
+                                    end`, function (err: any) {
+                                        fs.writeFile('./validation_results/get_receivers2.m', `function f = get_receivers2()\r\nf={${receivers2}};\r\n
+                                        end`, function (err: any) {
 
-                        const ls = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr]);
+                                            fs.writeFile('./validation_results/get_receivers3.m', `function f = get_receivers3()\r\nf={${receivers3}};\r\n
+                                            end`, function (err: any) {
 
-                            ls.stdout.on("data", (data: string) => {
-                                console.log(data);
+                                                fs.writeFile('./validation_results/get_receivers4.m', `function f = get_receivers4()\r\nf={${receivers4}};\r\n
+                                                end`, function (err: any) {
+
+
+                                                        const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}1`, height, frequencyStr, 1]);
+
+                                                            ls1.stdout.on("data", (data: string) => {
+                                                                console.log(data);
+                                                            });
+
+                                                            ls1.stderr.on("data", (data: string) => {
+                                                                console.log(`stderr: ${data}`);
+                                                            });
+
+                                                            ls1.on('error', (error: { message: string }) => {
+                                                                console.log(`error: ${error.message}`);
+                                                            });
+
+                                                            ls1.on("close", (code: string) => {
+                                                                console.log(`child process exited with code ${code}`);
+                                                            })
+
+                                                            // return res.status(200).json({
+                                                            //     message: "Success",
+                                                            // });
+                                                    });
+
+                                                    const ls2 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}2`, height, frequencyStr, 2]);
+
+                                                    ls2.stdout.on("data", (data: string) => {
+                                                        console.log(data);
+                                                    });
+
+                                                    ls2.stderr.on("data", (data: string) => {
+                                                        console.log(`stderr: ${data}`);
+                                                    });
+
+                                                    ls2.on('error', (error: { message: string }) => {
+                                                        console.log(`error: ${error.message}`);
+                                                    });
+
+                                                    ls2.on("close", (code: string) => {
+                                                        console.log(`child process exited with code ${code}`);
+                                                    })
+
+                                                    // return res.status(200).json({
+                                                    //     message: "Success",
+                                                    // });
+                                            });
+
+                                            const ls3 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}3`, height, frequencyStr, 3]);
+
+                                            ls3.stdout.on("data", (data: string) => {
+                                                console.log(data);
+                                            });
+
+                                            ls3.stderr.on("data", (data: string) => {
+                                                console.log(`stderr: ${data}`);
+                                            });
+
+                                            ls3.on('error', (error: { message: string }) => {
+                                                console.log(`error: ${error.message}`);
+                                            });
+
+                                            ls3.on("close", (code: string) => {
+                                                console.log(`child process exited with code ${code}`);
+                                            })
+
+                                            // return res.status(200).json({
+                                            //     message: "Success",
+                                            // });
+                                    });
+
+                                    const ls4 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat,`${fName}4`, height, frequencyStr, 4]);
+
+                                    ls4.stdout.on("data", (data: string) => {
+                                        console.log(data);
+                                    });
+
+                                    ls4.stderr.on("data", (data: string) => {
+                                        console.log(`stderr: ${data}`);
+                                    });
+
+                                    ls4.on('error', (error: { message: string }) => {
+                                        console.log(`error: ${error.message}`);
+                                    });
+
+                                    ls4.on("close", (code: string) => {
+                                        console.log(`child process exited with code ${code}`);
+                                    })
+
+                                    return res.status(200).json({
+                                        message: "Success",
+                                    });
                             });
-
-                            ls.stderr.on("data", (data: string) => {
-                                console.log(`stderr: ${data}`);
-                            });
-
-                            ls.on('error', (error: { message: string }) => {
-                                console.log(`error: ${error.message}`);
-                            });
-
-                            ls.on("close", (code: string) => {
-                                console.log(`child process exited with code ${code}`);
-                            })
-
-                            return res.status(200).json({
-                                message: "Success",
-                            });
-                    });
                 });
+            })
+        });
+    });
         } else {
-            return res.status(404).json({
-                error: "Not enough points.",
-            });
+            console.log("JAPA");
+            // return res.status(404).json({
+            //     error: "Not enough points.",
+            // });
         }
     } else {
-        return res.status(200).json({
+        // return 1
+         res.status(200).json({
             message: "Success",
         });
     }
 
     } catch (err) {
-        return res.status(404).json({
-            error: err.message,
-        });
+        console.log("JAPA err", err);
+        // return res.status(404).json({
+        //     error: err.message,
+        // });
     }
     // }
 });
