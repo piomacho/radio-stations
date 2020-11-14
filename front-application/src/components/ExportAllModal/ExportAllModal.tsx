@@ -151,8 +151,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           // const resultsChunked = chunkArray(results, 20, true);
           handleExportFull(results, Number(pointsDistance)).then((data: any) => {
            try {
-            console.log("pozniej", data);
-              // const parsedResult = JSON.parse(data.results);
               setSegmentsElevations(data);
               exportToOctave(data);
 
