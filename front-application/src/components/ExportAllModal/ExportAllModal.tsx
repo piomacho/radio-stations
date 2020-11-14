@@ -3,7 +3,6 @@ import Modal from "react-modal";
 import store, { CoordinatesType } from "../../Store/Store";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import sizeof from 'object-sizeof'
 
 import Button from "../Button/Button";
 import {
@@ -18,12 +17,15 @@ import {
   Coord,
   AdaptersHeader,
   ExportInputWrapper,
-  DistanceDisplay
+  DistanceDisplay,
+  ProgressBarWrapper
 } from "./ExportAllModal.style";
 import { ButtonWrapper } from "../Button/Button.styles";
-import { callApiFetch, lineFromPoints, measureDistance } from "../../common/global";
+import { callApiFetch, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
 import { chunkArray } from "./chunkArray";
+import { LoaderOverLay } from "../SelectionPanel/SelectionPanel.styles";
+import { LoaderContainer } from "../Adapters/Adapters.style";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -164,21 +166,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         });
   }
 
-  // const constructDataForOctave = (data: Array<SegmentResultType>):any  => {
-  //   const resultArray:any  = [];
-  //   data.map((element:SegmentResultType, iterator: number) => {
-  //     resultArray.push({
-  //       coordinates: element.results,
-  //       adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-  //       receiver:  { latitude: +element.receiver.latitude, longitude: element.receiver.longitude }
-  //     });
-  //   });
-
-  //   return resultArray;
-  // }
   const constructDataForOctave = (data: Array<SegmentFullResultType>):any  => {
     const resultArray:any  = [];
-    console.log("===== ",data);
     data && data.map((element:SegmentFullResultType, iterator: number) => {
       resultArray.push({
         coordinates: element.points,
@@ -191,20 +180,10 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const exportToOctave = async(data: Array<SegmentFullResultType>) => {
-    // console.log('data', data);
     const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
-    // const numberOfCalls = 20;
     const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, 20, true);
-    // console.log(" ======= >>>  :))" , sizeof(bodyObject))
-
-
-
-
-
-
     let numberOfCalls = chunkedArray.length;
 
-    console.log(" Xd", chunkedArray.length, "------ ", chunkedArray);
     while(numberOfCalls > 0){
 
       const bodyObject =  JSON.stringify( {
@@ -214,19 +193,13 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         postNumber: numberOfCalls
 
       });
-      console.log("TU ", numberOfCalls);
       //@ts-ignore
       const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, numberOfCalls);
       numberOfCalls = numberOfCalls - 1;
 
       if(awaited) {
         try {
-          setLoaderValue(20 - numberOfCalls)
 
-          // console.log("PROMIŚ ->  node -> ", numberOfCalls);
-
-          // const parsedResponse = JSON.parse(awaited.results);
-          // resultArray.push(...parsedResponse);
         } catch(err) {
           console.error("getLineInfoFull() -> parsing error: ", err);
         }
@@ -248,12 +221,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         resolve(
           callApiFetch(`api/export-octave/send-all/`, requestOptions)
         .then(async() => {
-          console.log("poszlo do node -> ", postNumber)
-          setLoaderValue(40 - postNumber)
+          // setLoaderValue(20 - postNumber)
           if(postNumber === 1){
+
             setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
           }
-          // <CircularProgressbar value={value} maxValue={1} text={`${value * 100}%`} />;
           return postNumber;
         })
         .catch(err => setError(err))
@@ -274,7 +246,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         receiverLongitude: result.longitude,
         receiverLatitude: result.latitude
       }).then(async function(results) {
-        // console.log("myk");
         return Promise.resolve(results)
       });
   }
@@ -293,8 +264,9 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       const awaited: postLookUpLineResultType = await postLookupDistanceForAllPoint(+adapterX, +adapterY, distance, chunkedArray[numberOfCalls - 1]);
       if(awaited) {
         numberOfCalls = numberOfCalls - 1;
+        setLoaderValue(20 - loaderValue - numberOfCalls)
         try {
-          console.log("PROMIŚ -> ", numberOfCalls);
+          console.log("----> ", numberOfCalls);
           const parsedResponse = JSON.parse(awaited.results);
           resultArray.push(...parsedResponse);
         } catch(err) {
@@ -303,7 +275,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
       }
     }
-    console.log("RA -: ",resultArray);
     return resultArray;
   };
 
@@ -322,15 +293,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return getLineInfo(item, distance)
   }
 
-  const handleExport = async(results: ResultCoordinateType, distance: number) => {
-    return Promise.all( results.coordinates.map(async(result: ResultType) => handleLinePromises(result, distance)));
-  }
-
   const handleExportFull = async(results: ResultCoordinateType, distance: number) => {
     return getLineInfoFull(results, distance);
   }
 
-  const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0;
+  const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0 && successMessage === '';
   const adapterX = +(+adapter.szerokosc).toFixed(2);
   const adapterY = +(+adapter.dlugosc).toFixed(2);
 
@@ -363,21 +330,20 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           <AdaptersHeader>Input wanted distance between points:</AdaptersHeader>
             <Coord><Input onChange={handleChangePointsDistance} placeholder="Distance between points: " /></Coord>
         </AdapterCoordsWrapper>
+
         <ExportInputWrapper>
-        <CircularProgressbar value={loaderValue/40} maxValue={1} text={`${(loaderValue/40) * 100}%`} />;
-          {/* <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
-          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay> */}
           <InputContainer>
             <Input onChange={handleChange} placeholder="Enter file name:" />
             <TypeSpan>.xlsx</TypeSpan>
+
             <ExportWrapper>
-            <Button
-              onClick={allowedSubmit ? handleExportClick : null}
-              label={"Export"}
-              backColor={"#7bed9f"}
-              backColorHover={"#2ed573"}
-              disabled={!allowedSubmit}
-            />
+              <Button
+                onClick={allowedSubmit ? handleExportClick : null}
+                label={"Export"}
+                backColor={"#7bed9f"}
+                backColorHover={"#2ed573"}
+                disabled={!allowedSubmit}
+              />:
           </ExportWrapper>
           </InputContainer>
 
@@ -387,13 +353,23 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         <Message key={idx} error={true}>{error}</Message>
       ))}
       {successMessage && <Message>{successMessage}</Message>}
-      <ButtonWrapper>
-        <Button
-          onClick={showModal(false, "export-all", false)}
-          label={"Close"}
-          backColorHover={"#ff7979"}
-        />
-      </ButtonWrapper>
+         <ButtonWrapper>
+         <Button
+           onClick={showModal(false, "export-all", false)}
+           label={"Close"}
+           backColorHover={"#ff7979"}
+         />
+       </ButtonWrapper>
+
+       {loaderValue > 0 && (loaderValue/20) < 1 ?
+        <LoaderOverLay>
+          <LoaderContainer>
+              <ProgressBarWrapper>
+                    <CircularProgressbar background={true} value={loaderValue/20} maxValue={1} text={`${(loaderValue/20) * 100}%`} />;
+                </ProgressBarWrapper>
+          </LoaderContainer>
+        </LoaderOverLay>
+       : null}
     </Modal>
   );
 };

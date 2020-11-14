@@ -78,7 +78,6 @@ const SelectionPanel = () => {
       range: 10,
     })
       .then(async(results: any) => {
-        console.log("tu jest ")
         const elevations = await format(results.results, 30);
         const distances = await formatDistance(results.results, 30);
         setPlotData(results.results);
@@ -151,7 +150,6 @@ const SelectionPanel = () => {
       {coordinates.elevations.length > 0 ? (
         <GMapsModal showModal={showModal} modalVisiblity={mapsModalVisiblity} />
       ) : null}
-      {/* {coordinates.length > 0 ? ( */}
         <ExportModal
           showModal={showModal}
           modalVisiblity={exportModalVisiblity}
@@ -160,7 +158,6 @@ const SelectionPanel = () => {
           showModal={showModal}
           modalVisiblity={exportAllModalVisiblity}
         />
-      {/* ) : null} */}
     </Wrapper>
   );
 };

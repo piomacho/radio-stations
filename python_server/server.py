@@ -52,7 +52,6 @@ def get_elevation_distance(lat, lng, distance):
     :return:
     """
     try:
-        # print("lat ", lat, " long", lng)
         elevation = interface.lookup(lat, lng)
     except:
         return {
@@ -77,7 +76,6 @@ def get_elevation_distance_all(point):
 
     """
     try:
-        # print("point ", point)
         elevation = interface.lookup(point['latitude'], point['longitude'])
     except:
         return {
@@ -201,8 +199,6 @@ def dx(distance, m):
     return math.sqrt(distance/(m**2+1))
 
 def calculate_initial_compass_bearing(adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
-    # if (type(pointA) != tuple) or (type(pointB) != tuple):
-    #     raise TypeError("Only tuples are supported as arguments")
 
     lat1 = math.radians(adapterLatitude)
     lat2 = math.radians(receiverLatitude)
@@ -266,7 +262,6 @@ class fullResult:
 def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers):
     cArray = []
     resultArray=[]
-    print(len(receivers))
     for i in range(int(len(receivers))):
         cArray = []
 
@@ -293,8 +288,6 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
             if(x == int(numberOfPoints) - 1):
                 resultArray.append(result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray))
 
-    # for obj in resultArray:
-    #     print( obj.coords," !!!!!!!!!!!!!!!!?????!?!??!?!!?? POINTS", obj.points)
     return resultArray
 
 def generateCoordinatesDistance(range1, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
@@ -377,7 +370,7 @@ def body_to_adapter():
             raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
     return latlng
-# Tu trzeba skopiowac elegancko
+
 def body_to_line_distance():
     try:
         adapterLatitude = request.json.get('adapterLatitude', None)
@@ -406,7 +399,6 @@ def body_to_line_distance():
         raise InternalException(json.dumps({'error': '"receiverLongitude" is required in the body.'}))
     # GENEROWANIE SIATKI PUNKTOW
     locations = generateCoordinatesDistance(rangePar, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude)
-    # print(locations)
     latlng = [];
     for l in locations:
         try:
@@ -528,8 +520,6 @@ def do_lookup_line_distance(get_locations_func):
     :return:
     """
     try:
-        # print(get_locations_func())
-        # allData = get_locations_func();
         locations = get_locations_func()['results']
         latitude = get_locations_func()['receiverLatitude']
         longitude = get_locations_func()['receiverLongitude']
@@ -546,12 +536,9 @@ def do_lookup_line_distance_all(get_locations_func):
     :return:
     """
     try:
-        # return {}
         resultArray = []
-        # print(get_locations_func())
         allData = get_locations_func();
         for data in allData:
-            # print("==== ", data.points)
             resultArray.append(fullResult({'latitude': data.coords['latitude'], 'longitude': data.coords['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data.points] ))
         finalResult = jsonpickle.encode(resultArray, unpicklable=False)
         return {'results': finalResult}
@@ -598,22 +585,6 @@ def post_lookup():
         :return:
         """
     return do_lookup(body_to_locations)
-# # Base Endpoint
-# URL_ENDPOINT_WEB = '/api/v1/lookup-web'
-
-# # For CORS
-# @route(URL_ENDPOINT_WEB, method=['OPTIONS'])
-# def cors_handler():
-#     return {}
-
-# @route(URL_ENDPOINT_NEW, method=['POST'])
-# def post_lookup_new():
-#     """
-#         GET method. Uses body_to_locations.
-#         :return:
-#         """
-#     return do_lookup(body_to_adapter)
-
 
 # Base Endpoint
 URL_ENDPOINT_NEW = '/api/v1/lookupnew'

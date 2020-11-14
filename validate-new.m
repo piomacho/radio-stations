@@ -97,15 +97,10 @@ end
             funtionFromStrReceiver = str2func(['@(x,y,z)' fNameRec]);
             ReceiversData = funtionFromStrReceiver();
 
-            % ReceiversData = get_receivers();
-            % receiver = strsplit(ReceiversData, ';');
             r1 = ReceiversData{index};
-            % printf("%s", ReceiversData)
-            % r2 =  strsplit(r1, ',');
+
             receiverLatitude = r1(:,1);
             receiverLongitude = r1(:,2);
-            % printf("%d", receiverLatitude)
-            % printf("%d", receiverLongitude)
 
             disp(['Processing ' num2str(tpccnt) '/' num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  'Tpc = ' num2str(Tpc) ' ...']);
 

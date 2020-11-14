@@ -17,7 +17,7 @@ export const ButtonWrapper = styled('div')`
 `;
 
 export const LoaderOverLay = styled('div')`
-    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.5);
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.75);
     height: 100%;
     left: 0;
     position: fixed;

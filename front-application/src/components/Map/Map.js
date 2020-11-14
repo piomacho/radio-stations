@@ -48,7 +48,6 @@ const MapWithMarker = compose(
     }
 
   useEffect(() => {
-    // console.log("======> ", +adapter.szerokosc, "- ", +adapter.dlugosc) lat1: number , lon1: number, lat2: number , lon2: number)
     console.info(
       "Odległość między punktami: ,",
       measureDistance(+trialCoords[0].latitude, +trialCoords[0].longitude, +trialCoords[1].latitude, +trialCoords[1].longitude)

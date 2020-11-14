@@ -100,3 +100,9 @@ export const DistanceDisplay = styled('p')`
     font-weight: 700;
     margin-bottom: 30px;
 `;
+
+export const ProgressBarWrapper = styled('div')`
+    width: 350px;
+    margin-left: 30px;
+    margin-top: 20px;
+`;
