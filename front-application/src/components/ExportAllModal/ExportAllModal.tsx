@@ -172,7 +172,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       resultArray.push({
         coordinates: element.points,
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-        receiver:  { latitude: +element.receiver.latitude, longitude: element.receiver.longitude }
+        receiver:  { latitude: +element.receiver.latitude, longitude: +element.receiver.longitude }
       });
     });
 
@@ -181,6 +181,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   const exportToOctave = async(data: Array<SegmentFullResultType>) => {
     const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
+
+
     const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, 20, true);
     let numberOfCalls = chunkedArray.length;
 
@@ -193,6 +195,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         postNumber: numberOfCalls
 
       });
+
+      // console.log("export octa ", chunkedArray[numberOfCalls - 1])
       //@ts-ignore
       const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, numberOfCalls);
       numberOfCalls = numberOfCalls - 1;
@@ -257,6 +261,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const getLineInfoFull = async(results: ResultCoordinateType, distance: number) => {
     let numberOfCalls = 20;
     const resultArray = [];
+    let hasMagenicVendor = results.coordinates.some( (vendor : any) => vendor.latitude === 52.09503391970407 && vendor.longitude === 21.032673362076522)
     const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
 
     while(numberOfCalls > 0){
@@ -269,6 +274,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           console.log("----> ", numberOfCalls);
           const parsedResponse = JSON.parse(awaited.results);
           resultArray.push(...parsedResponse);
+
+          let hasMagenicVendor = resultArray.some( (vendor : any) => vendor.receiver.latitude === 52.09503391970407 && vendor.receiver.longitude === 21.032673362076522)
         } catch(err) {
           console.error("getLineInfoFull() -> parsing error: ", err);
         }
@@ -365,7 +372,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         <LoaderOverLay>
           <LoaderContainer>
               <ProgressBarWrapper>
-                    <CircularProgressbar background={true} value={loaderValue/20} maxValue={1} text={`${(loaderValue/20) * 100}%`} />;
+                    <CircularProgressbar background={true} value={loaderValue/20} maxValue={1} text={`${Math.round((loaderValue/20) * 100)}%`} />;
                 </ProgressBarWrapper>
           </LoaderContainer>
         </LoaderOverLay>

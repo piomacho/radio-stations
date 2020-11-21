@@ -3,6 +3,7 @@ const xlsx = require('xlsx');
 let Jimp = require('jimp')
 const { getColorFotLegend } = require("./getColorForLegend.js");
 const { sortAndGroupResultElements } = require("./sortAndGroupResultElements.js");
+var fs = require('fs');
 
 const program = new Command();
 program.version('0.0.1');
@@ -47,9 +48,36 @@ const size = Number(program.size)
 
     pointInfo.push({'phire': phire, 'phirn': phirn, 'lb': lb, 'E': e, 'color': color})
 }
-const sortedDataMap = sortAndGroupResultElements(pointInfo);
-console.log("sort", pointInfo[2]);
+
+const pp = pointInfo.sort((p, b) => p.E - b.E );
+fs.writeFile('mynewfile3.txt', JSON.stringify(pp), function (err) {
+  if (err) throw err;
+  console.log('Saved!');
+});
+
+
+
+fs.readFile('otherCoords.json', function read(err, data) {
+  if (err) {
+      throw err;
+  }
+  // const content = JSON.parse(data);
+  const unusedArray= JSON.parse(data);
+  const formattedCordsUnused = unusedArray.map((elem) => {
+    return {phire: elem.latitude, phirn: elem.longitude, color: 0xffffffff}
+  })
+
+// console.log("formatt", formattedCordsUnused);
+const all = pointInfo;
+const l = [...new Set(all.map(item => (item.phire && item.phirn)))]
+
+const all123 = all.filter(a =>  a!== undefined)
+
+console.log("UL ", unusedArray.length, " points ", pointInfo.length, " all --- ", all.length)
+const sortedDataMap = sortAndGroupResultElements(l);
+// console.log("sort", pointInfo[2]);
 const sortedDataMapKeys = Object.keys(sortedDataMap);
+console.log("----->>> ", sortedDataMapKeys.length);
 const defaultColor = 0xFFFFFFFF;
 
 
@@ -61,13 +89,15 @@ Jimp.read(`initial.bmp`).then(image => {
       const mapKey = sortedDataMapKeys[x];
 
       if(mapKey !== undefined){
+        // console.log("sortedDataMap[mapKey][y]",sortedDataMap[mapKey][y], "----- >> ", mapKey )
+
         if(sortedDataMap[mapKey][y] !== undefined) {
-          image.setPixelColor(sortedDataMap[mapKey][y].color, x, y);
+          image.setPixelColor(sortedDataMap[mapKey][y].color ||0xFF00FF00 , x, y);
         } else {
-          image.setPixelColor(defaultColor, x, y);
+          image.setPixelColor(0xFFFFFF00, x, y);
         }
       } else {
-        image.setPixelColor(defaultColor, x, y);
+        image.setPixelColor(0xFFFFFFFF, x, y);
       }
 
 
@@ -77,6 +107,12 @@ Jimp.read(`initial.bmp`).then(image => {
     });
   })
 });
+
+});
+
+
+
+
 
 console.log("File saved !");
 return true ;

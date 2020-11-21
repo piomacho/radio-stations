@@ -31,6 +31,7 @@
     "concurrently": "^5.1.0",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
+    "deep-sort-object": "^1.0.2",
     "dotenv": "^8.2.0",
     "excel4node": "^1.7.2",
     "express": "^4.17.1",
@@ -38,6 +39,7 @@
     "google-maps": "^4.3.3",
     "http-status-codes": "^1.4.0",
     "jimp": "^0.16.1",
+    "lodash": "^4.17.20",
     "module-alias": "^2.2.2",
     "morgan": "^1.9.1",
     "object-sizeof": "^1.6.1",
@@ -48,6 +50,7 @@
     "react-router-dom": "^5.1.2",
     "read-excel-file": "^4.0.8",
     "request-stats": "^3.0.0",
+    "sort-keys": "^4.1.0",
     "winston": "^3.2.1",
     "xlsx": "^0.16.8"
   },

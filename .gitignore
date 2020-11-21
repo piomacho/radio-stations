@@ -18,6 +18,7 @@ npm-debug.log
 /src
 *.gz
 *.xlsx#
+/validation_results
 
 # testing
 /front-application/coverage

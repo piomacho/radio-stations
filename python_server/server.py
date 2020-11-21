@@ -267,6 +267,10 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
 
         brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receivers[i]['longitude']), degrees_to_radians(receivers[i]['latitude']))
         range1 = measureDistance(adapterLatitude, adapterLongitude, receivers[i]['latitude'], receivers[i]['longitude'])
+        #    latitude === 52.09503391970407 && vendor.receiver.longitude === 21.032673362076522
+        if(receivers[i]['latitude'] == 52.09503391970407 and receivers[i]['longitude'] == 21.032673362076522):
+            print("--------------------", measureDistance(adapterLatitude, adapterLongitude, receivers[i]['latitude'], receivers[i]['longitude']))
+
         numberOfPoints = float(range1)/float(distance)
         for x in range(int(numberOfPoints)):
             d = (float(range1)/int(numberOfPoints)) * x

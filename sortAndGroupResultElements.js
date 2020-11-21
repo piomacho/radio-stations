@@ -6,7 +6,7 @@ const sortAndGroupResultElements = (results) => {
            }
            return a.phire > b.phire ? -1 : 1;
         }).reduce((r, a) => {
-            r[a.phire] = [...r[a.phire] || [], a];
+            r[a.phire] = [...r[a.phire] || [], a !== undefined && a];
             return r;
            }, {});
 }

@@ -11,7 +11,7 @@ import { GMapsSpan, OESpan } from "./Map.style";
 import store from "../../Store/Store";
 import { callApiFetch } from "../../common/global";
 import { measureDistance } from "../../common/global";
-import Keys from "../../keys"
+import Keys from "../../keys";
 
 const MapWithMarker = compose(
   withScriptjs,
@@ -22,7 +22,7 @@ const MapWithMarker = compose(
   const [loading, setLoading] = useState(false);
   const [gMapsElevation, setGMapsElevation] = useGlobalState("gmapsCoordinates");
   const [trialCoords] = useGlobalState("trialCoords");
-  const [elevationResults] = useGlobalState("elevationResults");
+  const [setElevationResults, elevationResults] = useGlobalState("elevationResults");
   const image =
     "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
 
@@ -47,6 +47,7 @@ const MapWithMarker = compose(
       return str;
     }
 
+
   useEffect(() => {
     console.info(
       "Odległość między punktami: ,",
@@ -69,6 +70,8 @@ const MapWithMarker = compose(
         icon={icon}
         position={{ lat: +adapter.szerokosc, lng: +adapter.dlugosc }}
       />
+
+
       {elevationResults.map((marker, iterator) => {
         const onClick = props.onClick.bind(this, marker);
         return (

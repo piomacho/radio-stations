@@ -5,13 +5,10 @@ const { spawn, execFile } = require("child_process");
 
 const fs = require('fs');
 const xl = require('excel4node');
-
-// Create a new instance of a Workbook class
 const wb = new xl.Workbook();
 
 const ws = wb.addWorksheet('Sheet 1');
 
-// global.myNumber;
 
 export interface CoordinatesType {
     latitude: number;
@@ -143,15 +140,29 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
 
         globalStorage.push(...coordinatesArray);
-
+        let hasMagenicVendor =  globalStorage.find( (vendor : any) => vendor.receiver.latitude === 52.09503391970407 && vendor.receiver.longitude === 21.032673362076522)
+        console.log("________ send-all1 11 ", hasMagenicVendor, " ob ");
 
         //----------------------------------------------
         if(+numberOfPost === 1) {
 
+            // const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length >= 10);
             const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length > 10);
+            const notInlcudedCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length <= 10);
+            const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
+
+            const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);
+
+            // write JSON string to a file
+            fs.writeFile('otherCoords.json', notInlcudedCoordintesReceivers, (err:string) => {
+                if (err) {
+                    throw err;
+                }
+                console.log("JSON data is saved.");
+            });
             globalStorage = [];
 
-            console.log("filter -- ", filteredCoordintesArray.length);
+
 
             const chunkedFilterArray = chunkArray(filteredCoordintesArray, 4, true);
 
@@ -210,7 +221,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`;
                         segment += '\n';
                     } else if(iterator === 0) {
-                        segment += `${c.distance} ${c.elevation} 4;\n`;
+                        segment += `0 ${c.elevation} 4;\n`;
                     } else {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`
                     }
@@ -227,7 +238,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`;
                         segment += '\n';
                     } else if(iterator === 0) {
-                        segment += `${c.distance} ${c.elevation} 4;\n`;
+                        segment += `0 ${c.elevation} 4;\n`;
                     } else {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`
                     }
@@ -244,7 +255,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`;
                         segment += '\n';
                     } else if(iterator === 0) {
-                        segment += `${c.distance} ${c.elevation} 4;\n`;
+                        segment += `0 ${c.elevation} 4;\n`;
                     } else {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`
                     }
@@ -261,7 +272,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`;
                         segment += '\n';
                     } else if(iterator === 0) {
-                        segment += `${c.distance} ${c.elevation} 4;\n`;
+                        segment += `0 ${c.elevation} 4;\n`;
                     } else {
                         segment += `\t    ${c.distance} ${c.elevation} 4;`
                     }
