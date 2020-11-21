@@ -19,7 +19,7 @@ program.parse(process.argv);
 
 const allDataArray = [];
 
-for (i = 1; i <= 4; i++) {
+for (i = 0; i < 4; i++) {
   const workbook = xlsx.readFile(`./validation_results/${program.xlxName}${i}.xlsx`);
   const worksheet = workbook.Sheets['Page1'];
   const xlData = xlsx.utils.sheet_to_json(worksheet);
@@ -76,6 +76,7 @@ const all123 = all.filter(a =>  a!== undefined)
 console.log("UL ", unusedArray.length, " points ", pointInfo.length, " all --- ", all.length)
 const sortedDataMap = sortAndGroupResultElements(l);
 // console.log("sort", pointInfo[2]);
+// const sortedDataMap = sortAndGroupResultElements(pointInfo);
 const sortedDataMapKeys = Object.keys(sortedDataMap);
 console.log("----->>> ", sortedDataMapKeys.length);
 const defaultColor = 0xFFFFFFFF;
