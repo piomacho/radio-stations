@@ -9,7 +9,7 @@
     "client": "cd front-application && npm start",
     "python-server": "cd python_server && python server.py",
     "start:all": "concurrently --kill-others-on-fail \"npm run python-server\" nodemon --config nodemon.json \"npm run client\"",
-    "start:partial": "concurrently --kill-others-on-fail nodemon --config nodemon.json \"npm run client\"",
+    "start:partial": "concurrently --kill-others-on-fail \"kill-port --port 5000\" nodemon --config nodemon.json \"npm run client\"",
     "test": "nodemon --config nodemon.test.json"
   },
   "_moduleAliases": {
@@ -39,6 +39,7 @@
     "google-maps": "^4.3.3",
     "http-status-codes": "^1.4.0",
     "jimp": "^0.16.1",
+    "kill-port": "^1.6.1",
     "lodash": "^4.17.20",
     "module-alias": "^2.2.2",
     "morgan": "^1.9.1",
@@ -51,6 +52,7 @@
     "read-excel-file": "^4.0.8",
     "request-stats": "^3.0.0",
     "sort-keys": "^4.1.0",
+    "sort-object-keys": "^1.1.3",
     "winston": "^3.2.1",
     "xlsx": "^0.16.8"
   },

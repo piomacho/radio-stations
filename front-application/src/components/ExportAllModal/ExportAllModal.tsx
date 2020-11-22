@@ -192,8 +192,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         fileName: fileName,
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
         data: chunkedArray[numberOfCalls - 1],
-        postNumber: numberOfCalls
-
+        postNumber: numberOfCalls,
       });
 
       // console.log("export octa ", chunkedArray[numberOfCalls - 1])

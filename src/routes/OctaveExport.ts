@@ -140,6 +140,28 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string)
 }
 
 
+const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, j: number, height: number,  frequencyStr: string) => {
+
+    const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${j}`, height, frequencyStr, j]);
+
+    ls1.stdout.on("data", (data: string) => {
+        console.log(data);
+    });
+
+    ls1.stderr.on("data", (data: string) => {
+        console.log(`stderr: ${data}`);
+    });
+
+    ls1.on('error', (error: { message: string }) => {
+        console.log(`error: ${error.message}`);
+    });
+
+    ls1.on("close", (code: string) => {
+        console.log(`child process exited with code ${code}`);
+    })
+}
+
+
 router.post('/send-all/', async (req: Request, res: Response) => {
     try {
         const coordinatesArray = req.body.data;
@@ -164,37 +186,64 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         }
 
         globalStorage.push(...coordinatesArray);
-        // console.log("numb", numberOfPost);
 
         //----------------------------------------------
         if(+numberOfPost === 1) {
+            const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length > 5);
 
-            // const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length >= 10);
-            const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length > 10);
-            const notInlcudedCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length <= 10);
+            const notInlcudedCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length <= 5);
+            notInlcudedCoordintesArray.push({
+                coordinates: [],
+                receiver: {
+                  longitude: adapterLon,
+                  latitude: adapterLat
+                }
+            })
+
+            const allReceivers = filteredCoordintesArray.map(e => e.receiver);
             const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
+
+
+            const allReceivers1 =  allReceivers.sort((a, b) => {
+                if (a.latitude === b.latitude) {
+                   // Price is only important when cities are the same
+                   return b.longitude - a.longitude;
+                }
+                return a.latitude > b.latitude ? -1 : 1;
+             })
+
+
+             const allReceivers2 =  allReceivers1.map((a) => {
+                return { latitude: parseFloat((+a.latitude).toFixed(13)), longitude: parseFloat((+a.longitude).toFixed(13))}
+             })
 
             const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);
 
-            // write JSON string to a file
             fs.writeFile('otherCoords.json', notInlcudedCoordintesReceivers, (err:string) => {
                 if (err) {
                     throw err;
                 }
                 console.log("JSON data is saved.");
             });
-            globalStorage = [];
+            fs.writeFile('allValidCords.json', JSON.stringify(allReceivers2), (err:string) => {
+                if (err) {
+                    throw err;
+                }
+                globalStorage = [];
+
+                console.log("JSON data all is saved.");
+            });
             const chunkedFilterArray = chunkArray(filteredCoordintesArray, ITERATIONS, true);
 
             for (let i = 0; i < ITERATIONS; i++) {
                 let receivers123= ' ';
                 chunkedFilterArray[i] && chunkedFilterArray[i].map((c: SegmentResultType) => {
-                    receiversArray.push(receivers123);
+                    // receiversArray.push(receivers123);
                     receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
                     receivers123 += '\n';
 
                     if(receivers123 !== '' && receivers123 !== '\n') {
-                        receiversArray[i] += receivers123;
+                        receiversArray[i] = receivers123;
 
                     }
                 });
@@ -254,24 +303,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                     Promise.all(writeToReceiversPromises).then(result => {
 
                         for (let j = 0; j < ITERATIONS; j++) {
-
-                            const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${j}`, height, frequencyStr, j]);
-
-                            ls1.stdout.on("data", (data: string) => {
-                                console.log(data);
-                            });
-
-                            ls1.stderr.on("data", (data: string) => {
-                                console.log(`stderr: ${data}`);
-                            });
-
-                            ls1.on('error', (error: { message: string }) => {
-                                console.log(`error: ${error.message}`);
-                            });
-
-                            ls1.on("close", (code: string) => {
-                                console.log(`child process exited with code ${code}`);
-                            })
+                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, j, height, frequencyStr);
                         }
                     });
                 });

@@ -2,8 +2,9 @@ const { Command } = require('commander');
 const xlsx = require('xlsx');
 let Jimp = require('jimp')
 const { getColorFotLegend } = require("./getColorForLegend.js");
-const { sortAndGroupResultElements } = require("./sortAndGroupResultElements.js");
+const { sortAndGroupResultElements, sortAndGroupResultElementsNew } = require("./sortAndGroupResultElements.js");
 var fs = require('fs');
+const sortObject = require('sort-object-keys');
 
 const program = new Command();
 program.version('0.0.1');
@@ -26,19 +27,12 @@ for (i = 0; i < 4; i++) {
   allDataArray.push(...xlData)
 }
 
-// Jimp.read(`initial.bmp`).then(image => {
-//   image.resize(+size, +size, () => {
-//     image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
-//         image.setPixelColor(defaultColor, x, y);
-//     });
-//   })
-// });
+console.log("DA ", allDataArray.length)
 
 const pointInfo = [];
 const size = Number(program.size)
 // E [dBuV/m] = Ptx [dBm] - Lb [dB] + 107
 
-// var xlData = xlsx.utils.sheet_to_json(worksheet);
  for (let i = 0; i < allDataArray.length; i++) {
     const phire = allDataArray[i].Phire;
     const phirn = allDataArray[i].Phirn;
@@ -46,14 +40,20 @@ const size = Number(program.size)
     const e = 60 - lb  + 107
     const color = getColorFotLegend(e);
 
-    pointInfo.push({'phire': phire, 'phirn': phirn, 'lb': lb, 'E': e, 'color': color})
+    // pointInfo.push({'phire': parseFloat((+phire).toFixed(13)), 'phirn': parseFloat((+phirn).toFixed(13)), 'lb': lb, 'E': e, 'color': color})
+    pointInfo.push({'phire': +phire, 'phirn': +phirn, 'color': color})
+    // pointInfo.push({'latitude': +phire, 'longitude': +phirn});
 }
 
-const pp = pointInfo.sort((p, b) => p.E - b.E );
-fs.writeFile('mynewfile3.txt', JSON.stringify(pp), function (err) {
-  if (err) throw err;
-  console.log('Saved!');
-});
+fs.readFile('allValidCords.json', function read(err, data) {
+  if (err) {
+      throw err;
+  }
+  const allCordsArray= JSON.parse(data);
+
+  const formattedCordsAll = allCordsArray.map((elem) => {
+    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13))}
+  })
 
 
 
@@ -61,56 +61,41 @@ fs.readFile('otherCoords.json', function read(err, data) {
   if (err) {
       throw err;
   }
-  // const content = JSON.parse(data);
   const unusedArray= JSON.parse(data);
   const formattedCordsUnused = unusedArray.map((elem) => {
-    return {phire: elem.latitude, phirn: elem.longitude, color: 0xffffffff}
+    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13)), color: 0xffffffff}
   })
 
-// console.log("formatt", formattedCordsUnused);
-const all = pointInfo;
-const l = [...new Set(all.map(item => (item.phire && item.phirn)))]
-
-const all123 = all.filter(a =>  a!== undefined)
-
-console.log("UL ", unusedArray.length, " points ", pointInfo.length, " all --- ", all.length)
-const sortedDataMap = sortAndGroupResultElements(l);
-// console.log("sort", pointInfo[2]);
-// const sortedDataMap = sortAndGroupResultElements(pointInfo);
+const dupa = [...pointInfo, ...formattedCordsUnused]
+fs.writeFile('mynewfile3.json', JSON.stringify(dupa), function (err) {
+  if (err) throw err;
+  console.log('Saved!');
+});
+const sortedDataMap = sortAndGroupResultElements(dupa);
 const sortedDataMapKeys = Object.keys(sortedDataMap);
-console.log("----->>> ", sortedDataMapKeys.length);
-const defaultColor = 0xFFFFFFFF;
-
-
 
 Jimp.read(`initial.bmp`).then(image => {
   image.resize(+size, +size, () => {
-    image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
-      // do your stuff..
-      const mapKey = sortedDataMapKeys[x];
-
-      if(mapKey !== undefined){
-        // console.log("sortedDataMap[mapKey][y]",sortedDataMap[mapKey][y], "----- >> ", mapKey )
-
-        if(sortedDataMap[mapKey][y] !== undefined) {
-          image.setPixelColor(sortedDataMap[mapKey][y].color ||0xFF00FF00 , x, y);
-        } else {
-          image.setPixelColor(0xFFFFFF00, x, y);
+    sortedDataMapKeys.map((elementFromAll, index) => {
+      const mapKey = elementFromAll;
+        for(let ii = 0; ii < +size; ii++){
+          if(sortedDataMap[mapKey][ii] === undefined){
+            console.log("myk -> ",sortedDataMap[mapKey][ii], " =-=- > ", mapKey)
+          }
+          image.setPixelColor(sortedDataMap[mapKey][ii] ? sortedDataMap[mapKey][ii].color : 0xff0000ff, ii, index);
         }
-      } else {
-        image.setPixelColor(0xFFFFFFFF, x, y);
-      }
-
-
-    if (x == image.bitmap.width - 1 && y == image.bitmap.height - 1) {
+        console.log(index)
+    if (index == sortedDataMapKeys.length - 1) {
+      console.log("all is saved now !")
       image.write(`${program.fileName}.bmp`);
     }
     });
   })
-});
 
 });
 
+});
+});
 
 
 
