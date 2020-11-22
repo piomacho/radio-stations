@@ -23,6 +23,10 @@ export const InputWrapper = styled("div")`
     flex-direction: column;
 `;
 
+export const TemplateWrapper = styled('div')`
+    
+`;
+
 export const Input = styled("input")`
     display: block;
     width: 30%;

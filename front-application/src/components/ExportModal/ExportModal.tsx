@@ -15,11 +15,13 @@ import {
   Coord,
   AdaptersHeader,
   ExportInputWrapper,
-  DistanceDisplay
+  DistanceDisplay,
+  TemplateWrapper
 } from "./ExportModal.style";
 import { ButtonWrapper } from "../Button/Button.styles";
 import { callApiFetch, lineFromPoints, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
+import {LocationPickerExample} from "./LocationPicker";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -182,48 +184,53 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       style={ customStyles }
     >
       <FloppyIcon />
-      <InputWrapper>
-        <AdapterCoordsWrapper>
-          <AdaptersHeader>Transmitter locations:</AdaptersHeader>
-            <Coord>Longitude: {(+adapter.dlugosc).toFixed(2)} </Coord>
-            <Coord>Latitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
-        </AdapterCoordsWrapper>
-        <AdapterCoordsWrapper>
-          <AdaptersHeader>Input coordinates:</AdaptersHeader>
-            <Coord><Input onChange={handleChangeY} placeholder="Receiver longitude: " /></Coord>
-            <Coord><Input onChange={handleChangeX} placeholder="Receiver latitude: " /></Coord>
-            <Coord><Input onChange={handleChangePoints} placeholder="Number of points: " /></Coord>
-        </AdapterCoordsWrapper>
-        <ExportInputWrapper>
-          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
-          <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
-          <InputContainer>
-            <Input onChange={handleChange} placeholder="Enter file name:" />
-            <TypeSpan>.xlsx</TypeSpan>
-            <ExportWrapper>
-            <Button
-              onClick={allowedSubmit ? handleExportClick : null}
-              label={"Export"}
-              backColor={"#7bed9f"}
-              backColorHover={"#2ed573"}
-              disabled={!allowedSubmit}
-            />
-          </ExportWrapper>
-          </InputContainer>
+      <TemplateWrapper>
+        <LocationPickerExample />
+        <InputWrapper>
+          <AdapterCoordsWrapper>
+            <AdaptersHeader>Transmitter locations:</AdaptersHeader>
+              <Coord>Longitude: {(+adapter.dlugosc).toFixed(2)} </Coord>
+              <Coord>Latitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
+          </AdapterCoordsWrapper>
+          <AdapterCoordsWrapper>
+            <AdaptersHeader>Input coordinates:</AdaptersHeader>
+              <Coord><Input onChange={handleChangeY} placeholder="Receiver longitude: " /></Coord>
+              <Coord><Input onChange={handleChangeX} placeholder="Receiver latitude: " /></Coord>
+              <Coord><Input onChange={handleChangePoints} placeholder="Number of points: " /></Coord>
+          </AdapterCoordsWrapper>
+          <ExportInputWrapper>
+            <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
+            <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
+            <InputContainer>
+              <Input onChange={handleChange} placeholder="Enter file name:" />
+              <TypeSpan>.xlsx</TypeSpan>
+              <ExportWrapper>
+              <Button
+                onClick={allowedSubmit ? handleExportClick : null}
+                label={"Export"}
+                backColor={"#7bed9f"}
+                backColorHover={"#2ed573"}
+                disabled={!allowedSubmit}
+              />
+            </ExportWrapper>
+            </InputContainer>
 
-        </ExportInputWrapper>
-      </InputWrapper>
-      {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
-        <Message key={idx} error={true}>{error}</Message>
-      ))}
-      {successMessage && <Message>{successMessage}</Message>}
-      <ButtonWrapper>
-        <Button
-          onClick={showModal(false, "export", false)}
-          label={"Close"}
-          backColorHover={"#ff7979"}
-        />
-      </ButtonWrapper>
+          </ExportInputWrapper>
+        </InputWrapper>
+
+        {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
+          <Message key={idx} error={true}>{error}</Message>
+        ))}
+        {successMessage && <Message>{successMessage}</Message>}
+        <ButtonWrapper>
+          <Button
+            onClick={showModal(false, "export", false)}
+            label={"Close"}
+            backColorHover={"#ff7979"}
+          />
+        </ButtonWrapper>
+      </TemplateWrapper>
+
     </Modal>
   );
 };

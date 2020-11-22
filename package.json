@@ -21,6 +21,7 @@
   "dependencies": {
     "@types/cors": "^2.8.6",
     "@types/geopoint": "^1.0.1",
+    "@types/google-map-react": "^2.1.0",
     "@types/react-router-dom": "^5.1.3",
     "bmp-js": "^0.1.0",
     "body-parser": "^1.19.0",
@@ -36,6 +37,7 @@
     "excel4node": "^1.7.2",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
+    "google-map-react": "^2.1.9",
     "google-maps": "^4.3.3",
     "http-status-codes": "^1.4.0",
     "jimp": "^0.16.1",
