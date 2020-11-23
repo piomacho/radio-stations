@@ -1,10 +1,9 @@
 import React, { useState, ChangeEvent } from "react";
 import Modal from "react-modal";
-import store, { CoordinatesType } from "../../Store/Store";
+import store from "../../Store/Store";
 
 import Button from "../Button/Button";
 import {
-  FloppyIcon,
   InputWrapper,
   TypeSpan,
   Input,
@@ -15,13 +14,15 @@ import {
   Coord,
   AdaptersHeader,
   ExportInputWrapper,
-  DistanceDisplay,
-  TemplateWrapper
+  TemplateWrapper,
+  Title,
+  TitleSpan,
+  ValueSpan,
+  CloseButton
 } from "./ExportModal.style";
-import { ButtonWrapper } from "../Button/Button.styles";
-import { callApiFetch, lineFromPoints, measureDistance } from "../../common/global";
+import { callApiFetch, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
-import {LocationPickerExample} from "./LocationPicker";
+import {LocationPickerComponent} from "./LocationPicker";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -49,7 +50,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [fileName, setFileName] = useState("");
   const [recLongitude, setRecLongitude] = useState("");
   const [recLatitude, setRecLatitude] = useState("");
-  const [points, setPoints] = useState("");
+  const [distance, setDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
@@ -69,42 +70,17 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     }
   };
 
-  const handleChangeX = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setError({...error, xError: null});
-    const rg = /^[+-]?\d+(\.\d+)?$/; // forbidden file names
-    const isAllowed = rg.test(value);
-    // setAllowedName(isAllowed);
-    if (!isAllowed) {
-      setError({...error, xError: "Latitude is not allowed !"});
-    }
-
-    setRecLatitude(value);
-  }
-
-  const handleChangePoints = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeDistance = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setError({...error, pointsError: null});
-    const rg = /^[0-9]+$/;
-    const isAllowed = rg.test(value);
-    if (!isAllowed) {
-      setError({...error, pointsError: "Points quantity is invalid !"});
-    }
-
-    setPoints(value);
-
-  }
-
-  const handleChangeY = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setError({...error, yError: null});
     const rg = /^[+-]?\d+(\.\d+)?$/;
     const isAllowed = rg.test(value);
     if (!isAllowed) {
-      setError({...error, yError: "Longitude is not allowed !"});
+      setError({...error, pointsError: "Niepoprawna odległość między punktami!"});
     }
 
-    setRecLongitude(value);
+    setDistance(value);
+
   }
 
   const handleExportClick = () => {
@@ -114,7 +90,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         adapterLongitude: +adapterY,
         adapterLatitude: +adapterX,
         range: measureDistance( adapterX, adapterY, +recLatitude, +recLongitude).toFixed(2),
-        numberOfPoints: points,
+        distance: distance,
         receiverLongitude: +recLongitude,
         receiverLatitude: +recLatitude
       })
@@ -129,26 +105,9 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExport = (results: any) => {
-    const bodyObject =  JSON.stringify( {
-      fileName: fileName,
-      data:
-        [
-          {
-            coordinates: results.results,
-            adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-            receiver: { latitude: +recLatitude, longitude: +recLongitude }
-          },
-          {
-            coordinates: results.results,
-            adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-            receiver: { latitude: +recLatitude, longitude: +recLongitude }
-          }
-        ]
-    });
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      // body: bodyObject
       body: JSON.stringify({
         coordinates: results.results,
         fileName: fileName,
@@ -156,13 +115,12 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         receiver: { latitude: +recLatitude, longitude: +recLongitude }
       })
     };
-    if (true) {
-      callApiFetch(`api/export-octave/send`, requestOptions)
-        .then(() => {
-          setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
-        })
-        .catch(err => setError(err));
-    }
+
+    callApiFetch(`api/export-octave/send`, requestOptions)
+      .then(() => {
+        setSuccessMessage("Zapisano plik! Trwa proces w Octave ... ");
+      })
+      .catch(err => setError(err));
   };
 
   const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0;
@@ -171,7 +129,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   const customStyles = {
     content : {
-      backgroundColor: '#FBE9EB',
+      backgroundColor: '#dfdce3',
     }
   };
 
@@ -183,33 +141,47 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       contentLabel="Export Modal"
       style={ customStyles }
     >
-      <FloppyIcon />
+      <CloseButton onClick={showModal(false, "export", false)}><span>&#10006;</span></CloseButton>
+      <Title>Wybierz punkt na mapie: </Title>
       <TemplateWrapper>
-        <LocationPickerExample />
+        <LocationPickerComponent
+          handleChangeX={setRecLongitude}
+          handleChangeY={setRecLatitude}
+          recLongitude={recLongitude}
+          recLatitude={recLatitude}
+
+        />
         <InputWrapper>
           <AdapterCoordsWrapper>
-            <AdaptersHeader>Transmitter locations:</AdaptersHeader>
-              <Coord>Longitude: {(+adapter.dlugosc).toFixed(2)} </Coord>
-              <Coord>Latitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
+            <AdaptersHeader>Współrzędne nadajnika:</AdaptersHeader>
+              <TitleSpan>Długość: <ValueSpan>{(+adapter.dlugosc).toFixed(2)}</ValueSpan></TitleSpan>
+              <TitleSpan>Szerokość:  <ValueSpan>{(+adapter.szerokosc).toFixed(2)}</ValueSpan></TitleSpan>
           </AdapterCoordsWrapper>
           <AdapterCoordsWrapper>
-            <AdaptersHeader>Input coordinates:</AdaptersHeader>
-              <Coord><Input onChange={handleChangeY} placeholder="Receiver longitude: " /></Coord>
-              <Coord><Input onChange={handleChangeX} placeholder="Receiver latitude: " /></Coord>
-              <Coord><Input onChange={handleChangePoints} placeholder="Number of points: " /></Coord>
+            <AdaptersHeader>Współrzędne odbiornika:</AdaptersHeader>
+              <TitleSpan>Długość: <ValueSpan>{(+recLongitude).toFixed(2)}</ValueSpan> </TitleSpan>
+              <TitleSpan>Szerokość: <ValueSpan>{ (+recLatitude).toFixed(2)}</ValueSpan></TitleSpan>
+          </AdapterCoordsWrapper>
+          {recLongitude !== "" && recLatitude !== "" &&
+                <AdapterCoordsWrapper>
+                  <AdaptersHeader>Odległość [km]: <ValueSpan>{` ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</ValueSpan></AdaptersHeader>
+                </AdapterCoordsWrapper>}
+          <AdapterCoordsWrapper>
+            <AdaptersHeader>Odległość między punktami [km]:</AdaptersHeader>
+              <Coord><Input onChange={handleChangeDistance} placeholder="Odległość: " /></Coord>
           </AdapterCoordsWrapper>
           <ExportInputWrapper>
-            <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" &&  `Distance: ${measureDistance( adapterX, adapterY, +recLatitude, +recLongitude,).toFixed(2)} km`}</DistanceDisplay>
-            <DistanceDisplay>{ recLongitude !== "" && recLatitude !== "" && points !== '' && `Unit distance: ${(measureDistance(adapterX, adapterY, +recLatitude, +recLongitude,)/+points).toFixed(2)} km`}</DistanceDisplay>
             <InputContainer>
-              <Input onChange={handleChange} placeholder="Enter file name:" />
+              <Input onChange={handleChange} placeholder="Wpisz nazwę pliku:" />
               <TypeSpan>.xlsx</TypeSpan>
               <ExportWrapper>
               <Button
                 onClick={allowedSubmit ? handleExportClick : null}
-                label={"Export"}
-                backColor={"#7bed9f"}
-                backColorHover={"#2ed573"}
+                label={"Exportuj"}
+                backColor={"#0f1626"}
+                backColorHover={"#f5f5f5"}
+                color={"#f5f5f5"}
+                colorHover={"#0f1626"}
                 disabled={!allowedSubmit}
               />
             </ExportWrapper>
@@ -222,13 +194,6 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           <Message key={idx} error={true}>{error}</Message>
         ))}
         {successMessage && <Message>{successMessage}</Message>}
-        <ButtonWrapper>
-          <Button
-            onClick={showModal(false, "export", false)}
-            label={"Close"}
-            backColorHover={"#ff7979"}
-          />
-        </ButtonWrapper>
       </TemplateWrapper>
 
     </Modal>

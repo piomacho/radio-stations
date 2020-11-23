@@ -1,30 +1,53 @@
 import styled from "styled-components";
-import Floppy from "./floppy.svg";
+import Trasmitter from './transmitter.svg';
+import Adapter from './transmitter-tower.svg';
 
 interface ExportModalType {
     error?: boolean;
 }
 
-export const FloppyIcon = styled('div')`
-    background-color: #FBE9EB;
-    background-image: url(${Floppy});
+export const TransmitterIcon = styled('div')`
+    background-image: url(${Trasmitter});
     background-position: center;
     background-repeat: no-repeat;
     background-size: auto auto;
-    padding: 0 10px;
+    padding: 0 20px;
+    height: 50px;
+`;
+
+export const AdapterIcon = styled('div')`
+    background-image: url(${Adapter});
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: auto auto;
+    padding: 0 20px;
     height: 50px;
 `;
 
 export const InputWrapper = styled("div")`
     display: flex;
     justify-content: center;
-    align-items: center;
     padding-top: 25px;
     flex-direction: column;
 `;
 
-export const TemplateWrapper = styled('div')`
-    
+export const TemplateWrapper = styled('div')``;
+
+export const CloseButton = styled('div')`
+    float: right;
+    font-size: 25px;
+    display: inline-block;
+    color: #985e6d;
+    cursor: pointer;
+
+    &:hover {
+        color: #2d1c20;
+    }
+`;
+
+export const Title = styled('div')`
+    font-size: 20px;
+    padding: 10px 0;
 `;
 
 export const Input = styled("input")`
@@ -57,7 +80,6 @@ export const TypeSpan = styled("span")`
 export const InputContainer = styled('div')`
     display: flex;
     height: 45px;
-    /* margin-right: 20px; */
     align-items: center;
 `;
 
@@ -73,30 +95,38 @@ export const Message = styled('p')<ExportModalType>`
 
 export const AdapterCoordsWrapper = styled('div')`
     display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    align-items: center;
+
 
 `;
 export const Coord = styled('div')`
     font-weight: 700;
-    color: #2980b9;
+    color: #0f1626;
     text-align: center;
+    padding-left: 10px;
 `;
 
 export const AdaptersHeader = styled('div')`
     font-weight: 700;
-    color: #2c3e50;
+    color: #07889b;
     font-size: 20px;
     margin-bottom: 10px;
 `;
+export const TitleSpan = styled('span')`
+    color: #ff533d;
+    padding-bottom: 8px;
+    font-weight: 700;
+    padding-left: 10px;
+`;
+
+export const ValueSpan = styled('span')`
+    color: #0f1626;
+    font-size: initial;
+`
 
 export const ExportInputWrapper = styled('div')`
     display: flex;
     align-items: center;
     flex-direction: column;
-`;
-
-export const DistanceDisplay = styled('p')`
-    font-weight: 700;
-    margin-bottom: 30px;
 `;

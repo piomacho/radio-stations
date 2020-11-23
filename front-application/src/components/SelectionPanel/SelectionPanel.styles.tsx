@@ -47,8 +47,8 @@ export const SubmitPlotButton = ({ callback }: any) => (
     <Button
       width={180}
       height={50}
-      backColor={"#686de0"}
-      backColorHover={"#30336b"}
+      backColor={"#494e6b"}
+      backColorHover={"#1d1f2a"}
       label={"Create plot"}
       onClick={callback}
     />
@@ -69,8 +69,8 @@ export const SubmitPlotButton = ({ callback }: any) => (
     <Button
       width={180}
       height={50}
-      backColor={"#ff7675"}
-      backColorHover={"#d63031"}
+      backColor={"#98878f"}
+      backColorHover={"#2d282a"}
       label={"Calculate one point"}
       onClick={callback}
     />
@@ -80,8 +80,8 @@ export const SubmitPlotButton = ({ callback }: any) => (
     <Button
       width={180}
       height={50}
-      backColor={"#000f18"}
-      backColorHover={"#005482"}
+      backColor={"#985e6d"}
+      backColorHover={"#2d1c20"}
       label={"Get full calculation"}
       onClick={callback}
     />

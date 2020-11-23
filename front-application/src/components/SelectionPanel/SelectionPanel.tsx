@@ -126,9 +126,9 @@ const SelectionPanel = () => {
           <ButtonWrapper>
             <SubmitPlotMemoButton callback={showModal(true, "plot", true)} />
           </ButtonWrapper>
-          <ButtonWrapper>
+          {/* <ButtonWrapper>
             <SubmitMapsButton callback={showModal(true, "maps", true)} />
-          </ButtonWrapper>
+          </ButtonWrapper> */}
           <ButtonWrapper>
             <SendToOctaveButton callback={showModal(true, "export", false)} />
           </ButtonWrapper>

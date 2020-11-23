@@ -1,8 +1,15 @@
 import styled from "styled-components";
-
+import Bg from './img/bg.jpg';
 
 export const AppWrapper = styled('div')`
     padding: 20px;
     height: 100vh;
-    background-color: #e4eef6;
+    position: relative;
+    background: linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ),  url(${Bg});
+    object-fit: cover;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+
+
 `;

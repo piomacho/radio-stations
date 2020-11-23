@@ -225,12 +225,12 @@ def calculateBearing(adapterLongitude, adapterLatitude, receiverLongitude, recei
 
     return B
 
-def generateCoordinatesNew(range1, numberOfPoints, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
+def generateCoordinatesNew(range1, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
     cArray = []
     brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receiverLongitude), degrees_to_radians(receiverLatitude))
-
+    numberOfPoints = float(range1)/float(distance)
     for x in range(int(numberOfPoints)):
-        d = (float(range1)/int(numberOfPoints)) * x
+        d = float(distance) * x
 
         R = 6378.1 #Radius of the Earth
 
@@ -267,9 +267,6 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
 
         brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receivers[i]['longitude']), degrees_to_radians(receivers[i]['latitude']))
         range1 = measureDistance(adapterLatitude, adapterLongitude, receivers[i]['latitude'], receivers[i]['longitude'])
-        #    latitude === 52.09503391970407 && vendor.receiver.longitude === 21.032673362076522
-        if(receivers[i]['latitude'] == 52.09503391970407 and receivers[i]['longitude'] == 21.032673362076522):
-            print("--------------------", measureDistance(adapterLatitude, adapterLongitude, receivers[i]['latitude'], receivers[i]['longitude']))
 
         numberOfPoints = float(range1)/float(distance)
         for x in range(int(numberOfPoints)):
@@ -298,7 +295,7 @@ def generateCoordinatesDistance(range1, distance, adapterLongitude, adapterLatit
     cArray = []
     brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receiverLongitude), degrees_to_radians(receiverLatitude))
 
-    numberOfPoints = float(range1)/int(distance);
+    numberOfPoints = float(range1)/float(distance);
 
     for x in range(int(numberOfPoints)):
         d = (float(range1)/int(numberOfPoints)) * x
@@ -452,7 +449,7 @@ def body_to_line():
     try:
         adapterLatitude = request.json.get('adapterLatitude', None)
         adapterLongitude = request.json.get('adapterLongitude', None)
-        numberOfPoints = request.json.get('numberOfPoints', None)
+        distance = request.json.get('distance', None)
         adapterLatitude = request.json.get('adapterLatitude', None)
         receiverLatitude = request.json.get('receiverLatitude', None)
         receiverLongitude = request.json.get('receiverLongitude', None)
@@ -467,14 +464,14 @@ def body_to_line():
         raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
     if not rangePar:
         raise InternalException(json.dumps({'error': '"range" is required in the body.'}))
-    if not numberOfPoints:
-        raise InternalException(json.dumps({'error': '"numberOfPoints" is required in the body.'}))
+    if not distance:
+        raise InternalException(json.dumps({'error': '"distance" is required in the body.'}))
     if not receiverLatitude:
         raise InternalException(json.dumps({'error': '"receiverLatitude" is required in the body.'}))
     if not receiverLongitude:
         raise InternalException(json.dumps({'error': '"receiverLongitude" is required in the body.'}))
 
-    locations = generateCoordinatesNew(rangePar, numberOfPoints, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude)
+    locations = generateCoordinatesNew(rangePar, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude)
     latlng = [];
     for l in locations:
         try:

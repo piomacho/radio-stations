@@ -244,14 +244,14 @@ class OpenElevationRestClient extends React.Component {
         if (parameters['adapterLatitude'] !== undefined &&
             parameters['adapterLongitude'] !== undefined &&
             parameters['range'] !== undefined &&
-            parameters['numberOfPoints'] !== undefined &&
+            parameters['distance'] !== undefined &&
             parameters['receiverLatitude'] !== undefined &&
             parameters['receiverLongitude'] !== undefined) {
 
             body = {
                 adapterLatitude: parameters['adapterLatitude'],
                 adapterLongitude: parameters['adapterLongitude'],
-                numberOfPoints: parameters['numberOfPoints'],
+                distance: parameters['distance'],
                 range: parameters['range'],
                 receiverLatitude: parameters['receiverLatitude'],
                 receiverLongitude: parameters['receiverLongitude']

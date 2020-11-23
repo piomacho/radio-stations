@@ -1,38 +1,54 @@
-import React, { useState } from 'react'
+import React, { SetStateAction, useState } from 'react'
 import Keys from "../../keys";
 import GoogleMapReact, {ClickEventValue} from 'google-map-react';
+import { AdapterIcon, TransmitterIcon } from './ExportModal.style';
+import store from "../../Store/Store";
+import { useEffect } from 'react';
 
-const DefaultLocation = { lat: 51.14, lng: 21.04};
-const DefaultZoom = 8;
+
+const DefaultZoom = 7;
 
 interface LatLongType {
     lat: number,
     lng: number,
-    text: string
 }
-const AnyReactComponent = ({lat, lng, text}: LatLongType) =>  <div style={{
-    color: 'white',
-    background: 'grey',
-    padding: '15px 10px',
-    display: 'inline-flex',
-    textAlign: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '100%',
-    transform: 'translate(-30px, -30px)'
+
+
+interface LocationPickerComponentType {
+  recLongitude: string,
+  recLatitude: string,
+  handleChangeX: (x: SetStateAction<string>) => void,
+  handleChangeY: (y: SetStateAction<string>) => void
+}
+
+const Receiver = ({lat, lng}: LatLongType) =>  <div style={{
+    transform: 'translate(-20px, -40px)'
   }}>
-   {text}
+    <TransmitterIcon />
 </div>;
 
-export const LocationPickerExample = () => {
+const Adapter = ({lat, lng}: LatLongType) =>  <div style={{
+    transform: 'translate(-20px, -40px)'
+  }}>
+    <AdapterIcon />
+</div>;
+
+export const LocationPickerComponent = ({handleChangeX, handleChangeY, recLongitude, recLatitude}: LocationPickerComponentType) => {
+  const { useGlobalState } = store;
+  const [adapter] = useGlobalState('adapter');
+  const DefaultLocation = { lat: Number(adapter.szerokosc), lng: Number(adapter.dlugosc)};
 
   const [defaultLocation, setDefaultLocation] = useState(DefaultLocation);
+
 
   const [location, setLocation] = useState(defaultLocation);
   const [zoom, setZoom] = useState(DefaultZoom);
 
+
+
   function handleChangeLocation (event: ClickEventValue){
-    console.log("location --- >  ", event.lat," ",  event.lng);
+    handleChangeX(`${event.lng}`);
+    handleChangeY(`${event.lat}`);
     setLocation({lat: event.lat, lng: event.lng});
   }
 
@@ -66,12 +82,17 @@ export const LocationPickerExample = () => {
     // onChangeZoom={handleChangeZoom}
     bootstrapURLKeys={{ key: Keys.mapsKey}}
     >
-        {location.lat && location.lng ?
-         <AnyReactComponent
+        {Number(recLongitude) > 0 && Number(recLatitude) > 0  ?
+         <Receiver
             lat={location.lat}
             lng={location.lng}
-            text={'Kreyser Avrora'}
           />:null}
+
+          <Adapter
+            lat={Number(adapter.szerokosc)}
+            lng={Number(adapter.dlugosc)}
+          />
+
     </GoogleMapReact>
     </div>
   </>
