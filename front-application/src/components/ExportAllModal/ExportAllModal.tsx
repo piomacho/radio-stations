@@ -26,6 +26,7 @@ import OpenElevationClient from "../../OECient/OpenElevationClient";
 import { chunkArray } from "./chunkArray";
 import { LoaderOverLay } from "../SelectionPanel/SelectionPanel.styles";
 import { LoaderContainer } from "../Adapters/Adapters.style";
+import { CloseButton } from "../ExportModal/ExportModal.style";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -78,6 +79,7 @@ interface SegmentFullResultType {
   points: Array<ElevationSegmentType>
 }
 
+let ITERATIONS = 20;
 
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
@@ -148,11 +150,21 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         })
       };
 
+    const dataFactor =  Number(radius)/Number(pointsDistance)
+    console.log(" data factor ", dataFactor);
+
+    if(dataFactor > 150) {
+      console.log(" ------- - -- - -- -  - - -- - -- --  400 ")
+      ITERATIONS = 400
+    } else if(dataFactor > 300) {
+      ITERATIONS = 1500;
+    }
+
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
-          // const resultsChunked = chunkArray(results, 20, true);
           handleExportFull(results, Number(pointsDistance)).then((data: any) => {
            try {
+
               setSegmentsElevations(data);
               exportToOctave(data);
 
@@ -183,7 +195,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
 
 
-    const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, 20, true);
+    const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, ITERATIONS, true);
     let numberOfCalls = chunkedArray.length;
 
     while(numberOfCalls > 0){
@@ -195,7 +207,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         postNumber: numberOfCalls,
       });
 
-      // console.log("export octa ", chunkedArray[numberOfCalls - 1])
       //@ts-ignore
       const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, numberOfCalls);
       numberOfCalls = numberOfCalls - 1;
@@ -219,14 +230,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       headers: { "Content-Type": "application/json" },
       body: data,
     };
-
     return new Promise(resolve => {
         resolve(
           callApiFetch(`api/export-octave/send-all/`, requestOptions)
         .then(async() => {
-          // setLoaderValue(20 - postNumber)
-          if(postNumber === 1){
-
+          if(postNumber === 2){
             setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
           }
           return postNumber;
@@ -238,7 +246,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
 
   }
-
 
   const getLineInfo = (result: ResultType, distance: number) => {
     return OEClient.postLookupLineDistance({
@@ -258,9 +265,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const getLineInfoFull = async(results: ResultCoordinateType, distance: number) => {
-    let numberOfCalls = 20;
+    let numberOfCalls = ITERATIONS;
     const resultArray = [];
-    let hasMagenicVendor = results.coordinates.some( (vendor : any) => vendor.latitude === 52.09503391970407 && vendor.longitude === 21.032673362076522)
     const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
 
     while(numberOfCalls > 0){
@@ -268,13 +274,12 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       const awaited: postLookUpLineResultType = await postLookupDistanceForAllPoint(+adapterX, +adapterY, distance, chunkedArray[numberOfCalls - 1]);
       if(awaited) {
         numberOfCalls = numberOfCalls - 1;
-        setLoaderValue(20 - loaderValue - numberOfCalls)
+        setLoaderValue(ITERATIONS - loaderValue - numberOfCalls)
         try {
           console.log("----> ", numberOfCalls);
           const parsedResponse = JSON.parse(awaited.results);
           resultArray.push(...parsedResponse);
 
-          let hasMagenicVendor = resultArray.some( (vendor : any) => vendor.receiver.latitude === 52.09503391970407 && vendor.receiver.longitude === 21.032673362076522)
         } catch(err) {
           console.error("getLineInfoFull() -> parsing error: ", err);
         }
@@ -295,10 +300,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     });
   };
 
-  const handleLinePromises = async (item: ResultType, distance: number) => {
-    return getLineInfo(item, distance)
-  }
-
   const handleExportFull = async(results: ResultCoordinateType, distance: number) => {
     return getLineInfoFull(results, distance);
   }
@@ -309,7 +310,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   const customStyles = {
     content : {
-      backgroundColor: '#cad7dd',
+      backgroundColor: 'rgb(223, 220, 227)',
     }
   };
 
@@ -321,35 +322,36 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       contentLabel="Export Modal"
       style={ customStyles }
     >
+      <CloseButton onClick={showModal(false, "export-all", false)}><span>&#10006;</span></CloseButton>
       <FloppyIcon />
       <InputWrapper>
         <AdapterCoordsWrapper>
-          <AdaptersHeader>Transmitter locations:</AdaptersHeader>
-            <Coord>Longitude: {(+adapter.dlugosc).toFixed(2)} </Coord>
-            <Coord>Latitude: {(+adapter.szerokosc).toFixed(2)}</Coord>
+          <AdaptersHeader>Współrzędne nadajnika:</AdaptersHeader>
+            <Coord>Długość geograficzna: {(+adapter.dlugosc).toFixed(2)} </Coord>
+            <Coord>Szerokość geograficzna: {(+adapter.szerokosc).toFixed(2)}</Coord>
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
-          <AdaptersHeader>Input radius value:</AdaptersHeader>
-            <Coord><Input onChange={handleChangeRadius} placeholder="Radius: " /></Coord>
+          <AdaptersHeader>Wprowadź promień obszaru wokół nadajnika:</AdaptersHeader>
+            <Coord><Input onChange={handleChangeRadius} placeholder="Promień: " /></Coord>
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
-          <AdaptersHeader>Input wanted distance between points:</AdaptersHeader>
-            <Coord><Input onChange={handleChangePointsDistance} placeholder="Distance between points: " /></Coord>
+          <AdaptersHeader>Wprowadź dystans pomiędzy kolejnymi punktami:</AdaptersHeader>
+            <Coord><Input onChange={handleChangePointsDistance} placeholder="Odległość: " /></Coord>
         </AdapterCoordsWrapper>
 
         <ExportInputWrapper>
           <InputContainer>
-            <Input onChange={handleChange} placeholder="Enter file name:" />
+            <Input onChange={handleChange} placeholder="Nazwa pliku wynikowego:" />
             <TypeSpan>.xlsx</TypeSpan>
 
             <ExportWrapper>
               <Button
                 onClick={allowedSubmit ? handleExportClick : null}
-                label={"Export"}
+                label={"Wyeksportuj"}
                 backColor={"#7bed9f"}
                 backColorHover={"#2ed573"}
                 disabled={!allowedSubmit}
-              />:
+              />
           </ExportWrapper>
           </InputContainer>
 
@@ -359,19 +361,12 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         <Message key={idx} error={true}>{error}</Message>
       ))}
       {successMessage && <Message>{successMessage}</Message>}
-         <ButtonWrapper>
-         <Button
-           onClick={showModal(false, "export-all", false)}
-           label={"Close"}
-           backColorHover={"#ff7979"}
-         />
-       </ButtonWrapper>
 
-       {loaderValue > 0 && (loaderValue/20) < 1 ?
+       {loaderValue > 0 && (loaderValue/ITERATIONS) < 1 ?
         <LoaderOverLay>
           <LoaderContainer>
               <ProgressBarWrapper>
-                    <CircularProgressbar background={true} value={loaderValue/20} maxValue={1} text={`${Math.round((loaderValue/20) * 100)}%`} />;
+                    <CircularProgressbar background={true} value={loaderValue/ITERATIONS} maxValue={1} text={`${Math.round((loaderValue/ITERATIONS) * 100)}%`} />;
                 </ProgressBarWrapper>
           </LoaderContainer>
         </LoaderOverLay>

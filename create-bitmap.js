@@ -45,15 +45,15 @@ const size = Number(program.size)
     // pointInfo.push({'latitude': +phire, 'longitude': +phirn});
 }
 
-fs.readFile('allValidCords.json', function read(err, data) {
-  if (err) {
-      throw err;
-  }
-  const allCordsArray= JSON.parse(data);
+// fs.readFile('allValidCords.json', function read(err, data) {
+//   if (err) {
+//       throw err;
+//   }
+//   const allCordsArray= JSON.parse(data);
 
-  const formattedCordsAll = allCordsArray.map((elem) => {
-    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13))}
-  })
+//   const formattedCordsAll = allCordsArray.map((elem) => {
+//     return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13))}
+//   })
 
 
 

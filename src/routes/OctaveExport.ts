@@ -41,12 +41,6 @@ interface ElevationSegmentType {
   }
 const router = Router();
 
-// const formatCoordinates = (coords: any) => {
-
-//    return coords.map((c: CoordinatesType) => {
-//         return [c.latitude.toString().replace(',', '.'), c.longitude.toString().replace(',', '.'), c.elevation.toString().replace(',', '.'), c.distance.toString().replace(',', '.') ];
-//     });
-// };
 
 const formatCoordinates1 = (coords: any) => {
     return coords.map((c: CoordinatesType) => {
@@ -108,6 +102,10 @@ router.post('/send/', async (req: Request, res: Response) => {
 });
 
 let globalStorage:  Array<SegmentResultType> = [];
+let ITERATIONS = 5;
+let globalProcessCounter: number = 0;
+let processCounter: number = 0;
+let maxProcessCounter: number = 0;
 
 const writeToReceiverFile = (numberOfIteration: number, receiverArray: string) => {
     return new Promise((resolve, reject) => {
@@ -140,25 +138,53 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string)
 }
 
 
-const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, j: number, height: number,  frequencyStr: string) => {
+const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, height: number,  frequencyStr: string, res:any, mainIterations: number): void | number => {
+        if(globalProcessCounter === -1 ){
+            return;
+        }
+        for (let j = 0; j < mainIterations; j++) {
+            if(globalProcessCounter < ITERATIONS) {
+                globalProcessCounter = globalProcessCounter + 1;
+            }
+        const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${globalProcessCounter-1}`, height, frequencyStr, globalProcessCounter-1]);
 
-    const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${j}`, height, frequencyStr, j]);
+        ls1.stdout.on("data", (data: string) => {
+            console.log(data);
+        });
 
-    ls1.stdout.on("data", (data: string) => {
-        console.log(data);
-    });
+        ls1.stderr.on("data", (data: string) => {
+            console.log(`stderr: ${data}`);
+        });
 
-    ls1.stderr.on("data", (data: string) => {
-        console.log(`stderr: ${data}`);
-    });
+        ls1.on('error', (error: { message: string }) => {
 
-    ls1.on('error', (error: { message: string }) => {
-        console.log(`error: ${error.message}`);
-    });
+            console.log(`error: ${error.message}`);
+        });
 
-    ls1.on("close", (code: string) => {
-        console.log(`child process exited with code ${code}`);
-    })
+        ls1.on("close", (code: string) => {
+            if(+code === 0) {
+                processCounter = processCounter + 1;
+                // globalProcessCounter = globalProcessCounter + 1;
+                ls1.kill();
+                console.log("PC -==   ", processCounter, "  GLOB ", globalProcessCounter)
+                if(processCounter === mainIterations) {
+                    processCounter = 0;
+                    setTimeout(function() {
+                        runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
+                        return 1;
+                    }, 2000);
+                }
+                if(globalProcessCounter >= ITERATIONS) {
+                    res.send(
+                    "Wielki sukess",
+                    );
+                    globalProcessCounter = -1;
+                    return 1;
+                }
+            }
+            console.log(`child process exited with code ${code}`);
+        })
+    }
 }
 
 
@@ -170,6 +196,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const height = req.body.adapter.height;
         const numberOfPost = req.body.postNumber;
         const fName = req.body.fileName;
+        const dataFactor = req.body.dataFactor;
         const frequency = Number(req.body.frequency)/100;
         const frequencyStr = frequency.toString();
         const receiverLon = req.body.data[0].receiver.longitude;
@@ -177,8 +204,14 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const segmentsArray: Array<Array<string>> = [];
         const receiversArray: Array<string> = [];
         const segmentsArrayStr: Array<string> = [];
+        // let processCounter = ITERATIONS;
 
-        const ITERATIONS = 4;
+        if(dataFactor > 150) {
+            ITERATIONS = 100
+          } else if(dataFactor > 300) {
+            ITERATIONS = 300;
+          }
+
 
         for (let i = 0; i < ITERATIONS; i++) {
             segmentsArray.push([]);
@@ -200,22 +233,8 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                 }
             })
 
-            const allReceivers = filteredCoordintesArray.map(e => e.receiver);
+            // const allReceivers = filteredCoordintesArray.map(e => e.receiver);
             const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
-
-
-            const allReceivers1 =  allReceivers.sort((a, b) => {
-                if (a.latitude === b.latitude) {
-                   // Price is only important when cities are the same
-                   return b.longitude - a.longitude;
-                }
-                return a.latitude > b.latitude ? -1 : 1;
-             })
-
-
-             const allReceivers2 =  allReceivers1.map((a) => {
-                return { latitude: parseFloat((+a.latitude).toFixed(13)), longitude: parseFloat((+a.longitude).toFixed(13))}
-             })
 
             const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);
 
@@ -225,14 +244,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                 }
                 console.log("JSON data is saved.");
             });
-            fs.writeFile('allValidCords.json', JSON.stringify(allReceivers2), (err:string) => {
-                if (err) {
-                    throw err;
-                }
-                globalStorage = [];
 
-                console.log("JSON data all is saved.");
-            });
             const chunkedFilterArray = chunkArray(filteredCoordintesArray, ITERATIONS, true);
 
             for (let i = 0; i < ITERATIONS; i++) {
@@ -293,20 +305,28 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                 writeToProfilePromises.push(writeToProfileFile(j, segmentsArrayStr[j]));
             }
 
-            res.status(200).json({
-                message: "Success",
-            });
-
             if(filteredCoordintesArray.length > 0 ) {
                 Promise.all(writeToProfilePromises).then(result => {
 
-                    Promise.all(writeToReceiversPromises).then(result => {
+                    Promise.all(writeToReceiversPromises).then(async(result) => {
+                        if(ITERATIONS < 20) {
+                            console.log("Jest mniej ni 20");
+                            const mainIterations = Math.ceil(ITERATIONS / 2);
+                            maxProcessCounter = Math.ceil(ITERATIONS / 2);
+                            globalProcessCounter = 0;
+                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
 
-                        for (let j = 0; j < ITERATIONS; j++) {
-                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, j, height, frequencyStr);
+
+
+                        } else {
+                        //
                         }
+
                     });
+
                 });
+
+
         } else {
             return res.status(404).json({
                 error: "Not enough points.",

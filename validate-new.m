@@ -55,7 +55,6 @@ end
      GHz = frequency(fcnt);
      pg  = Page{fcnt};
 
-    %  A = {'Phire', 'Phirn',  'Phite', 'Phitn','Lb'};
      A = {'FlagVp', 'GHz', 'Grx', 'Grt', 'Hrg', 'Htg', 'Phire', 'Phirn',  'Phite', ...
     'Phitn', 'Tpc',	'Profile',	'FlagLos50', 'FlagLospa', 'FlagLosps', 'FlagSea', ...
     'FlagShort', 'A1', 'A2', 'A2r',	'A2t',	'Aac',	'Aad',	'dAat',	'Ags',	'Agsur', ...
@@ -123,7 +122,6 @@ end
 
                 A = [A; row];
 
-            % printf("%d - %d",length(A), length(BB));
             r1 = tpccnt + 1;
          end
      end
@@ -151,3 +149,5 @@ for i = 1:length(d)
 end
 printf("%s", "writing !!!!!!!!!!")
 xlswrite(nazwaPliku,B, Profile);
+
+exit(0)
