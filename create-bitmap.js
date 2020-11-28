@@ -20,7 +20,7 @@ program.parse(process.argv);
 
 const allDataArray = [];
 
-for (i = 0; i < 4; i++) {
+for (i = 0; i < 6; i++) {
   const workbook = xlsx.readFile(`./validation_results/${program.xlxName}${i}.xlsx`);
   const worksheet = workbook.Sheets['Page1'];
   const xlData = xlsx.utils.sheet_to_json(worksheet);
@@ -95,7 +95,7 @@ Jimp.read(`initial.bmp`).then(image => {
 });
 
 });
-});
+// });
 
 
 

@@ -48,9 +48,6 @@ const formatCoordinates1 = (coords: any) => {
      });
  };
 
-const writeReceiversToFile = () => {
-
-};
 
 router.post('/send/', async (req: Request, res: Response) => {
     try {
@@ -102,7 +99,7 @@ router.post('/send/', async (req: Request, res: Response) => {
 });
 
 let globalStorage:  Array<SegmentResultType> = [];
-let ITERATIONS = 5;
+let ITERATIONS = 6;
 let globalProcessCounter: number = 0;
 let processCounter: number = 0;
 let maxProcessCounter: number = 0;
@@ -139,7 +136,7 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string)
 
 
 const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, height: number,  frequencyStr: string, res:any, mainIterations: number): void | number => {
-        if(globalProcessCounter === -1 ){
+        if(globalProcessCounter === -1){
             return;
         }
         for (let j = 0; j < mainIterations; j++) {
@@ -171,7 +168,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, 
                     processCounter = 0;
                     setTimeout(function() {
                         runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
-                        return 1;
+                        // return 1;
                     }, 2000);
                 }
                 if(globalProcessCounter >= ITERATIONS) {
@@ -310,9 +307,8 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
                     Promise.all(writeToReceiversPromises).then(async(result) => {
                         if(ITERATIONS < 20) {
-                            console.log("Jest mniej ni 20");
-                            const mainIterations = Math.ceil(ITERATIONS / 2);
-                            maxProcessCounter = Math.ceil(ITERATIONS / 2);
+                            const mainIterations = ITERATIONS / 2;
+                            maxProcessCounter = ITERATIONS / 2;
                             globalProcessCounter = 0;
                             runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
 
