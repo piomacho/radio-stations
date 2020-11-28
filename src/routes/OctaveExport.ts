@@ -1,4 +1,5 @@
 import { Request, Response, Router } from 'express';
+const path = require("path");
 // const { exec } = require("child_process");
 import {chunkArray} from './chunkArray';
 const { spawn, execFile } = require("child_process");
@@ -136,54 +137,49 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string)
 
 
 const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, height: number,  frequencyStr: string, res:any, mainIterations: number): void | number => {
-        if(globalProcessCounter === -1){
-            return;
+        if(globalProcessCounter !== -1) {
+            for (let j = 0; j < mainIterations; j++) {
+                if(globalProcessCounter < ITERATIONS) {
+                    globalProcessCounter = globalProcessCounter + 1;
+                }
+            const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${globalProcessCounter-1}`, height, frequencyStr, globalProcessCounter-1]);
+
+            ls1.stdout.on("data", (data: string) => {
+                console.log(data);
+            });
+
+            ls1.stderr.on("data", (data: string) => {
+                console.log(`stderr: ${data}`);
+            });
+
+            ls1.on('error', (error: { message: string }) => {
+
+                console.log(`error: ${error.message}`);
+            });
+
+            ls1.on("close", (code: string) => {
+                if(+code === 0) {
+                    processCounter = processCounter + 1;
+                    if(processCounter === mainIterations) {
+                        processCounter = 0;
+                        setTimeout(function() {
+                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
+                            // return 1;
+                        }, 2000);
+                    }
+                    if(globalProcessCounter >= ITERATIONS) {
+                        res.status(200).send("Wielki sukces");
+                        globalProcessCounter = -1;
+                        ls1.kill()
+                        return 1;
+                    }
+                }
+                console.log(`child process exited with code ${code}`);
+            })
         }
-        for (let j = 0; j < mainIterations; j++) {
-            if(globalProcessCounter < ITERATIONS) {
-                globalProcessCounter = globalProcessCounter + 1;
-            }
-        const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${globalProcessCounter-1}`, height, frequencyStr, globalProcessCounter-1]);
-
-        ls1.stdout.on("data", (data: string) => {
-            console.log(data);
-        });
-
-        ls1.stderr.on("data", (data: string) => {
-            console.log(`stderr: ${data}`);
-        });
-
-        ls1.on('error', (error: { message: string }) => {
-
-            console.log(`error: ${error.message}`);
-        });
-
-        ls1.on("close", (code: string) => {
-            if(+code === 0) {
-                processCounter = processCounter + 1;
-                // globalProcessCounter = globalProcessCounter + 1;
-                ls1.kill();
-                console.log("PC -==   ", processCounter, "  GLOB ", globalProcessCounter)
-                if(processCounter === mainIterations) {
-                    processCounter = 0;
-                    setTimeout(function() {
-                        runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
-                        // return 1;
-                    }, 2000);
-                }
-                if(globalProcessCounter >= ITERATIONS) {
-                    res.send(
-                    "Wielki sukess",
-                    );
-                    globalProcessCounter = -1;
-                    return 1;
-                }
-            }
-            console.log(`child process exited with code ${code}`);
-        })
-    }
 }
 
+}
 
 router.post('/send-all/', async (req: Request, res: Response) => {
     try {
@@ -201,7 +197,6 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const segmentsArray: Array<Array<string>> = [];
         const receiversArray: Array<string> = [];
         const segmentsArrayStr: Array<string> = [];
-        // let processCounter = ITERATIONS;
 
         if(dataFactor > 150) {
             ITERATIONS = 100
@@ -230,7 +225,6 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                 }
             })
 
-            // const allReceivers = filteredCoordintesArray.map(e => e.receiver);
             const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
 
             const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);
@@ -243,53 +237,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             });
 
             const chunkedFilterArray = chunkArray(filteredCoordintesArray, ITERATIONS, true);
-
-            for (let i = 0; i < ITERATIONS; i++) {
-                let receivers123= ' ';
-                chunkedFilterArray[i] && chunkedFilterArray[i].map((c: SegmentResultType) => {
-                    // receiversArray.push(receivers123);
-                    receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
-                    receivers123 += '\n';
-
-                    if(receivers123 !== '' && receivers123 !== '\n') {
-                        receiversArray[i] = receivers123;
-
-                    }
-                });
-            }
-
-            for (let i = 0; i < ITERATIONS; i++) {
-                chunkedFilterArray[i] && chunkedFilterArray[i].map((coordinateData: SegmentResultType) => {
-                    let segment = ' ';
-                    coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
-                        if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
-                            segment += `\t    ${c.distance} ${c.elevation} 4;`;
-                            segment += '\n';
-                        } else if(iterator === 0) {
-                            segment += `0 ${c.elevation} 4;\n`;
-                        } else {
-                            segment += `\t    ${c.distance} ${c.elevation} 4;`
-                        }
-
-                    })
-                    if(segment !== '' && segment !== '\n') {
-                        segmentsArray[i].push(segment);
-                    }
-                });
-            }
-
-
-
-            for (let j = 0; j < ITERATIONS; j++) {
-                for(let i = 0; i <  segmentsArray[j].length; i++) {
-                    if(i !== segmentsArray.length -1) {
-                        segmentsArrayStr[j] += `[${segmentsArray[j][i]}]; `;
-                    } else if(segmentsArray[i]) {
-                        segmentsArrayStr[j] += `[${segmentsArray[j][i]}];`;
-                    }
-                }
-            }
-
+            prepareProfileData(chunkedFilterArray, receiversArray, segmentsArray, segmentsArrayStr)
 
             const writeToReceiversPromises: Array<unknown> = [];
             const writeToProfilePromises: Array<unknown> = [];
@@ -312,14 +260,10 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                             globalProcessCounter = 0;
                             runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
 
-
-
                         } else {
                         //
                         }
-
                     });
-
                 });
 
 
@@ -340,5 +284,55 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         });
     }
 });
+
+
+
+const prepareProfileData = (chunkedFilterArray: Array<Array<SegmentResultType>>, receiversArray:Array<string>, segmentsArray: Array<Array<string>>, segmentsArrayStr: Array<string> ) => {
+    for (let i = 0; i < ITERATIONS; i++) {
+        let receivers123= ' ';
+        chunkedFilterArray[i] && chunkedFilterArray[i].map((c: SegmentResultType) => {
+            receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
+            receivers123 += '\n';
+
+            if(receivers123 !== '' && receivers123 !== '\n') {
+                receiversArray[i] = receivers123;
+
+            }
+        });
+    }
+
+    for (let i = 0; i < ITERATIONS; i++) {
+        chunkedFilterArray[i] && chunkedFilterArray[i].map((coordinateData: SegmentResultType) => {
+            let segment = ' ';
+            coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
+                if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
+                    segment += `\t    ${c.distance} ${c.elevation} 4;`;
+                    segment += '\n';
+                } else if(iterator === 0) {
+                    segment += `0 ${c.elevation} 4;\n`;
+                } else {
+                    segment += `\t    ${c.distance} ${c.elevation} 4;`
+                }
+
+            })
+            if(segment !== '' && segment !== '\n') {
+                segmentsArray[i].push(segment);
+            }
+        });
+    }
+
+
+
+    for (let j = 0; j < ITERATIONS; j++) {
+        for(let i = 0; i <  segmentsArray[j].length; i++) {
+            if(i !== segmentsArray.length -1) {
+                segmentsArrayStr[j] += `[${segmentsArray[j][i]}]; `;
+            } else if(segmentsArray[i]) {
+                segmentsArrayStr[j] += `[${segmentsArray[j][i]}];`;
+            }
+        }
+    }
+
+}
 
 export default router;

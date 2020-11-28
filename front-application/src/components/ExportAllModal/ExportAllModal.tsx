@@ -233,13 +233,17 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return new Promise(resolve => {
         resolve(
           callApiFetch(`api/export-octave/send-all/`, requestOptions)
-        .then(async() => {
+        .then(async(file) => {
+          console.log("file -- - - - - >  ", file);
           if(postNumber === 2){
             setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
           }
           return postNumber;
         })
-        .catch(err => setError(err))
+        .catch(err => {
+          console.log("error ", err);
+          setError(err)
+        })
         );
     });
 
