@@ -79,14 +79,14 @@ interface SegmentFullResultType {
   points: Array<ElevationSegmentType>
 }
 
-let ITERATIONS = 20;
+let ITERATIONS = 200;
 
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
   const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
   const [error, setError] = useState(EmptyError);
-  const [loaderValue, setLoaderValue] = useState(0);
+  const [loaderValue, setLoaderValue] = useState(-1);
   const [fileName, setFileName] = useState("");
   const [segmentsElevations, setSegmentsElevations] = useState<Array<SegmentResultType>>([]);
   const [radius, setRadius] = useState("");
@@ -154,8 +154,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     console.log(" data factor ", dataFactor);
 
     if(dataFactor > 150) {
-      console.log(" ------- - -- - -- -  - - -- - -- --  400 ")
-      ITERATIONS = 400
+      ITERATIONS = 800
     } else if(dataFactor > 300) {
       ITERATIONS = 1500;
     }
@@ -366,7 +365,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       ))}
       {successMessage && <Message>{successMessage}</Message>}
 
-       {loaderValue > 0 && (loaderValue/ITERATIONS) < 1 ?
+       {loaderValue >= 0 && (loaderValue/ITERATIONS) < 1 ?
         <LoaderOverLay>
           <LoaderContainer>
               <ProgressBarWrapper>

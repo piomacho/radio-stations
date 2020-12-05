@@ -141,6 +141,7 @@ def body_to_locations():
         raise InternalException(json.dumps({'error': '"Locations" is required in the body.'}))
 
     latlng = []
+
     for l in locations:
         try:
             latlng += [ (l['latitude'],l['longitude']) ]
@@ -481,7 +482,19 @@ def body_to_line():
 
     return latlng
 
-
+def do_lookup_heatmap(get_locations_func):
+    """
+    Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
+    and returns an answer ready to go to the client.
+    :return:
+    """
+    try:
+        locations = get_locations_func()
+        return {'results': [get_elevation(lat, lng) for (lat, lng) in locations]}
+    except InternalException as e:
+        response.status = 400
+        response.content_type = 'application/json'
+        return e.args[0]
 
 def do_lookup(get_locations_func):
     """
@@ -585,7 +598,7 @@ def post_lookup():
         GET method. Uses body_to_locations.
         :return:
         """
-    return do_lookup(body_to_locations)
+    return do_lookup_heatmap(body_to_locations)
 
 # Base Endpoint
 URL_ENDPOINT_NEW = '/api/v1/lookupnew'

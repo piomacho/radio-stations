@@ -7,3 +7,8 @@ export const GMapsSpan = styled('span')`
 export const OESpan = styled('span')`
     color: #FF0033;
 `;
+
+export const Wrapper = styled('div')`
+    margin: 0 130px;
+`;
+

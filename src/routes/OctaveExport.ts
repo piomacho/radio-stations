@@ -6,9 +6,10 @@ const { spawn, execFile } = require("child_process");
 
 const fs = require('fs');
 const xl = require('excel4node');
+const async = require("async");
 const wb = new xl.Workbook();
 
-const ws = wb.addWorksheet('Sheet 1');
+const pLimit = require('p-limit');
 
 
 export interface CoordinatesType {
@@ -100,7 +101,7 @@ router.post('/send/', async (req: Request, res: Response) => {
 });
 
 let globalStorage:  Array<SegmentResultType> = [];
-let ITERATIONS = 6;
+let ITERATIONS = 250;
 let globalProcessCounter: number = 0;
 let processCounter: number = 0;
 let maxProcessCounter: number = 0;
@@ -198,11 +199,14 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const receiversArray: Array<string> = [];
         const segmentsArrayStr: Array<string> = [];
 
-        if(dataFactor > 150) {
-            ITERATIONS = 100
-          } else if(dataFactor > 300) {
-            ITERATIONS = 300;
-          }
+        const limit = pLimit(20);
+
+        // if(dataFactor > 150) {
+        //     ITERATIONS = 150;
+        //   }
+        //   else if(dataFactor > 300) {
+        //     ITERATIONS = 300;
+        //   }
 
 
         for (let i = 0; i < ITERATIONS; i++) {
@@ -243,20 +247,22 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             const writeToProfilePromises: Array<unknown> = [];
 
             for (let j = 0; j < ITERATIONS; j++) {
-                writeToReceiversPromises.push(writeToReceiverFile(j, receiversArray[j]));
+            // let async_queue = Array(ITERATIONS).fill(my_task);
+
+                limit(() => writeToReceiversPromises.push(writeToReceiverFile(j, receiversArray[j])));
             }
 
             for (let j = 0; j < ITERATIONS; j++) {
-                writeToProfilePromises.push(writeToProfileFile(j, segmentsArrayStr[j]));
+                limit(() => writeToProfilePromises.push(writeToProfileFile(j, segmentsArrayStr[j])));
             }
 
             if(filteredCoordintesArray.length > 0 ) {
                 Promise.all(writeToProfilePromises).then(result => {
 
                     Promise.all(writeToReceiversPromises).then(async(result) => {
-                        if(ITERATIONS < 20) {
-                            const mainIterations = ITERATIONS / 2;
-                            maxProcessCounter = ITERATIONS / 2;
+                        if(ITERATIONS > 20) {
+                            const mainIterations = ITERATIONS / 50;
+                            maxProcessCounter = ITERATIONS / 50;
                             globalProcessCounter = 0;
                             runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
 

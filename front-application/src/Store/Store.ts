@@ -17,6 +17,25 @@ export interface GMapsCoordinatesType {
     resolution: number;
 }
 
+interface CornersType {
+    maxLongMaxLat: {
+        lat: number | null,
+        lng: number | null
+    },
+    minLongMaxLat: {
+        lat: number | null,
+        lng: number | null
+    },
+    maxLongMinLat: {
+        lat: number | null,
+        lng: number | null
+    },
+    minLongMinLat: {
+        lat: number | null,
+        lng: number | null
+    }
+}
+
 interface InitialStateType {
     station: {
         value: string;
@@ -33,14 +52,33 @@ interface InitialStateType {
     // todo remove any
     coordinates: {elevations: Array<Array<number>>, distances: Array<Array<number>>},
     gmapsCoordinates: Array<GMapsCoordinatesType>,
+    corners: CornersType,
     trialCoords: Array<any>,
-    elevationResults: Array<CoordinatesType>
+    elevationResults: Array<CoordinatesType>,
 }
 
 const initialState: InitialStateType = {
     station: {value: '', label: ''},
     adapter: {value: '', label: '', dlugosc: '', szerokosc: '', wys_npm: undefined, czestotliwosc: ''},
     gmapsCoordinates: [],
+    corners: {
+        maxLongMaxLat: {
+            lat: null,
+            lng: null
+        },
+        minLongMaxLat: {
+            lat: null,
+            lng: null
+        },
+        maxLongMinLat: {
+            lat: null,
+            lng: null
+        },
+        minLongMinLat: {
+            lat: null,
+            lng: null
+        }
+    },
     coordinates: {elevations: [], distances: []}, trialCoords: [], elevationResults: []};
 
 

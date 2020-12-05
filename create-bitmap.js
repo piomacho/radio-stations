@@ -20,14 +20,12 @@ program.parse(process.argv);
 
 const allDataArray = [];
 
-for (i = 0; i < 6; i++) {
+for (i = 0; i < 250; i++) {
   const workbook = xlsx.readFile(`./validation_results/${program.xlxName}${i}.xlsx`);
   const worksheet = workbook.Sheets['Page1'];
   const xlData = xlsx.utils.sheet_to_json(worksheet);
   allDataArray.push(...xlData)
 }
-
-console.log("DA ", allDataArray.length)
 
 const pointInfo = [];
 const size = Number(program.size)
@@ -45,25 +43,13 @@ const size = Number(program.size)
     // pointInfo.push({'latitude': +phire, 'longitude': +phirn});
 }
 
-// fs.readFile('allValidCords.json', function read(err, data) {
-//   if (err) {
-//       throw err;
-//   }
-//   const allCordsArray= JSON.parse(data);
-
-//   const formattedCordsAll = allCordsArray.map((elem) => {
-//     return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13))}
-//   })
-
-
-
 fs.readFile('otherCoords.json', function read(err, data) {
   if (err) {
       throw err;
   }
   const unusedArray= JSON.parse(data);
   const formattedCordsUnused = unusedArray.map((elem) => {
-    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13)), color: 0xffffffff}
+    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13)), color: 0xff0000ff}
   })
 
 const dupa = [...pointInfo, ...formattedCordsUnused]
