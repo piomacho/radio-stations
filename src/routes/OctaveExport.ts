@@ -101,7 +101,9 @@ router.post('/send/', async (req: Request, res: Response) => {
 });
 
 let globalStorage:  Array<SegmentResultType> = [];
-let ITERATIONS = 250;
+// let ITERATIONS = 250;
+// let ITERATIONS = 800;
+let ITERATIONS = 25;
 let globalProcessCounter: number = 0;
 let processCounter: number = 0;
 let maxProcessCounter: number = 0;
@@ -169,9 +171,10 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, 
                         }, 2000);
                     }
                     if(globalProcessCounter >= ITERATIONS) {
+
                         res.status(200).send("Wielki sukces");
                         globalProcessCounter = -1;
-                        ls1.kill()
+                        // ls1.kill()
                         return 1;
                     }
                 }
@@ -201,12 +204,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
         const limit = pLimit(20);
 
-        // if(dataFactor > 150) {
-        //     ITERATIONS = 150;
-        //   }
-        //   else if(dataFactor > 300) {
-        //     ITERATIONS = 300;
-        //   }
+
 
 
         for (let i = 0; i < ITERATIONS; i++) {
@@ -218,6 +216,20 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
         //----------------------------------------------
         if(+numberOfPost === 1) {
+
+        if(dataFactor < 20) {
+            ITERATIONS = 5;
+        }
+        if (dataFactor > 100 && dataFactor < 150) {
+            ITERATIONS = 50;
+        }
+        else if(dataFactor >= 150 && dataFactor < 300) {
+            ITERATIONS = 250;
+          }
+          else if(dataFactor >= 300) {
+            ITERATIONS = 800;
+          }
+
             const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length > 5);
 
             const notInlcudedCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length <= 5);
@@ -260,15 +272,11 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                 Promise.all(writeToProfilePromises).then(result => {
 
                     Promise.all(writeToReceiversPromises).then(async(result) => {
-                        if(ITERATIONS > 20) {
-                            const mainIterations = ITERATIONS / 50;
-                            maxProcessCounter = ITERATIONS / 50;
+                            const mainIterations = 5;
+                            maxProcessCounter = 5;
                             globalProcessCounter = 0;
                             runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
 
-                        } else {
-                        //
-                        }
                     });
                 });
 
@@ -286,7 +294,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
     } catch (err) {
         return res.status(404).json({
-            error: err.message,
+            error: "Chujnia",
         });
     }
 });

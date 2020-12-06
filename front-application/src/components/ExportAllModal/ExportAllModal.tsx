@@ -153,10 +153,10 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const dataFactor =  Number(radius)/Number(pointsDistance)
     console.log(" data factor ", dataFactor);
 
-    if(dataFactor > 150) {
+    if(dataFactor > 150 && dataFactor < 300) {
       ITERATIONS = 800
-    } else if(dataFactor > 300) {
-      ITERATIONS = 1500;
+    } else if(dataFactor >= 300) {
+      ITERATIONS = 3200;
     }
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
@@ -165,7 +165,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
            try {
 
               setSegmentsElevations(data);
-              exportToOctave(data);
+              exportToOctave(data, dataFactor);
 
             } catch (e) {
               console.error("Parsing error ->", e);
@@ -190,7 +190,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return resultArray;
   }
 
-  const exportToOctave = async(data: Array<SegmentFullResultType>) => {
+  const exportToOctave = async(data: Array<SegmentFullResultType>, dataFactor: number) => {
     const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
 
 
@@ -204,6 +204,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
         data: chunkedArray[numberOfCalls - 1],
         postNumber: numberOfCalls,
+        dataFactor: dataFactor
       });
 
       //@ts-ignore
@@ -237,6 +238,9 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           if(postNumber === 2){
             setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
           }
+          if(postNumber === 1) {
+            setSuccessMessage("KONIEC !!!!! ");
+          }
           return postNumber;
         })
         .catch(err => {
@@ -269,6 +273,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   const getLineInfoFull = async(results: ResultCoordinateType, distance: number) => {
     let numberOfCalls = ITERATIONS;
+    console.log("number of ", numberOfCalls)
     const resultArray = [];
     const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
 

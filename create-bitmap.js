@@ -13,14 +13,16 @@ program
   .option('-n, --fileName <type>', 'add file name')
   .option('-x, --xlxName <type>', 'add excel file name')
   .option('-s, --size <type>', 'add radius of measured teritory [km]')
+  .option('-i, --iterations <type>', 'add iterations')
 
   ;
 
 program.parse(process.argv);
 
 const allDataArray = [];
+const iterations = Number(program.iterations);
 
-for (i = 0; i < 250; i++) {
+for (i = 0; i < iterations; i++) {
   const workbook = xlsx.readFile(`./validation_results/${program.xlxName}${i}.xlsx`);
   const worksheet = workbook.Sheets['Page1'];
   const xlData = xlsx.utils.sheet_to_json(worksheet);
@@ -28,7 +30,7 @@ for (i = 0; i < 250; i++) {
 }
 
 const pointInfo = [];
-const size = Number(program.size)
+const size = Number(program.size) - 1;
 // E [dBuV/m] = Ptx [dBm] - Lb [dB] + 107
 
  for (let i = 0; i < allDataArray.length; i++) {

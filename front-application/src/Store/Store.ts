@@ -48,6 +48,9 @@ interface InitialStateType {
         szerokosc: string;
         wys_npm: number | undefined;
         czestotliwosc: string;
+        id_antena: string;
+        id_nadajnik: string;
+        id_program: string;
     },
     // todo remove any
     coordinates: {elevations: Array<Array<number>>, distances: Array<Array<number>>},
@@ -59,7 +62,7 @@ interface InitialStateType {
 
 const initialState: InitialStateType = {
     station: {value: '', label: ''},
-    adapter: {value: '', label: '', dlugosc: '', szerokosc: '', wys_npm: undefined, czestotliwosc: ''},
+    adapter: {value: '', label: '', dlugosc: '', szerokosc: '', wys_npm: undefined, czestotliwosc: '', id_antena: '', id_nadajnik: '', id_program: ''},
     gmapsCoordinates: [],
     corners: {
         maxLongMaxLat: {
