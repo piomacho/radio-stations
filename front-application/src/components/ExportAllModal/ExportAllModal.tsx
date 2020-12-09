@@ -1,8 +1,9 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import Modal from "react-modal";
 import store, { CoordinatesType } from "../../Store/Store";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import io from "socket.io-client";
 
 import Button from "../Button/Button";
 import {
@@ -92,8 +93,21 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [radius, setRadius] = useState("");
   const [pointsDistance, setPointsDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const ENDPOINT = "http://localhost:5000";
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
+  // const socket = io('http://localhost:5000')
 
+
+
+  useEffect(() => {
+    const socket = io(ENDPOINT);
+
+
+     //@ts-ignore
+    socket.on("finishMapProcessing", data => {
+      setSuccessMessage(data);
+    });
+  }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -235,11 +249,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           callApiFetch(`api/export-octave/send-all/`, requestOptions)
         .then(async(file) => {
           console.log("file -- - - - - >  ", file);
-          if(postNumber === 2){
-            setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
-          }
           if(postNumber === 1) {
-            setSuccessMessage("KONIEC !!!!! ");
+            setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
           }
           return postNumber;
         })

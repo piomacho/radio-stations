@@ -4,7 +4,6 @@ let Jimp = require('jimp')
 const { getColorFotLegend } = require("./getColorForLegend.js");
 const { sortAndGroupResultElements, sortAndGroupResultElementsNew } = require("./sortAndGroupResultElements.js");
 var fs = require('fs');
-const sortObject = require('sort-object-keys');
 
 const program = new Command();
 program.version('0.0.1');
@@ -40,9 +39,7 @@ const size = Number(program.size) - 1;
     const e = 60 - lb  + 107
     const color = getColorFotLegend(e);
 
-    // pointInfo.push({'phire': parseFloat((+phire).toFixed(13)), 'phirn': parseFloat((+phirn).toFixed(13)), 'lb': lb, 'E': e, 'color': color})
     pointInfo.push({'phire': +phire, 'phirn': +phirn, 'color': color})
-    // pointInfo.push({'latitude': +phire, 'longitude': +phirn});
 }
 
 fs.readFile('otherCoords.json', function read(err, data) {
@@ -54,12 +51,9 @@ fs.readFile('otherCoords.json', function read(err, data) {
     return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13)), color: 0xff0000ff}
   })
 
-const dupa = [...pointInfo, ...formattedCordsUnused]
-fs.writeFile('mynewfile3.json', JSON.stringify(dupa), function (err) {
-  if (err) throw err;
-  console.log('Saved!');
-});
-const sortedDataMap = sortAndGroupResultElements(dupa);
+const allCoordinates = [...pointInfo, ...formattedCordsUnused]
+
+const sortedDataMap = sortAndGroupResultElements(allCoordinates);
 const sortedDataMapKeys = Object.keys(sortedDataMap);
 
 Jimp.read(`initial.bmp`).then(image => {
@@ -83,9 +77,6 @@ Jimp.read(`initial.bmp`).then(image => {
 });
 
 });
-// });
-
-
 
 
 console.log("File saved !");

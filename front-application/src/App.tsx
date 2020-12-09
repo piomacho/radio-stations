@@ -9,22 +9,9 @@ const ENDPOINT = "http://localhost:5000";
 const socket = io('http://localhost:5000')
 
 const App = () => {
-  const [response, setResponse] = useState("");
-
-  useEffect(() => {
-    const socket = io(ENDPOINT);
-    //@ts-ignore
-    socket.on("FromAPI", data => {
-      setResponse(data);
-    });
-  }, []);
-
     return (
       <Router>
         <AppWrapper>
-        <p>
-          It's <time dateTime={response}>{response}</time>
-        </p>
           <SelectionPanel />
         </AppWrapper>
         </Router>

@@ -3,11 +3,14 @@ const path = require("path");
 // const { exec } = require("child_process");
 import {chunkArray} from './chunkArray';
 const { spawn, execFile } = require("child_process");
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
 const fs = require('fs');
 const xl = require('excel4node');
 const async = require("async");
 const wb = new xl.Workbook();
+
 
 const pLimit = require('p-limit');
 
@@ -50,6 +53,13 @@ const formatCoordinates1 = (coords: any) => {
      });
  };
 
+const runBitmapScript = async(fName: string, size: number) => {
+    const { stdout, stderr } = await exec(`node ${path.join(__dirname, '../../create-bitmap.js')} -x ${fName} -n ${fName} -s ${size} -i ${globalProcessCounter}`);
+    console.log('std out:  ----- >>> ', stdout);
+    if(stderr) {
+        console.log('stderr:', stderr);
+    }
+}
 
 router.post('/send/', async (req: Request, res: Response) => {
     try {
@@ -101,12 +111,9 @@ router.post('/send/', async (req: Request, res: Response) => {
 });
 
 let globalStorage:  Array<SegmentResultType> = [];
-// let ITERATIONS = 250;
-// let ITERATIONS = 800;
 let ITERATIONS = 25;
 let globalProcessCounter: number = 0;
 let processCounter: number = 0;
-let maxProcessCounter: number = 0;
 
 const writeToReceiverFile = (numberOfIteration: number, receiverArray: string) => {
     return new Promise((resolve, reject) => {
@@ -139,7 +146,7 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string)
 }
 
 
-const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, height: number,  frequencyStr: string, res:any, mainIterations: number): void | number => {
+const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, height: number,  frequencyStr: string, req:any, mainIterations: number, dataFactor:number): void | number => {
         if(globalProcessCounter !== -1) {
             for (let j = 0; j < mainIterations; j++) {
                 if(globalProcessCounter < ITERATIONS) {
@@ -166,15 +173,16 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, 
                     if(processCounter === mainIterations) {
                         processCounter = 0;
                         setTimeout(function() {
-                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
+                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, req, mainIterations, dataFactor);
                             // return 1;
                         }, 2000);
                     }
                     if(globalProcessCounter >= ITERATIONS) {
-
-                        res.status(200).send("Wielki sukces");
+                        req.app.io.emit("finishMapProcessing", "Finished !");
+                        const size = dataFactor * 2 - 1;
+                        runBitmapScript(fName, size);
+                        ls1.kill()
                         globalProcessCounter = -1;
-                        // ls1.kill()
                         return 1;
                     }
                 }
@@ -251,7 +259,9 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                 }
                 console.log("JSON data is saved.");
             });
-
+            res.status(200).json({
+                message: "Success",
+            });
             const chunkedFilterArray = chunkArray(filteredCoordintesArray, ITERATIONS, true);
             prepareProfileData(chunkedFilterArray, receiversArray, segmentsArray, segmentsArrayStr)
 
@@ -259,7 +269,6 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             const writeToProfilePromises: Array<unknown> = [];
 
             for (let j = 0; j < ITERATIONS; j++) {
-            // let async_queue = Array(ITERATIONS).fill(my_task);
 
                 limit(() => writeToReceiversPromises.push(writeToReceiverFile(j, receiversArray[j])));
             }
@@ -273,9 +282,8 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
                     Promise.all(writeToReceiversPromises).then(async(result) => {
                             const mainIterations = 5;
-                            maxProcessCounter = 5;
                             globalProcessCounter = 0;
-                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, res, mainIterations);
+                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, req, mainIterations, dataFactor);
 
                     });
                 });
@@ -294,7 +302,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
 
     } catch (err) {
         return res.status(404).json({
-            error: "Chujnia",
+            error: err,
         });
     }
 });

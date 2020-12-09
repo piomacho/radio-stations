@@ -18,6 +18,10 @@ app.use('/api', BaseRouter);
 
 const staticDir = path.join(__dirname, 'public');
 app.use(express.static(staticDir));
+app.use(function(req:any, res:any, next:any) {
+  req.io = io;
+  next();
+});
 const server = require('http').createServer(app);
 const options = { /* ... */ };
 const io = require('socket.io')(server, {
@@ -26,30 +30,15 @@ const io = require('socket.io')(server, {
       methods: ["GET", "POST"]
     }
   });
+  app.io = io;
+//@ts-ignore
+io.on('connection', function(socket){
+  console.log('a user connected');
 
 
-    //@ts-ignore
-let interval;
-    //@ts-ignore
-io.on('connection', socket => {
-    console.log("New client connected");
-    //@ts-ignore
-    if (interval) {
-        //@ts-ignore
-      clearInterval(interval);
-    }
-    interval = setInterval(() => getApiAndEmit(socket), 1000);
-    socket.on("disconnect", () => {
-      console.log("Client disconnected");
-      //@ts-ignore
-      clearInterval(interval);
-    });
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
   });
-  //@ts-ignore
-  const getApiAndEmit = socket => {
-    const response = new Date();
-    // Emitting a new message. Will be consumed by the client
-    socket.emit("FromAPI", response);
-  };
+});
 
 server.listen(5000);
