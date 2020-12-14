@@ -3,6 +3,7 @@ build
 npm-debug.log
 .env
 .DS_Store
+magmapy-bb9815bb7548.json
 
 *.csv
 *.xlsx

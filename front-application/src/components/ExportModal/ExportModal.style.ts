@@ -89,7 +89,7 @@ export const ExportWrapper = styled('div')`
 `;
 
 export const Message = styled('p')<ExportModalType>`
-    color:  ${props => props.error ? `#ff0000` : `#2ecc71`};
+    color:  ${props => props.error ? `#ff0000` : `#88d317`};
     font-weight: 700;
 `;
 
