@@ -86,7 +86,8 @@ interface SegmentFullResultType {
   points: Array<ElevationSegmentType>
 }
 
-let ITERATIONS = 20;
+let ITERATIONS = 200;
+
 
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
@@ -104,21 +105,32 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [ isFinished, setIsFinihed ] = useState(false);
   const [corners, setCorners] = useState({});
   const ENDPOINT = "http://localhost:5000";
+  const fs = require('fs');
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
+  const ss = require('socket.io-stream');
   // const socket = io('http://localhost:5000')
 
   const limit = pLimit(5);
+  const socket = io(ENDPOINT);
 
   useEffect(() => {
-    const socket = io(ENDPOINT);
 
-
+    var filename = 'test-copy.txt';
      //@ts-ignore
     socket.on("finishMapProcessing", data => {
       setSuccessMessage(data);
       setIsFinihed(true);
       setOctaveLoader(false);
     });
+
+    // socket.on
+
+    // ss(socket).on('sending', function(stream:any) {
+    //   stream.pipe(fs.createWriteStream(filename));
+    //   stream.on('end', function () {
+    //     console.log('file received');
+    //   });
+    // });
   }, []);
 
   // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -182,7 +194,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     if(dataFactor > 150 && dataFactor < 300) {
       ITERATIONS = 800
     } else if(dataFactor >= 300) {
-      ITERATIONS = 6000;
+      ITERATIONS = 6500;
     }
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
@@ -219,28 +231,28 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return resultArray;
   }
 
-  const exportToOctave = async(data: Array<SegmentFullResultType>, dataFactor: number, corners123: any) => {
+  const exportToOctave = async(data: Array<SegmentFullResultType>, dataFactor: number, corners123: any, postNumber: number) => {
     const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
 
 
-    const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, ITERATIONS, true);
-    let numberOfCalls = chunkedArray.length;
+    // const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, ITERATIONS, true);
+    // let numberOfCalls = chunkedArray.length;
 
-    while(numberOfCalls > 0){
+    // while(numberOfCalls > 0){
 
       const bodyObject =  JSON.stringify( {
         // fileName: `${id_antena}_${id_nadajnik}_${id_program}+${Math.random()}`,
         fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-        data: chunkedArray[numberOfCalls - 1],
-        postNumber: numberOfCalls,
+        data: dataConstructedForOctave,
+        postNumber: postNumber,
         dataFactor: dataFactor,
         corners: corners123
       });
 
       //@ts-ignore
-      const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, numberOfCalls);
-      numberOfCalls = numberOfCalls - 1;
+      const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, postNumber);
+      // numberOfCalls = numberOfCalls - 1;
 
       if(awaited) {
         try {
@@ -250,7 +262,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         }
 
       }
-    }
+    // }
   };
 
 
@@ -265,10 +277,12 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         resolve(
           callApiFetch(`api/export-octave/send-all/`, requestOptions)
         .then(async(file) => {
+          console.log("PN ==> ", postNumber);
           if(postNumber === 1) {
             setSuccessMessage("Pomyślnie przesłano dane ! Trwa proces Octave ... ");
             setOctaveLoader(true);
           }
+
           return postNumber;
         })
         .catch(err => {
@@ -290,27 +304,31 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     let numberOfCalls = ITERATIONS;
     console.log("number of ", numberOfCalls)
     // const resultArray = [];
-    const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
+    const chunkedArray = chunkArray(results.coordinates, ITERATIONS, true);
+    console.log("chunked arrray length", results.coordinates.length)
 
-    while(numberOfCalls > 0){
-      //@ts-ignore
-      const awaited: postLookUpLineResultType = await postLookupDistanceForAllPoint(+adapterX, +adapterY, distance, chunkedArray[numberOfCalls - 1]);
-      if(awaited) {
-        numberOfCalls = numberOfCalls - 1;
-        setLoaderValue(ITERATIONS - loaderValue - numberOfCalls)
-        try {
-          console.log("----> ", numberOfCalls);
-          const parsedResponse = JSON.parse(awaited.results);
-          exportToOctave(parsedResponse, 300, corners);
+  //  for(let i= ITERATIONS - 1; i > 0; i--){
+  //     //@ts-ignore
+  //     const awaited: postLookUpLineResultType = await postLookupDistanceForAllPoint(+adapterX, +adapterY, distance, chunkedArray[i - 1]);
+  //     if(awaited) {
 
-          // resultArray.push(...parsedResponse);
+  //       setLoaderValue(ITERATIONS - loaderValue - i)
+  //       console.log("---->  awaited --- ", awaited);
+  //       try {
+  //         console.log("---->  koko --- ", i);
+  //         const parsedResponse =  awaited.results && JSON.parse(awaited.results);
+  //         if (parsedResponse.length > 0){
+  //           // exportToOctave(parsedResponse, ITERATIONS, corners, i);
+  //         }
 
-        } catch(err) {
-          console.error("getLineInfoFull() -> parsing error: ", err);
-        }
+  //         // resultArray.push(...parsedResponse);
 
-      }
-    }
+  //       } catch(err) {
+  //         console.error("getLineInfoFull() -> parsing error: ", err);
+  //       }
+
+  //     }
+  //   }
     return true;
   };
 

@@ -9,11 +9,12 @@ magmapy-bb9815bb7548.json
 *.xlsx
 *.hgt
 *.bmp
+get_receivers.*.m
 
 /node_modules
 /octave-src
 /.pnp
-.pnp.js
+/validation_results
 
 /server-side/keys.ts
 /src

@@ -187,8 +187,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, 
                     if(globalProcessCounter >= ITERATIONS) {
                         req.app.io.emit("finishMapProcessing", "Zakończono !");
                         const size = ((dataFactor * 2) | 0 ) - 1;
-                        runBitmapScript(fName, size, corners);
-                        // const corners = getCorners()
+                        // runBitmapScript(fName, size, corners);
                         ls1.kill()
                         globalProcessCounter = -1;
                         return 1;
@@ -234,6 +233,8 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         //----------------------------------------------
         if(+numberOfPost === 1) {
 
+            console.log("BUMBUMBUMBUMBUM#!@#!@#!@#@!#!@# ");
+
         if(dataFactor < 20) {
             ITERATIONS = 5;
         }
@@ -257,7 +258,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                   latitude: adapterLat
                 }
             })
-
+            globalStorage = [];
             const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
 
             const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);
@@ -310,9 +311,10 @@ router.post('/send-all/', async (req: Request, res: Response) => {
     }
 
     } catch (err) {
-        return res.status(404).json({
-            error: err,
-        });
+        // return res.status(404).json({
+        //     error: "tutaj coś ",
+        // });
+        console.log("bład")
     }
 });
 

@@ -54,7 +54,7 @@ class OpenElevationRestClient extends React.Component {
         if (body && !Object.keys(body).length) {
             body = undefined;
         }
-        // console.log("_--=-=- > ", JSON.stringify(body))
+        console.log("_--=-=- > ", urlWithParams)
         fetch(urlWithParams, {
             method,
             headers,
