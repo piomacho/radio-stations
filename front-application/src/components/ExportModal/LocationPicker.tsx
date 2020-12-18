@@ -52,10 +52,6 @@ export const LocationPickerComponent = ({handleChangeX, handleChangeY, recLongit
     setLocation({lat: event.lat, lng: event.lng});
   }
 
-//   function handleChangeZoom (newZoom: number){
-//     setZoom(newZoom);
-//   }
-
   function handleResetLocation(){
     setDefaultLocation({ ... DefaultLocation});
     // setZoom(DefaultZoom);
@@ -63,10 +59,6 @@ export const LocationPickerComponent = ({handleChangeX, handleChangeY, recLongit
 
   return (
     <>
-  {/* <button onClick={handleResetLocation}>Reset Location</button>
-  <label>Latitute:</label><input type='text' value={location.lat} disabled/>
-  <label>Longitute:</label><input type='text' value={location.lng} disabled/> */}
-  {/* <label>Zoom:</label><input type='text' value={zoom} disabled/> */}
   <div style={{ height: '100vh', width: '100%' }}>
   <GoogleMapReact
     defaultCenter={defaultLocation}

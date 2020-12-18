@@ -4,6 +4,8 @@ import store, { CoordinatesType } from "../../Store/Store";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import io from "socket.io-client";
+import Loader from 'react-loader-spinner';
+import path from "path";
 
 import Button from "../Button/Button";
 import {
@@ -19,15 +21,19 @@ import {
   AdaptersHeader,
   ExportInputWrapper,
   DistanceDisplay,
-  ProgressBarWrapper
+  ProgressBarWrapper,
+  DownloadIcon,
+  DownloadArea,
+  ResultMessage
 } from "./ExportAllModal.style";
 import { ButtonWrapper } from "../Button/Button.styles";
-import { callApiFetch, measureDistance } from "../../common/global";
+import { callApiFetch, getCorners, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
 import { chunkArray } from "./chunkArray";
 import { LoaderOverLay } from "../SelectionPanel/SelectionPanel.styles";
 import { LoaderContainer } from "../Adapters/Adapters.style";
 import { CloseButton } from "../ExportModal/ExportModal.style";
+import pLimit from 'p-limit';
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -38,13 +44,13 @@ interface ErrorsType {
   xError: null | string;
   yError: null | string;
   pointsError: null | string;
-  fileNameError: null | string;
+  // fileNameError: null | string;
 }
 
 const EmptyError: ErrorsType = { xError: null,
   yError: null,
   pointsError: null,
-  fileNameError: null
+  // fileNameError: null
 }
 
 interface ResultCoordinateType {
@@ -80,24 +86,28 @@ interface SegmentFullResultType {
   points: Array<ElevationSegmentType>
 }
 
-let ITERATIONS = 200;
+let ITERATIONS = 20;
 
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
   const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
+  const { id_nadajnik, id_antena, id_program} = adapter;
   const [error, setError] = useState(EmptyError);
+  const [octaveLoader, setOctaveLoader] = useState(false);
   const [loaderValue, setLoaderValue] = useState(-1);
-  const [fileName, setFileName] = useState("");
-  const [segmentsElevations, setSegmentsElevations] = useState<Array<SegmentResultType>>([]);
+  // const [fileName, setFileName] = useState("");
+  // const [segmentsElevations, setSegmentsElevations] = useState<Array<SegmentResultType>>([]);
   const [radius, setRadius] = useState("");
   const [pointsDistance, setPointsDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [ isFinished, setIsFinihed ] = useState(false);
+  const [corners, setCorners] = useState({});
   const ENDPOINT = "http://localhost:5000";
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
   // const socket = io('http://localhost:5000')
 
-
+  const limit = pLimit(5);
 
   useEffect(() => {
     const socket = io(ENDPOINT);
@@ -106,23 +116,25 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
      //@ts-ignore
     socket.on("finishMapProcessing", data => {
       setSuccessMessage(data);
+      setIsFinihed(true);
+      setOctaveLoader(false);
     });
   }, []);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSuccessMessage("");
-    setError({...error, fileNameError: null});
-    setFileName(value);
-    const rg1 = /^[^\\/:\*\?"<>\|]+$/; // forbidden characters \ / : * ? " < > |
-    const rg2 = /^\./; // cannot start with dot (.)
-    const rg3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; // forbidden file names
-    const isAllowed = rg1.test(value) && !rg2.test(value) && !rg3.test(value);
-    // setAllowedName(isAllowed);
-    if (!isAllowed && value.length > 0) {
-      setError({...error, fileNameError: "Name is not allowed !"});
-    }
-  };
+  // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const value = e.target.value;
+  //   setSuccessMessage("");
+  //   setError({...error, fileNameError: null});
+  //   setFileName(value);
+  //   const rg1 = /^[^\\/:\*\?"<>\|]+$/; // forbidden characters \ / : * ? " < > |
+  //   const rg2 = /^\./; // cannot start with dot (.)
+  //   const rg3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; // forbidden file names
+  //   const isAllowed = rg1.test(value) && !rg2.test(value) && !rg3.test(value);
+  //   // setAllowedName(isAllowed);
+  //   if (!isAllowed && value.length > 0) {
+  //     setError({...error, fileNameError: "Name is not allowed !"});
+  //   }
+  // };
 
   const handleChangeRadius = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -163,23 +175,26 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           pointsDistance: Number(pointsDistance)
         })
       };
-
+    setLoaderValue(0);
     const dataFactor =  Number(radius)/Number(pointsDistance)
     console.log(" data factor ", dataFactor);
 
     if(dataFactor > 150 && dataFactor < 300) {
       ITERATIONS = 800
     } else if(dataFactor >= 300) {
-      ITERATIONS = 3200;
+      ITERATIONS = 6000;
     }
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
+
+          const corners123 = await getCorners(results.coordinates);
+          setCorners(corners123);
           handleExportFull(results, Number(pointsDistance)).then((data: any) => {
            try {
 
-              setSegmentsElevations(data);
-              exportToOctave(data, dataFactor);
+              // setSegmentsElevations(data);
+              // exportToOctave(data, dataFactor, corners123);
 
             } catch (e) {
               console.error("Parsing error ->", e);
@@ -204,7 +219,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return resultArray;
   }
 
-  const exportToOctave = async(data: Array<SegmentFullResultType>, dataFactor: number) => {
+  const exportToOctave = async(data: Array<SegmentFullResultType>, dataFactor: number, corners123: any) => {
     const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
 
 
@@ -214,11 +229,13 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     while(numberOfCalls > 0){
 
       const bodyObject =  JSON.stringify( {
-        fileName: fileName,
+        // fileName: `${id_antena}_${id_nadajnik}_${id_program}+${Math.random()}`,
+        fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
         data: chunkedArray[numberOfCalls - 1],
         postNumber: numberOfCalls,
-        dataFactor: dataFactor
+        dataFactor: dataFactor,
+        corners: corners123
       });
 
       //@ts-ignore
@@ -248,9 +265,9 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         resolve(
           callApiFetch(`api/export-octave/send-all/`, requestOptions)
         .then(async(file) => {
-          console.log("file -- - - - - >  ", file);
           if(postNumber === 1) {
-            setSuccessMessage("File saved succcessfully! Octave process in progress ... ");
+            setSuccessMessage("Pomyślnie przesłano dane ! Trwa proces Octave ... ");
+            setOctaveLoader(true);
           }
           return postNumber;
         })
@@ -265,19 +282,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   }
 
-  const getLineInfo = (result: ResultType, distance: number) => {
-    return OEClient.postLookupLineDistance({
-        adapterLongitude: +adapterY,
-        adapterLatitude: +adapterX,
-        range: measureDistance( +adapterX, +adapterY, result.latitude, result.longitude).toFixed(2),
-        distance: distance,
-        receiverLongitude: result.longitude,
-        receiverLatitude: result.latitude
-      }).then(async function(results) {
-        return Promise.resolve(results)
-      });
-  }
-
   interface postLookUpLineResultType {
     results: string;
   }
@@ -285,7 +289,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const getLineInfoFull = async(results: ResultCoordinateType, distance: number) => {
     let numberOfCalls = ITERATIONS;
     console.log("number of ", numberOfCalls)
-    const resultArray = [];
+    // const resultArray = [];
     const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
 
     while(numberOfCalls > 0){
@@ -297,7 +301,9 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         try {
           console.log("----> ", numberOfCalls);
           const parsedResponse = JSON.parse(awaited.results);
-          resultArray.push(...parsedResponse);
+          exportToOctave(parsedResponse, 300, corners);
+
+          // resultArray.push(...parsedResponse);
 
         } catch(err) {
           console.error("getLineInfoFull() -> parsing error: ", err);
@@ -305,7 +311,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
       }
     }
-    return resultArray;
+    return true;
   };
 
   const postLookupDistanceForAllPoint = (adapterX: number, adapterY: number, distance: number, coordinates: ResultType[]) => {
@@ -323,7 +329,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     return getLineInfoFull(results, distance);
   }
 
-  const allowedSubmit = Object.values(error).every(x => (x === null)) && fileName.length > 0 && successMessage === '';
+  const allowedSubmit = Object.values(error).every(x => (x === null)) && pointsDistance !== "" && radius !== '' && successMessage === '';
   const adapterX = +(+adapter.szerokosc).toFixed(2);
   const adapterY = +(+adapter.dlugosc).toFixed(2);
 
@@ -358,28 +364,39 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             <Coord><Input onChange={handleChangePointsDistance} placeholder="Odległość: " /></Coord>
         </AdapterCoordsWrapper>
 
+        {isFinished === false ?
         <ExportInputWrapper>
           <InputContainer>
-            <Input onChange={handleChange} placeholder="Nazwa pliku wynikowego:" />
+            <Input value={`${id_antena}_${id_nadajnik}_${id_program}`} disabled={true}/>
             <TypeSpan>.xlsx</TypeSpan>
 
             <ExportWrapper>
               <Button
                 onClick={allowedSubmit ? handleExportClick : null}
                 label={"Wyeksportuj"}
-                backColor={"#7bed9f"}
-                backColorHover={"#2ed573"}
+                backColor={"#88d317"}
+                backColorHover={"#0e8044"}
                 disabled={!allowedSubmit}
               />
           </ExportWrapper>
           </InputContainer>
 
-        </ExportInputWrapper>
+        </ExportInputWrapper> :
+        <DownloadArea>
+          <ResultMessage>Odwiedź stronę <a target="_blank" href="https://mapy.radiopolska.pl/">https://mapy.radiopolska.pl/</a> aby zobaczyć otrzymaną mapę.</ResultMessage>
+          <div>
+            <ResultMessage>Pobierz plik .kml:</ResultMessage>
+            <a href={`https://storage.googleapis.com/klm-map-storage/${id_antena}_${id_nadajnik}_${id_program}.kml`} download={`${id_antena}_${id_nadajnik}_${id_program}.kml`}><DownloadIcon /></a> </div>
+        </DownloadArea>}
       </InputWrapper>
       {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
         <Message key={idx} error={true}>{error}</Message>
       ))}
-      {successMessage && <Message>{successMessage}</Message>}
+      {successMessage &&  <div>
+        <Message>{successMessage}</Message>
+        { octaveLoader && <LoaderContainer><Loader type="Circles" color="#88d317" height={40} width={40}/></LoaderContainer>}
+        {/* <a onClick={downloadFile} download={`${id_antena}_${id_nadajnik}_${id_program}.bmp`}>Download file ! </a> */}
+        </div>}
 
        {loaderValue >= 0 && (loaderValue/ITERATIONS) < 1 ?
         <LoaderOverLay>

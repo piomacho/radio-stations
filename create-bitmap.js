@@ -2,8 +2,12 @@ const { Command } = require('commander');
 const xlsx = require('xlsx');
 let Jimp = require('jimp')
 const { getColorFotLegend } = require("./getColorForLegend.js");
+const { uploadFile } = require('./uploadFile.js');
+const { createKml } = require('./createKml.js');
 const { sortAndGroupResultElements, sortAndGroupResultElementsNew } = require("./sortAndGroupResultElements.js");
 var fs = require('fs');
+const path = require('path');
+const {Storage} = require('@google-cloud/storage');
 
 const program = new Command();
 program.version('0.0.1');
@@ -13,10 +17,17 @@ program
   .option('-x, --xlxName <type>', 'add excel file name')
   .option('-s, --size <type>', 'add radius of measured teritory [km]')
   .option('-i, --iterations <type>', 'add iterations')
+  .option('-a, --maxLongMaxLat <type>', 'maxLongMaxLat')
+  .option('-b, --maxLongMinLat <type>', 'maxLongMinLat')
+  .option('-c, --minLongMaxLat <type>', 'minLongMaxLat')
+  .option('-d, --minLongMinLat <type>', 'minLongMinLat');
 
   ;
 
 program.parse(process.argv);
+// Creates a client from a Google service account key.
+const storage = new Storage({keyFilename: path.join(__dirname, "./magmapy-bb9815bb7548.json"), projectId: 'magmapy'});
+const bucketName = 'klm-map-storage';
 
 const allDataArray = [];
 const iterations = Number(program.iterations);
@@ -30,6 +41,7 @@ for (i = 0; i < iterations; i++) {
 
 const pointInfo = [];
 const size = Number(program.size) - 1;
+console.log("=-=-=-=-=-=-= korners ", program.maxLongMaxLat)
 // E [dBuV/m] = Ptx [dBm] - Lb [dB] + 107
 
  for (let i = 0; i < allDataArray.length; i++) {
@@ -70,6 +82,15 @@ Jimp.read(`initial.bmp`).then(image => {
     if (index == sortedDataMapKeys.length - 1) {
       console.log("all is saved now !")
       image.write(`${program.fileName}.bmp`);
+      const kmlFile = createKml(program.maxLongMaxLat, program.maxLongMinLat, program.minLongMaxLat, program.minLongMinLat,  `${program.fileName}.bmp`);
+      fs.appendFile(`${program.fileName}.kml`, kmlFile, function (err) {
+        if (err) throw err;
+        console.log('Saved!');
+      });
+      uploadFile(storage, bucketName, `${program.fileName}.bmp`).catch(console.error);
+      // uploadFile(storage, bucketName, `${program.fileName}.bmp`).catch(console.error);
+
+
     }
     });
   })
@@ -80,5 +101,5 @@ Jimp.read(`initial.bmp`).then(image => {
 
 
 console.log("File saved !");
-return true ;
+// return true ;
 

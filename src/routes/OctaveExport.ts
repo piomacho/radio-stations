@@ -2,9 +2,12 @@ import { Request, Response, Router } from 'express';
 const path = require("path");
 // const { exec } = require("child_process");
 import {chunkArray} from './chunkArray';
+import {getCorners}  from '../common/global'
+import { createBitmap } from './createBitmap';
 const { spawn, execFile } = require("child_process");
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+
 
 const fs = require('fs');
 const xl = require('excel4node');
@@ -20,6 +23,14 @@ export interface CoordinatesType {
     elevation: number;
     longitude: number;
     distance: number;
+}
+
+export interface CornersType {
+    maxLongMaxLat: {lat: number, lng: number}
+    maxLongMinLat: {lat: number, lng: number}
+    minLongMaxLat: {lat: number, lng: number}
+    minLongMinLat: {lat: number, lng: number}
+
 }
 
 interface ElevationSegmentType {
@@ -53,12 +64,8 @@ const formatCoordinates1 = (coords: any) => {
      });
  };
 
-const runBitmapScript = async(fName: string, size: number) => {
-    const { stdout, stderr } = await exec(`node ${path.join(__dirname, '../../create-bitmap.js')} -x ${fName} -n ${fName} -s ${size} -i ${globalProcessCounter}`);
-    console.log('std out:  ----- >>> ', stdout);
-    if(stderr) {
-        console.log('stderr:', stderr);
-    }
+const runBitmapScript = async(fName: string, size: number, corners: CornersType) => {
+    createBitmap(fName, size, globalProcessCounter, corners);
 }
 
 router.post('/send/', async (req: Request, res: Response) => {
@@ -146,7 +153,7 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string)
 }
 
 
-const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, height: number,  frequencyStr: string, req:any, mainIterations: number, dataFactor:number): void | number => {
+const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, receiverLat: number, fName: string, height: number,  frequencyStr: string, req:any, mainIterations: number, dataFactor:number, corners: CornersType): void | number => {
         if(globalProcessCounter !== -1) {
             for (let j = 0; j < mainIterations; j++) {
                 if(globalProcessCounter < ITERATIONS) {
@@ -173,14 +180,15 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, 
                     if(processCounter === mainIterations) {
                         processCounter = 0;
                         setTimeout(function() {
-                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, req, mainIterations, dataFactor);
+                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, req, mainIterations, dataFactor, corners);
                             // return 1;
                         }, 2000);
                     }
                     if(globalProcessCounter >= ITERATIONS) {
-                        req.app.io.emit("finishMapProcessing", "Finished !");
-                        const size = dataFactor * 2 - 1;
-                        runBitmapScript(fName, size);
+                        req.app.io.emit("finishMapProcessing", "Zakończono !");
+                        const size = ((dataFactor * 2) | 0 ) - 1;
+                        runBitmapScript(fName, size, corners);
+                        // const corners = getCorners()
                         ls1.kill()
                         globalProcessCounter = -1;
                         return 1;
@@ -202,6 +210,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
         const numberOfPost = req.body.postNumber;
         const fName = req.body.fileName;
         const dataFactor = req.body.dataFactor;
+        const corners = req.body.corners;
         const frequency = Number(req.body.frequency)/100;
         const frequencyStr = frequency.toString();
         const receiverLon = req.body.data[0].receiver.longitude;
@@ -283,7 +292,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                     Promise.all(writeToReceiversPromises).then(async(result) => {
                             const mainIterations = 5;
                             globalProcessCounter = 0;
-                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, req, mainIterations, dataFactor);
+                            runOctave(adapterLon, adapterLat, receiverLon, receiverLat, fName, height, frequencyStr, req, mainIterations, dataFactor, corners);
 
                     });
                 });

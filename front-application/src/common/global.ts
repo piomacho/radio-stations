@@ -1,3 +1,5 @@
+import { CoordinatesType } from "../Store/Store";
+
 export interface LocationType {
     latitude: number,
     longitude: number
@@ -88,4 +90,54 @@ export const lineFromPoints = (P: PointType, Q: PointType, ) =>
     const c =  a*(P.x) + b*(P.y);
 
     return {intercept: c/b ,direction: slope}
+}
+
+
+export const getCorners = async(results: Array<LocationType>) => {
+  const grouped = sortAndGroupResultElements(results);
+  console.log("GRUPED ", grouped)
+  const keysOfGroupedArray = Object.keys(grouped).map((item: string) =>  Number(item));
+  const minLat = Math.min(...keysOfGroupedArray);
+  const maxLat = Math.max(...keysOfGroupedArray);
+
+  const maxLongMaxLat = maxLat && grouped[`${maxLat}`] && grouped[`${maxLat}`].slice(-1)[0].longitude;
+  const minLongMaxLat = maxLat && grouped[`${maxLat}`] && grouped[`${maxLat}`][0].longitude;
+
+  const maxLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`].slice(-1)[0].longitude;
+  const minLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`][0].longitude;
+  console.log("min ",minLongMaxLat,"--- ",maxLat)
+  return {
+      maxLongMaxLat: {
+          lat: maxLat,
+          lng: maxLongMaxLat
+      },
+      minLongMaxLat: {
+          lat: maxLat,
+          lng: minLongMaxLat
+      },
+      maxLongMinLat: {
+          lat: minLat,
+          lng: maxLongMinLat
+      },
+      minLongMinLat: {
+          lat: minLat,
+          lng: minLongMinLat
+      }
+  }
+
+}
+const sortAndGroupResultElements = (results:Array<LocationType>): any => {
+  //@ts-ignore
+  return results.sort((a, b) => {
+         if (a.latitude === b.latitude) {
+            // Price is only important when cities are the same
+            return a.longitude - b.longitude ;
+         }
+
+         return a.latitude > b.latitude ? -1 : 1;
+      }).reduce((r: Array<LocationType>, a: LocationType) => {
+          //@ts-ignore
+          r[a.latitude] = [...r[a.latitude] || [], a !== undefined && a];
+          return r;
+         }, {});
 }

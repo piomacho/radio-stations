@@ -21,7 +21,6 @@ interface HeatmapObjectType {
 }
 
 const sortAndGroupResultElements = (results:Array<CoordinatesType>): any => {
-    console.log("=== ", results)
     //@ts-ignore
     return results.sort((a, b) => {
            if (a.latitude === b.latitude) {
@@ -68,7 +67,6 @@ const getCorners = (results: Array<CoordinatesType>) => {
             lng: minLongMinLat
         }
     }
-
 
 }
 
