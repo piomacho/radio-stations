@@ -352,6 +352,7 @@ def body_to_adapter():
         adapterLatitude = request.json.get('adapterLatitude', None)
         adapterLongitude = request.json.get('adapterLongitude', None)
         rangePar = request.json.get('range', None)
+        print("CO JEST KURŁA 003 ", request.json);
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -383,7 +384,7 @@ def body_to_line_distance():
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
 
-
+        print("CO JEST KURŁA 00 ", request.json);
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -418,10 +419,11 @@ def body_to_line_distance():
 
 def body_to_line_distance_all():
     try:
-        adapterLatitude = request.json.get('adapterLatitude', None)
-        adapterLongitude = request.json.get('adapterLongitude', None)
-        distance = request.json.get('distance', None)
-        receivers = request.json.get('receivers', None)
+        adapterLatitude = request.json['body'].get('adapterLatitude', None)
+        adapterLongitude = request.json['body'].get('adapterLongitude', None)
+        distance = request.json['body'].get('distance', None)
+        receivers = request.json['body'].get('receivers', None)
+        print("CO JEST KURŁA 011 ", request.json['body']);
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -436,6 +438,7 @@ def body_to_line_distance_all():
         raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
 
     # GENEROWANIE SIATKI PUNKTOW
+    print("CO JEST KURŁA");
 
     locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
 
@@ -455,6 +458,7 @@ def body_to_line():
         receiverLatitude = request.json.get('receiverLatitude', None)
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
+        print("CO JEST KURŁA 01 ", request.json);
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -551,6 +555,7 @@ def do_lookup_line_distance_all(get_locations_func):
     """
     try:
         resultArray = []
+        print("CO JEST KURŁA 123123 " );
         allData = get_locations_func();
         for data in allData:
             resultArray.append(fullResult({'latitude': data.coords['latitude'], 'longitude': data.coords['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data.points] ))

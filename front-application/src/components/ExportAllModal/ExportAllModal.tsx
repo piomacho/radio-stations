@@ -86,7 +86,7 @@ interface SegmentFullResultType {
   points: Array<ElevationSegmentType>
 }
 
-let ITERATIONS = 20;
+let ITERATIONS = 200;
 
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
@@ -111,8 +111,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   useEffect(() => {
     const socket = io(ENDPOINT);
-
-
+    //@ts-ignore
+    socket.on("loaderGenerate", data => {
+      console.log("received ", data);
+      setLoaderValue(data);
+    });
      //@ts-ignore
     socket.on("finishMapProcessing", data => {
       setSuccessMessage(data);
@@ -180,7 +183,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     console.log(" data factor ", dataFactor);
 
     if(dataFactor > 150 && dataFactor < 300) {
-      ITERATIONS = 800
+      ITERATIONS = 200
     } else if(dataFactor >= 300) {
       ITERATIONS = 6000;
     }
@@ -190,16 +193,16 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
           const corners123 = await getCorners(results.coordinates);
           setCorners(corners123);
-          handleExportFull(results, Number(pointsDistance)).then((data: any) => {
-           try {
+          // handleExportFull(results, Number(pointsDistance)).then((data: any) => {
+          //  try {
 
-              // setSegmentsElevations(data);
-              // exportToOctave(data, dataFactor, corners123);
+          //     // setSegmentsElevations(data);
+          //     // exportToOctave(data, dataFactor, corners123);
 
-            } catch (e) {
-              console.error("Parsing error ->", e);
-            }
-          })
+          //   } catch (e) {
+          //     console.error("Parsing error ->", e);
+          //   }
+          // })
         })
         .catch((error: any) => {
           console.log("Error postLookupLine:" + error);
@@ -297,7 +300,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       const awaited: postLookUpLineResultType = await postLookupDistanceForAllPoint(+adapterX, +adapterY, distance, chunkedArray[numberOfCalls - 1]);
       if(awaited) {
         numberOfCalls = numberOfCalls - 1;
-        setLoaderValue(ITERATIONS - loaderValue - numberOfCalls)
+        // setLoaderValue(ITEloaderValue - numberOfCalls)
         try {
           console.log("----> ", numberOfCalls);
           const parsedResponse = JSON.parse(awaited.results);

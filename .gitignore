@@ -16,7 +16,7 @@ magmapy-bb9815bb7548.json
 .pnp.js
 
 /server-side/keys.ts
-/src
+/src/keys.ts
 *.gz
 *.xlsx#
 /validation_results
