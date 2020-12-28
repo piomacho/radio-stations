@@ -1,8 +1,31 @@
 import { Request, Response, Router } from 'express';
+import { getCorners } from 'src/common/global';
 import { chunkArray } from './chunkArray';
+import { handleExportToOctave, SegmentResultType } from './octaveExportFunctions';
+import axiosRetry from 'axios-retry';
 const axios = require('axios')
 var fs = require('fs');
+const json = require('big-json');
+const path = require('path');
+const oboe = require('oboe');
 
+
+axiosRetry(axios, { retries: 3 });
+
+interface ElevationSegmentType {
+    latitude: number,
+    longitude: number,
+    elevation: number,
+    distance: number
+  }
+
+interface SegmentFullResultType {
+    receiver: {
+      longitude: number,
+      latitude: number
+    },
+    points: Array<ElevationSegmentType>
+  }
 
 
 const router = Router();
@@ -47,62 +70,125 @@ const makeRequest = (
   .post(urlWithParams, {
     body
   }).then(async(response: any) => {
-        console.log("makeRequest 1  ")
+        // console.log("1  ")
         return response.data;
     }).then(async(body: any) => {
-        console.log("makeRequest 2  ")
+        // console.log("2  ")
         // console.log("2  ")
 
-        return Promise.resolve(body)
+        return Promise.resolve(body.results)
     }).catch((error: any) => {
-        console.log("3  ");
+        console.log("3  ", error);
         return null;
     });
 };
-// fetch(urlWithParams, {
-//     method,
-//     headers,
-//     body: JSON.stringify(body)
-// })
+
+const removeResultsFile = () => {
+    fs.stat(path.join(__dirname, '../../full-result.json'), function (err: string) {
+
+        if (err) {
+            return console.error(err);
+        }
+        fs.unlink(path.join(__dirname, '../../full-result.json'),function () {
+            console.log("JSON removed");
+            fs.writeFile(path.join(__dirname, '../../full-result.json'), '[', function () {
+
+            });
+        });
+    });
+}
+
 router.post('/generate', async (req: Request, res: Response) => {
     try {
-        const { adapterLatitude, adapterLongitude, radius, pointsDistance } = req.body;
-        const coords = generateCoordinates(radius, pointsDistance,adapterLatitude, adapterLongitude);
-        let ITERATIONS = 200;
+        const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
+        console.log("------> adapter", adapter)
+        const coords = generateCoordinates(radius, pointsDistance, adapter.latitude, adapter.longitude);
+        const corners = await getCorners(coords);
+        removeResultsFile();
+
+
+        let ITERATIONS = 800;
+        if(dataFactor >= 300) {
+            ITERATIONS = 2700;
+        }
         const domain = 'http://0.0.0.0:10000';
         const chunkedArray = chunkArray(coords, ITERATIONS, true);
         const queryParameters: Record<string, any> = {}
-        const allCoordinates = [];
+        const allCoordinates: any = [];
 
         const headers: any = {};
         const form: Record<string, any> = {};
         headers["Accept"] = ["application/json"];
         headers["Content-Type"] = ["application/json"];
 
-        const path = '/lookup-line-distance-all';
 
+        const pathName = '/lookup-line-distance-all';
+
+        let counter = 0;
+        res.status(200).json({coordinates: "luz"});
         for(let i = 0; i < ITERATIONS; i++) {
+            //@ts-ignore
+            // headers["Content-Length"] = Buffer.byteLength(chunkedArray[i]);
             const body = {
-                adapterLatitude: adapterLatitude,
-                adapterLongitude: adapterLongitude,
+                final: (i === ITERATIONS - 1),
+                adapterLatitude: adapter.latitude,
+                adapterLongitude: adapter.longitude,
                 distance: pointsDistance,
                 receivers: chunkedArray[i],
             };
-            const result = await makeRequest('POST', domain + '/api/v1' + path, body, body, headers, queryParameters, form);
-
+            const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
             if(result) {
-                allCoordinates.push(result);
-                //@ts-ignore
-                req.app.io.emit("loaderGenerate", i + 1);
-                console.log("---->   ", allCoordinates.length)
+                try {
+
+                    counter = counter + 1;
+                       //@ts-ignore
+                    req.app.io.emit("loaderGenerate", counter);
+                   if(counter === ITERATIONS){
+                    fs.appendFile(path.join(__dirname, '../../full-result.json'), '""]', function (err: string) {
+                        if (err) throw err;
+
+                        console.log('Saved!');
+                        const readStream = fs.createReadStream(path.join(__dirname, '../../full-result.json'));
+                        oboe(readStream)
+                        .node('!.*', function(drink: any){
+
+                          allCoordinates.push(drink);
+
+                           // By returning oboe.drop, the parsed JSON object will be freed,
+                           // allowing it to be garbage collected.
+                           return oboe.drop;
+
+                        }).done(function( finalJson: any ){
+
+                           // most of the nodes have been dropped
+
+                           console.log( finalJson );  // logs: {"drinks":[]}
+                                   //@ts-ignore
+                                const dataConstructedForOctave: Array<SegmentResultType> = constructDataForOctave(allCoordinates, adapter.latitude, adapter.longitude, adapter.height, `${adapter.frequency}`);
+
+                                handleExportToOctave(dataConstructedForOctave, adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+
+                        })
+
+
+
+
+
+                    });
+
+                   }
+                }catch (err) {
+                    console.error("parsing erorr")
+                    return res.status(404).json({
+                        error: err.message,
+                }
+                );
+
             }
-        }
+        }}
 
 
-        console.log("koniec ", allCoordinates.length)
-            return res.status(200).json({
-                coordinates: allCoordinates,
-            });
+
 
 
     } catch (err) {
@@ -234,5 +320,22 @@ const radians_to_degrees = (radians: number) => {
   var pi = Math.PI;
   return radians * (180/pi);
 }
+
+const constructDataForOctave = (data: any, latitude: number, longitude: number, height: string, frequency: string):any  => {
+    const resultArray:any  = [];
+
+    data && data.map((element:SegmentFullResultType, iterator: number) => {
+        // console.log("--- ", element.)
+        if(element.receiver) {
+            resultArray.push({
+                coordinates: element.points,
+                adapter: { latitude: latitude, longitude: longitude, height: height, frequency: frequency},
+                receiver:  { latitude: +element.receiver.latitude, longitude: +element.receiver.longitude }
+              });
+        }
+      });
+      return resultArray;
+}
+
 
 export default router;

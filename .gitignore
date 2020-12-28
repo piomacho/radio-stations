@@ -9,6 +9,7 @@ magmapy-bb9815bb7548.json
 *.xlsx
 *.hgt
 *.bmp
+*.zip
 
 /node_modules
 /octave-src
@@ -18,7 +19,9 @@ magmapy-bb9815bb7548.json
 /server-side/keys.ts
 /src/keys.ts
 *.gz
-*.xlsx#
+*.xlsx
+./full-result.json
+otherCoords.json
 /validation_results
 
 # testing
