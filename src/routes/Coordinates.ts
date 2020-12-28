@@ -81,27 +81,27 @@ router.post('/generate', async (req: Request, res: Response) => {
 
         const path = '/lookup-line-distance-all';
 
-        for(let i = 0; i < ITERATIONS; i++) {
-            const body = {
-                adapterLatitude: adapterLatitude,
-                adapterLongitude: adapterLongitude,
-                distance: pointsDistance,
-                receivers: chunkedArray[i],
-            };
-            const result = await makeRequest('POST', domain + '/api/v1' + path, body, body, headers, queryParameters, form);
+        // for(let i = 0; i < ITERATIONS; i++) {
+        //     const body = {
+        //         adapterLatitude: adapterLatitude,
+        //         adapterLongitude: adapterLongitude,
+        //         distance: pointsDistance,
+        //         receivers: chunkedArray[i],
+        //     };
+        //     const result = await makeRequest('POST', domain + '/api/v1' + path, body, body, headers, queryParameters, form);
 
-            if(result) {
-                allCoordinates.push(result);
-                //@ts-ignore
-                req.app.io.emit("loaderGenerate", i + 1);
-                console.log("---->   ", allCoordinates.length)
-            }
-        }
+        //     if(result) {
+        //         allCoordinates.push(result);
+        //         //@ts-ignore
+        //         req.app.io.emit("loaderGenerate", i + 1);
+        //         console.log("---->   ", allCoordinates.length)
+        //     }
+        // }
 
-
-        console.log("koniec ", allCoordinates.length)
+        // console.log("all")
+        // console.log("koniec ", allCoordinates)
             return res.status(200).json({
-                coordinates: allCoordinates,
+                coordinates: coords,
             });
 
 

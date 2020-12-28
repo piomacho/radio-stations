@@ -257,7 +257,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                   latitude: adapterLat
                 }
             })
-
+            console.log("jest tu!!!! ")
             const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
 
             const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);

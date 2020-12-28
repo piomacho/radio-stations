@@ -288,9 +288,10 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
             lon2 = math.degrees(lon2)
             cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
             if(x == int(numberOfPoints) - 1):
-                resultArray.append(result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray))
+                xx = result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray)
+                resultArray.append(xx.__dict__)
 
-    return resultArray
+    return jsonpickle.encode(resultArray, unpicklable=False)
 
 def generateCoordinatesDistance(range1, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
     cArray = []
@@ -384,7 +385,7 @@ def body_to_line_distance():
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
 
-        print("CO JEST KURŁA 00 ", request.json);
+        # print("CO JEST KURŁA 00 ", request.json);
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -419,11 +420,10 @@ def body_to_line_distance():
 
 def body_to_line_distance_all():
     try:
-        adapterLatitude = request.json['body'].get('adapterLatitude', None)
-        adapterLongitude = request.json['body'].get('adapterLongitude', None)
-        distance = request.json['body'].get('distance', None)
-        receivers = request.json['body'].get('receivers', None)
-        print("CO JEST KURŁA 011 ", request.json['body']);
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        adapterLongitude = request.json.get('adapterLongitude', None)
+        distance = request.json.get('distance', None)
+        receivers = request.json.get('receivers', None)
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -438,16 +438,19 @@ def body_to_line_distance_all():
         raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
 
     # GENEROWANIE SIATKI PUNKTOW
-    print("CO JEST KURŁA");
+    print("CO JEST KURŁA",adapterLatitude);
 
     locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
+    # print("CO JEST KURŁA 011 ", locations );
 
     latlng = []
     latLngFull = []
 
     d = dict();
+    # print("JEST",
+    a = json.loads(locations)
 
-    return locations
+    return a
 
 def body_to_line():
     try:
@@ -458,7 +461,7 @@ def body_to_line():
         receiverLatitude = request.json.get('receiverLatitude', None)
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
-        print("CO JEST KURŁA 01 ", request.json);
+        # print("CO JEST KURŁA 01 ", request.json);
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -555,14 +558,17 @@ def do_lookup_line_distance_all(get_locations_func):
     """
     try:
         resultArray = []
-        print("CO JEST KURŁA 123123 " );
+        # print("CO JEST KURŁA 123123 " );
         allData = get_locations_func();
+        # print('llll ', allData)
         for data in allData:
-            resultArray.append(fullResult({'latitude': data.coords['latitude'], 'longitude': data.coords['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data.points] ))
+            xxx = fullResult({'latitude': data['coords']['latitude'], 'longitude': data['coords']['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data['points']] )
+            resultArray.append(xxx.__dict__)
         finalResult = jsonpickle.encode(resultArray, unpicklable=False)
+        # print("finalResult --------------------------- ",resultArray)
         return {'results': finalResult}
     except InternalException as e:
-        response.status = 400
+        response.status = 401
         response.content_type = 'application/json'
         return e.args[0]
 
