@@ -87,6 +87,8 @@ interface SegmentFullResultType {
 }
 
 let ITERATIONS = 200;
+//@ts-ignore
+let globalAr = [];
 
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
@@ -122,6 +124,10 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       setIsFinihed(true);
       setOctaveLoader(false);
     });
+
+    return ()=>{
+      socket.disconnect();
+     }
   }, []);
 
   // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -168,16 +174,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const handleExportClick = () => {
       const adapterLatitude = +(+adapter.szerokosc).toFixed(2);
       const adapterLongitude = +(+adapter.dlugosc).toFixed(2);
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          adapterLatitude: adapterLatitude,
-          adapterLongitude: adapterLongitude,
-          radius: Number(radius),
-          pointsDistance: Number(pointsDistance)
-        })
-      };
+
     setLoaderValue(0);
     const dataFactor =  Number(radius)/Number(pointsDistance)
     console.log(" data factor ", dataFactor);
@@ -185,24 +182,40 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     if(dataFactor > 150 && dataFactor < 300) {
       ITERATIONS = 200
     } else if(dataFactor >= 300) {
-      ITERATIONS = 6000;
+      ITERATIONS = 2700;
     }
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        adapter:{
+          latitude: adapterLatitude,
+          longitude: adapterLongitude,
+          height: +adapter.wys_npm,
+          frequency: adapter.czestotliwosc
+        },
+        radius: Number(radius),
+        pointsDistance: Number(pointsDistance),
+        fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
+        dataFactor: dataFactor
+      })
+    };
 
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
-
           const corners123 = await getCorners(results.coordinates);
           setCorners(corners123);
-          // handleExportFull(results, Number(pointsDistance)).then((data: any) => {
-          //  try {
+        //   handleExportFull(results, Number(pointsDistance)).then((data: any) => {
+        //    try {
 
-          //     // setSegmentsElevations(data);
-          //     // exportToOctave(data, dataFactor, corners123);
+        //       // setSegmentsElevations(data);
+        //       //@ts-ignore
+        //       // exportToOctave(globalAr, dataFactor, corners123);
 
-          //   } catch (e) {
-          //     console.error("Parsing error ->", e);
-          //   }
-          // })
+        //     } catch (e) {
+        //       console.error("Parsing error ->", e);
+        //     }
+        //   })
         })
         .catch((error: any) => {
           console.log("Error postLookupLine:" + error);
@@ -211,6 +224,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   const constructDataForOctave = (data: Array<SegmentFullResultType>):any  => {
     const resultArray:any  = [];
+    // console.log("DATA ", data);
     data && data.map((element:SegmentFullResultType, iterator: number) => {
       resultArray.push({
         coordinates: element.points,
@@ -240,7 +254,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         dataFactor: dataFactor,
         corners: corners123
       });
-
+      // console.log("wth");
       //@ts-ignore
       const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, numberOfCalls);
       numberOfCalls = numberOfCalls - 1;
@@ -258,7 +272,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
 
   const fireOctaveExport = async(data: Array<SegmentFullResultType>, postNumber: number) => {
-
+    // console.log("fireOctaveExport",fireOctaveExport)
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -291,9 +305,10 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   const getLineInfoFull = async(results: ResultCoordinateType, distance: number) => {
     let numberOfCalls = ITERATIONS;
-    console.log("number of ", numberOfCalls)
     // const resultArray = [];
     const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
+
+    console.log("results.coordinates ", results.coordinates)
 
     while(numberOfCalls > 0){
       //@ts-ignore
@@ -302,10 +317,10 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         numberOfCalls = numberOfCalls - 1;
         // setLoaderValue(ITEloaderValue - numberOfCalls)
         try {
-          console.log("----> ", numberOfCalls);
+          console.log("----> ", awaited);
           const parsedResponse = JSON.parse(awaited.results);
-          exportToOctave(parsedResponse, 300, corners);
 
+          globalAr.push(...parsedResponse)
           // resultArray.push(...parsedResponse);
 
         } catch(err) {
@@ -318,6 +333,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   };
 
   const postLookupDistanceForAllPoint = (adapterX: number, adapterY: number, distance: number, coordinates: ResultType[]) => {
+    console.log("coo ",coordinates)
     return OEClient.postLookupLineDistanceAll({
       adapterLongitude: +adapterY,
       adapterLatitude: +adapterX,

@@ -31,21 +31,24 @@ const bucketName = 'klm-map-storage';
 
 const allDataArray = [];
 
-for (let i = 0; i < iterations; i++) {
-  const workbook = xlsx.readFile(path.join(__dirname, `../../validation_results/${fileName}${i}.xlsx`));
+for (let i = 1; i <= iterations; i++) {
+  const workbook = xlsx.readFile(path.join(__dirname, `../../validation_results/${fileName}-${i}.xlsx`));
   const worksheet = workbook.Sheets['Page1'];
-  const xlData = xlsx.utils.sheet_to_json(worksheet);
-  allDataArray.push(...xlData)
+  const rowArr = xlsx.utils.sheet_to_row_object_array(worksheet)
+
+  for(let i=0;i<rowArr.length;i++){
+    var data = rowArr[i];
+    allDataArray.push({phire: data.Phire, phirn: data.Phirn, lb: data.Lb})
+  }
 }
 
 const pointInfo: Array<ImageCoordinatesType> = [];
-// const size = size - 1; !!!
 // E [dBuV/m] = Ptx [dBm] - Lb [dB] + 107
 
  for (let i = 0; i < allDataArray.length; i++) {
-    const phire = allDataArray[i].Phire;
-    const phirn = allDataArray[i].Phirn;
-    const lb = allDataArray[i].Lb;
+    const phire = allDataArray[i].phire;
+    const phirn = allDataArray[i].phirn;
+    const lb = allDataArray[i].lb;
     const e = 60 - lb  + 107
     const color = getColorFotLegend(e);
 

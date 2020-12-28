@@ -4,6 +4,7 @@ import json
 import bottle
 import math
 import numpy
+import os
 from bottle import route, run, request, response, hook
 
 from gdal_interfaces import GDALTileInterface
@@ -251,14 +252,14 @@ def generateCoordinatesNew(range1, distance, adapterLongitude, adapterLatitude, 
 
     return cArray
 class result:
-    def __init__(self, coords, points):
+    def __init__(self, coords, coordinates):
         self.coords = coords
-        self.points = points
+        self.coordinates = coordinates
 
 class fullResult:
     def __init__(self, coords, points):
         self.receiver = coords
-        self.points = points
+        self.coordinates = points
 
 def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers):
     cArray = []
@@ -288,9 +289,10 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
             lon2 = math.degrees(lon2)
             cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
             if(x == int(numberOfPoints) - 1):
-                resultArray.append(result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray))
+                xx = result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray)
+                resultArray.append(xx.__dict__)
 
-    return resultArray
+    return jsonpickle.encode(resultArray, unpicklable=False)
 
 def generateCoordinatesDistance(range1, distance, adapterLongitude, adapterLatitude, receiverLongitude, receiverLatitude):
     cArray = []
@@ -352,7 +354,6 @@ def body_to_adapter():
         adapterLatitude = request.json.get('adapterLatitude', None)
         adapterLongitude = request.json.get('adapterLongitude', None)
         rangePar = request.json.get('range', None)
-        print("CO JEST KURŁA 003 ", request.json);
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -384,7 +385,7 @@ def body_to_line_distance():
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
 
-        print("CO JEST KURŁA 00 ", request.json);
+        # print("CO JEST KURŁA 00 ", request.json);
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -423,7 +424,6 @@ def body_to_line_distance_all():
         adapterLongitude = request.json['body'].get('adapterLongitude', None)
         distance = request.json['body'].get('distance', None)
         receivers = request.json['body'].get('receivers', None)
-        print("CO JEST KURŁA 011 ", request.json['body']);
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -438,16 +438,19 @@ def body_to_line_distance_all():
         raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
 
     # GENEROWANIE SIATKI PUNKTOW
-    print("CO JEST KURŁA");
+    # print("CO JEST KURŁA",adapterLatitude);
 
     locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
+    # print("CO JEST KURŁA 011 ", locations );
 
     latlng = []
     latLngFull = []
 
     d = dict();
+    # print("JEST",
+    a = json.loads(locations)
 
-    return locations
+    return a
 
 def body_to_line():
     try:
@@ -458,7 +461,7 @@ def body_to_line():
         receiverLatitude = request.json.get('receiverLatitude', None)
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
-        print("CO JEST KURŁA 01 ", request.json);
+        # print("CO JEST KURŁA 01 ", request.json);
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -547,6 +550,27 @@ def do_lookup_line_distance(get_locations_func):
         response.content_type = 'application/json'
         return e.args[0]
 
+def do_write_to_file(results):
+    # print("JEST !!! ")
+    # f = None
+    my_path = os.path.abspath(os.path.dirname(__file__))
+    pathToFile = os.path.join(my_path, "../full-result.json")
+
+    # global globalArray
+    try:
+        with open(pathToFile, 'a') as outfile:
+            # str_q = str(results)[1 : -1]
+            json.dump(results, outfile)
+            outfile.write(',')
+
+
+    except InternalException as e:
+        # f.close()
+        # globalArray = []
+        response.status = 400
+        response.content_type = 'application/json'
+        return e.args[0]
+
 def do_lookup_line_distance_all(get_locations_func):
     """
     Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
@@ -555,14 +579,25 @@ def do_lookup_line_distance_all(get_locations_func):
     """
     try:
         resultArray = []
-        print("CO JEST KURŁA 123123 " );
+        f = None
+        my_path = os.path.abspath(os.path.dirname(__file__))
+        path = os.path.join(my_path, "../full-result.json")
+        # f.write(path, '[')
+
+
+
+        # f = open(path, "a")
+        # f.write(path, "[")
         allData = get_locations_func();
         for data in allData:
-            resultArray.append(fullResult({'latitude': data.coords['latitude'], 'longitude': data.coords['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data.points] ))
-        finalResult = jsonpickle.encode(resultArray, unpicklable=False)
-        return {'results': finalResult}
+            xxx = fullResult({'latitude': data['coords']['latitude'], 'longitude': data['coords']['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
+            do_write_to_file(xxx.__dict__);
+
+
+        # print("finalResult --------------------------- ",resultArray)
+        return {'results': 'oki'}
     except InternalException as e:
-        response.status = 400
+        response.status = 401
         response.content_type = 'application/json'
         return e.args[0]
 

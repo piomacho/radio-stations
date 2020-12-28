@@ -1,5 +1,12 @@
 import { CoordinatesType } from "src/routes/OctaveExport";
+export interface LocationType {
+    latitude: number,
+    longitude: number
+}
 
+interface LocationsType {
+    locations: Array<LocationType>
+}
 export const getFieldsFromObject = (objectMap: Record<string, any>, fields: Array<string>) =>{
     return objectMap.map((element: Record<string, any>) => {
         let obj: Record<string, any> = {};
@@ -11,9 +18,8 @@ export const getFieldsFromObject = (objectMap: Record<string, any>, fields: Arra
 }
 
 
-export const getCorners = (results: Array<CoordinatesType>) => {
+export const getCorners = async(results: Array<LocationType>) => {
     const grouped = sortAndGroupResultElements(results);
-
     const keysOfGroupedArray = Object.keys(grouped).map((item: string) =>  Number(item));
     const minLat = Math.min(...keysOfGroupedArray);
     const maxLat = Math.max(...keysOfGroupedArray);
@@ -23,7 +29,6 @@ export const getCorners = (results: Array<CoordinatesType>) => {
 
     const maxLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`].slice(-1)[0].longitude;
     const minLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`][0].longitude;
-
     return {
         maxLongMaxLat: {
             lat: maxLat,
@@ -44,7 +49,7 @@ export const getCorners = (results: Array<CoordinatesType>) => {
     }
 
   }
-  const sortAndGroupResultElements = (results:Array<CoordinatesType>): any => {
+  const sortAndGroupResultElements = (results:Array<LocationType>): any => {
     //@ts-ignore
     return results.sort((a, b) => {
            if (a.latitude === b.latitude) {
@@ -53,9 +58,10 @@ export const getCorners = (results: Array<CoordinatesType>) => {
            }
 
            return a.latitude > b.latitude ? -1 : 1;
-        }).reduce((r: Array<CoordinatesType>, a: CoordinatesType) => {
+        }).reduce((r: Array<LocationType>, a: LocationType) => {
             //@ts-ignore
             r[a.latitude] = [...r[a.latitude] || [], a !== undefined && a];
             return r;
            }, {});
   }
+//==

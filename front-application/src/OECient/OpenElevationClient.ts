@@ -60,10 +60,10 @@ class OpenElevationRestClient extends React.Component {
             headers,
             body: JSON.stringify(body)
         }).then((response) => {
-            console.log("1  ")
+            console.log("1  ", response)
             return response.json() ;
         }).then((body) => {
-            console.log("2  ")
+            console.log("2  ", body)
             deferred.resolve(body);
         }).catch((error) => {
             console.log("3  ", error);
@@ -154,20 +154,16 @@ class OpenElevationRestClient extends React.Component {
         headers["Accept"] = ["application/json"];
         headers["Content-Type"] = ["application/json"];
         // /api/v1/lookup-line-distance
-        if (parameters['adapterLatitude'] !== undefined &&
-            parameters['adapterLongitude'] !== undefined &&
-            parameters['distance'] !== undefined &&
-            parameters['receivers'] !== undefined
-            ) {
 
+        console.log("parameters", parameters);
             body = {
                 adapterLatitude: parameters['adapterLatitude'],
                 adapterLongitude: parameters['adapterLongitude'],
                 distance: parameters['distance'],
                 receivers: parameters['receivers'],
             };
-            console.log("body", parameters['receivers']);
-        }
+
+
         queryParameters = this.mergeQueryParams(parameters, queryParameters);
 
         this.makeRequest('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);

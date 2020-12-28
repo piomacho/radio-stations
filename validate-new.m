@@ -1,7 +1,7 @@
 args = argv();
 %fName = '/Users/piotrmachowski/Documents/octave/wyniki_orginalne.xlsx';
 %frequency = [0.03 0.2 2 20 50];
-frequency = [0.1];
+frequency = 0.1;
 Page      = {'Page1', 'Page2', 'Page3', 'Page4', 'Page5', 'Page6'};
 Tpc_array = [50];
 
@@ -17,9 +17,17 @@ Phite = str2double(args{1});
 Phitn = str2double(args{2});
 AdapterFrequency = str2double(args{7});
 iterationNumber = args{8};
+startVal = str2double(args{9});
+endVal = str2double(args{10});
 Tpc = 0.001;
 Profile = 'Prof_b2iseac';
-nazwaPliku = strcat('validation_results/',args{5},'.xlsx');
+
+% printf("start %d , end %d", startVal, endVal);
+
+nazwaPliku = strcat('validation_results/',args{5},'-',iterationNumber,'.xlsx');
+if exist(nazwaPliku, 'file')
+    delete(nazwaPliku)
+end
 
 try
     s = pwd;
@@ -27,9 +35,7 @@ try
     % pkg install -forge windows;
     pkg load io;
     pkg load windows;
-    if exist(nazwaPliku, 'file')
-        delete(nazwaPliku)
-    end
+
 
     if ~exist('prof_b2iseac2.m','file')
         addpath([s '/validation_results/'])
@@ -50,10 +56,10 @@ catch
     error('Folder ./octave-src/ does not appear to be on the MATLAB search path.');
 end
 
- for fcnt = 1:length(frequency)
 
-     GHz = frequency(fcnt);
-     pg  = Page{fcnt};
+
+     GHz = frequency;
+     pg  = 'Page1';
 
      A = {'FlagVp', 'GHz', 'Grx', 'Grt', 'Hrg', 'Htg', 'Phire', 'Phirn',  'Phite', ...
     'Phitn', 'Tpc',	'Profile',	'FlagLos50', 'FlagLospa', 'FlagLosps', 'FlagSea', ...
@@ -75,79 +81,80 @@ end
      r1 = 1;
 
      for tpccnt = 1:length(Tpc_array)
+        for iteration = startVal:endVal
+            % printf("---- %d", iteration);
+            fName = strcat('prof_', num2str(iteration));
+            funtionFromStr = str2func(['@(x,y,z)' fName]);
+            Data_array = funtionFromStr();
 
-        fName = strcat('prof_',iterationNumber);
-        funtionFromStr = str2func(['@(x,y,z)' fName]);
-        Data_array = funtionFromStr();
 
 
+            for index = 1:length(Data_array)
 
-        for index = 1:length(Data_array)
+                retrieved = Data_array{index};
 
-            retrieved = Data_array{index};
+                d = retrieved(:,1);
+                h = retrieved(:,2);
+                z = retrieved(:,3);
+                %[d,h,z]
+                Tpc = Tpc_array(tpccnt);
 
-            d = retrieved(:,1);
-            h = retrieved(:,2);
-            z = retrieved(:,3);
-            %[d,h,z]
-            Tpc = Tpc_array(tpccnt);
+                fNameRec = strcat('get_receivers', num2str(iteration));
+                funtionFromStrReceiver = str2func(['@(x,y,z)' fNameRec]);
+                ReceiversData = funtionFromStrReceiver();
 
-            fNameRec = strcat('get_receivers',iterationNumber);
-            funtionFromStrReceiver = str2func(['@(x,y,z)' fNameRec]);
-            ReceiversData = funtionFromStrReceiver();
+                r1 = ReceiversData{index};
 
-            r1 = ReceiversData{index};
+                receiverLatitude = r1(:,1);
+                receiverLongitude = r1(:,2);
 
-            receiverLatitude = r1(:,1);
-            receiverLongitude = r1(:,2);
+                disp(['Processing ' num2str(tpccnt) '/' num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  'Tpc = ' num2str(Tpc) ' ...']);
 
-            disp(['Processing ' num2str(tpccnt) '/' num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  'Tpc = ' num2str(Tpc) ' ...']);
+                p2001 = tl_p2001(d, h, z, GHz, Tpc_array(tpccnt), receiverLatitude, receiverLongitude, Phite, Phitn, Hrg, Htg, Grx, Gtx, FlagVP);
+                row = [...
+                    FlagVP, ...
+                    GHz, ...
+                    Grx, ...
+                    Gtx, ...
+                    Hrg, ...
+                    Htg, ...
+                    receiverLatitude, ...
+                    receiverLongitude, ...
+                    Phite, ...
+                    Phitn, ...
+                    Tpc, ...
+                    Profile, ...
+                    struct2cell(p2001).'
+                    ];
 
-            p2001 = tl_p2001(d, h, z, GHz, Tpc_array(tpccnt), receiverLatitude, receiverLongitude, Phite, Phitn, Hrg, Htg, Grx, Gtx, FlagVP);
-            row = [...
-                FlagVP, ...
-                GHz, ...
-                Grx, ...
-                Gtx, ...
-                Hrg, ...
-                Htg, ...
-                receiverLatitude, ...
-                receiverLongitude, ...
-                Phite, ...
-                Phitn, ...
-                Tpc, ...
-                Profile, ...
-                struct2cell(p2001).'
-                ];
+                    A = [A; row];
 
-                A = [A; row];
-
-            r1 = tpccnt + 1;
-         end
+                r1 = tpccnt + 1;
+            end
+        end
      end
-     printf("%s %s", "ZAPISTWANIE ROW", fName);
+     printf("%s %s", "ZAPISTWANIE ROW");
     xlswrite(nazwaPliku,A, pg);
 
- end
 
  %write the profile file
 
-B = {...
-    'File', 'Profile', ''; ...
-'Locations',	'Yes', ''; ...
-'Coords'	'LlatDeg', ''; ...
-'TxCoordE',	Phite, ''; ...
-'TxCoordN', Phitn, ''; ...
-'RxCoordE', Phire, ''; ...
-'RxCoordN', Phirn, ''; ...
-'Data',	'DHZ', ''; ...
-'Points', length(d), ''};
+% B = {...
+%     'File', 'Profile', ''; ...
+% 'Locations',	'Yes', ''; ...
+% 'Coords'	'LlatDeg', ''; ...
+% 'TxCoordE',	Phite, ''; ...
+% 'TxCoordN', Phitn, ''; ...
+% 'RxCoordE', Phire, ''; ...
+% 'RxCoordN', Phirn, ''; ...
+% 'Data',	'DHZ', ''; ...
+% 'Points', length(d), ''};
 
-for i = 1:length(d)
-    row = {d(i), h(i), z(i)};
-    B = [B; row];
-end
-printf("%s", "writing !!!!!!!!!!")
-xlswrite(nazwaPliku,B, Profile);
+% for i = 1:length(d)
+%     row = {d(i), h(i), z(i)};
+%     B = [B; row];
+% end
+% printf("%s", "writing !!!!!!!!!!")
+% xlswrite(nazwaPliku,B, Profile);
 
 exit(0)

@@ -244,7 +244,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             ITERATIONS = 250;
           }
           else if(dataFactor >= 300) {
-            ITERATIONS = 800;
+            ITERATIONS = 2500;
           }
 
             const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length > 5);
@@ -257,7 +257,7 @@ router.post('/send-all/', async (req: Request, res: Response) => {
                   latitude: adapterLat
                 }
             })
-
+            console.log("jest tu!!!! ")
             const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
 
             const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);

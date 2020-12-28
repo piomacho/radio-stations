@@ -33,7 +33,7 @@ const allDataArray = [];
 const iterations = Number(program.iterations);
 
 for (i = 0; i < iterations; i++) {
-  const workbook = xlsx.readFile(`./validation_results/${program.xlxName}${i}.xlsx`);
+  const workbook = xlsx.readFile(`./validation_results/${program.xlxName}-${i}.xlsx`);
   const worksheet = workbook.Sheets['Page1'];
   const xlData = xlsx.utils.sheet_to_json(worksheet);
   allDataArray.push(...xlData)
