@@ -49,7 +49,7 @@ export const SubmitPlotButton = ({ callback }: any) => (
       height={50}
       backColor={"#494e6b"}
       backColorHover={"#1d1f2a"}
-      label={"Create plot"}
+      label={"Pokaż okolicę anteny"}
       onClick={callback}
     />
   );
@@ -71,7 +71,7 @@ export const SubmitPlotButton = ({ callback }: any) => (
       height={50}
       backColor={"#98878f"}
       backColorHover={"#2d282a"}
-      label={"Calculate one point"}
+      label={"Wykonaj obliczenia dla jednego punktu"}
       onClick={callback}
     />
   );
@@ -82,11 +82,21 @@ export const SubmitPlotButton = ({ callback }: any) => (
       height={50}
       backColor={"#985e6d"}
       backColorHover={"#2d1c20"}
-      label={"Get full calculation"}
+      label={"Wykonaj pełne obliczenia"}
       onClick={callback}
     />
   );
 
+  export const ShowResultMapsButton = ({ callback }: any) => (
+    <Button
+      width={180}
+      height={50}
+      backColor={"#2A8956"}
+      backColorHover={"#1e392a"}
+      label={"Pokaz wyniki"}
+      onClick={callback}
+    />
+  );
 
 export const SubmitPlotMemoButton = memo(SubmitPlotButton);
 export const SubmitMapsMemoButton = memo(SubmitMapsButton);

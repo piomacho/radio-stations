@@ -87,7 +87,7 @@ const removeResultsFile = () => {
     fs.stat(path.join(__dirname, '../../full-result.json'), function (err: string) {
 
         if (err) {
-            return console.error(err);
+            console.error(err);
         }
         fs.unlink(path.join(__dirname, '../../full-result.json'),function () {
             console.log("JSON removed");
@@ -95,21 +95,44 @@ const removeResultsFile = () => {
 
             });
         });
+        fs.unlink(path.join(__dirname, '../../full-result-2.json'),function () {
+            console.log("JSON removed");
+            fs.writeFile(path.join(__dirname, '../../full-result-2.json'), '[', function () {
+
+            });
+        });
+        fs.unlink(path.join(__dirname, '../../full-result-3.json'),function () {
+            console.log("JSON removed");
+            fs.writeFile(path.join(__dirname, '../../full-result-3.json'), '[', function () {
+
+            });
+        });
+        fs.unlink(path.join(__dirname, '../../full-result-4.json'),function () {
+            console.log("JSON removed");
+            fs.writeFile(path.join(__dirname, '../../full-result-4.json'), '[', function () {
+
+            });
+        });
     });
 }
+router.post('/generate-template', async (req: Request, res: Response) => {
+    const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
+    const coords = await generateCoordinates(radius, pointsDistance, adapter.latitude, adapter.longitude);
 
+
+    res.send({coordinates: coords});
+});
 router.post('/generate', async (req: Request, res: Response) => {
     try {
         const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
-        console.log("------> adapter", adapter)
         const coords = generateCoordinates(radius, pointsDistance, adapter.latitude, adapter.longitude);
         const corners = await getCorners(coords);
-        removeResultsFile();
+        // removeResultsFile();
 
 
         let ITERATIONS = 800;
         if(dataFactor >= 300) {
-            ITERATIONS = 2700;
+            ITERATIONS = 3000;
         }
         const domain = 'http://0.0.0.0:10000';
         const chunkedArray = chunkArray(coords, ITERATIONS, true);
@@ -125,18 +148,20 @@ router.post('/generate', async (req: Request, res: Response) => {
         const pathName = '/lookup-line-distance-all';
 
         let counter = 0;
-        res.status(200).json({coordinates: "luz"});
+        res.status(200).json({coordinates: "success"});
         for(let i = 0; i < ITERATIONS; i++) {
-            //@ts-ignore
-            // headers["Content-Length"] = Buffer.byteLength(chunkedArray[i]);
+
             const body = {
                 final: (i === ITERATIONS - 1),
                 adapterLatitude: adapter.latitude,
                 adapterLongitude: adapter.longitude,
                 distance: pointsDistance,
                 receivers: chunkedArray[i],
+                iteration: ITERATIONS,
+                currentIteration: i
             };
-            const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
+            const result = true
+            // const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
             if(result) {
                 try {
 
@@ -144,9 +169,18 @@ router.post('/generate', async (req: Request, res: Response) => {
                        //@ts-ignore
                     req.app.io.emit("loaderGenerate", counter);
                    if(counter === ITERATIONS){
-                    fs.appendFile(path.join(__dirname, '../../full-result.json'), '""]', function (err: string) {
-                        handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
-                    });
+                    // fs.appendFile(path.join(__dirname, '../../full-result.json'), '""]', function (err: string) {
+                    //     fs.appendFile(path.join(__dirname, '../../full-result-2.json'), '""]', function (err: string) {
+                    //         fs.appendFile(path.join(__dirname, '../../full-result-3.json'), '""]', function (err: string) {
+                    //             fs.appendFile(path.join(__dirname, '../../full-result-4.json'), '""]', function (err: string) {
+                                    if (!fs.existsSync(path.join(__dirname, `../../validation_results/${fileName}`))){
+                                        fs.mkdirSync(path.join(__dirname, `../../validation_results/${fileName}`));
+                                    }
+                                    handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+                    //             });
+                    //         });
+                    //     });
+                    // });
 
                    }
                 }catch (err) {
@@ -227,10 +261,7 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
         long = a !== null ? a.lon : 0;
 
     }
-    // fs.writeFile('damne.txt', JSON.stringify(cArray), function (err: any) {
-    //     if (err) throw err;
-    //     console.log('Saved!');
-    //   });
+
     return cArray;
 };
 

@@ -226,9 +226,9 @@ Re = 6371;
     dt = d(end);                        % Eq (3.2.1)
 
     % make sure that there is enough points in the path profile
-    % if (length(d) <= 10)
-    %     error('The number of points in path profile should be larger than 10');
-    % end
+    if (length(d) <= 10)
+        error('The number of points in path profile should be larger than 10');
+    end
 
 %catch
 %    error('Folder ./octave-src/ does not appear to be on the MATLAB search path.');

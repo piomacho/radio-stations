@@ -9,7 +9,7 @@ import {
   SubmitMapsButton,
   SendToOctaveButton,
   NavigationPanel,
-  NavigationWrapper, SendAllToOctaveButton
+  NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton
 } from "./SelectionPanel.styles";
 import PlotModal from "../PlotModal/PlotModal";
 import store, { CoordinatesType } from "../../Store/Store";
@@ -20,6 +20,7 @@ import GMapsModal from "../GMapsModal/GMapsModal";
 import ExportModal from "../ExportModal/ExportModal";
 import { lineFromPoints } from "../../common/global";
 import ExportAllModal from "../ExportAllModal/ExportAllModal";
+import ShowMapsModal from "../ShowMapsModal/ShowMapsModal";
 
 // todo refactor to see proper plot
 const format = (
@@ -60,6 +61,7 @@ const SelectionPanel = () => {
   const [mapsModalVisiblity, setMapsModalVisiblity] = useState(false);
   const [exportModalVisiblity, setExportModalVisiblity] = useState(false);
   const [exportAllModalVisiblity, setExportAllModalVisiblity] = useState(false);
+  const [showMapsModalVisiblity, setShowMapsModalVisiblity] = useState(false);
   const [loading, setLoading] = useState(false);
   const [plotData, setPlotData] = useState<Array<any>>([]);
   const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
@@ -103,7 +105,8 @@ const SelectionPanel = () => {
         return setExportModalVisiblity(value);
       case "export-all":
           return setExportAllModalVisiblity(value);
-        return;
+      case "show-maps":
+          return setShowMapsModalVisiblity(value);
     }
   };
 
@@ -135,6 +138,9 @@ const SelectionPanel = () => {
           <ButtonWrapper>
             <SendAllToOctaveButton callback={showModal(true, "export-all", false)} />
           </ButtonWrapper>
+          <ButtonWrapper>
+            <ShowResultMapsButton callback={showModal(true, "show-maps", false)} />
+          </ButtonWrapper>
         </NavigationPanel>
       </NavigationWrapper>
       {loading ? (
@@ -157,6 +163,10 @@ const SelectionPanel = () => {
         <ExportAllModal
           showModal={showModal}
           modalVisiblity={exportAllModalVisiblity}
+        />
+        <ShowMapsModal
+          showModal={showModal}
+          modalVisiblity={showMapsModalVisiblity}
         />
     </Wrapper>
   );

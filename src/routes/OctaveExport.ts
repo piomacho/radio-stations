@@ -65,7 +65,7 @@ const formatCoordinates1 = (coords: any) => {
  };
 
 const runBitmapScript = async(fName: string, size: number, corners: CornersType) => {
-    createBitmap(fName, size, globalProcessCounter, corners);
+    // createBitmap(fName, size, globalProcessCounter, corners);
 }
 
 router.post('/send/', async (req: Request, res: Response) => {

@@ -20,7 +20,11 @@ magmapy-bb9815bb7548.json
 /src/keys.ts
 *.gz
 *.xlsx
+*.kml
 ./full-result.json
+./full-result-2.json
+./full-result-3.json
+./full-result-4.json
 full-result.json
 otherCoords.json
 /validation_results
@@ -180,3 +184,4 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+otherCoords.json

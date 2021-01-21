@@ -89,14 +89,17 @@ export const MyResponsiveHeatMap = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            adapterLatitude: adapterLatitude,
-            adapterLongitude: adapterLongitude,
+            adapter: {
+                latitude: adapterLatitude,
+                longitude: adapterLongitude,
+            },
             radius: Number(10),
             pointsDistance: Number(0.5)
         })
         };
         setLoading(true);
-        callApiFetch(`api/coordinates/generate`, requestOptions).then(response => {
+        callApiFetch(`api/coordinates/generate-template`, requestOptions).then(response => {
+            console.log("EEE ", response)
             OEClient.postLookup({
                 locations: response.coordinates
               }).then(async (results) => {
@@ -150,6 +153,7 @@ export const MyResponsiveHeatMap = () => {
             legendPosition: 'start',  legendOffset: -15 }}
             axisRight={null}
             axisBottom={null}
+            enableLabels={false}
             axisLeft={{
                 orient: 'left',
                 tickSize: 5,

@@ -2,14 +2,14 @@ args = argv();
 %fName = '/Users/piotrmachowski/Documents/octave/wyniki_orginalne.xlsx';
 %frequency = [0.03 0.2 2 20 50];
 frequency = 0.1;
-Page      = {'Page1', 'Page2', 'Page3', 'Page4', 'Page5', 'Page6'};
+% Page      = {'Page1', 'Page2', 'Page3', 'Page4', 'Page5', 'Page6'};
 Tpc_array = [50];
 
 printf(args{5})
 FlagVP = 1;
 Gtx = 0;
 Grx = 0;
-Hrg = 30;
+Hrg = 10;
 Htg = str2double(args{6});
 Phire = str2double(args{3});
 Phirn = str2double(args{4});
@@ -19,15 +19,19 @@ AdapterFrequency = str2double(args{7});
 iterationNumber = args{8};
 startVal = str2double(args{9});
 endVal = str2double(args{10});
+modulak = str2double(args{11});
+globalCounter = str2double(args{12});
 Tpc = 0.001;
 Profile = 'Prof_b2iseac';
+pyta = 0;
+iterationCounter = 0;
 
 % printf("start %d , end %d", startVal, endVal);
+% nazwaPliku = strcat('validation_results/',args{5},'/',args{5},'-',iterationNumber,'---start.xlsx');
+% if exist(nazwaPliku, 'file')
+%     delete(nazwaPliku)
+% end
 
-nazwaPliku = strcat('validation_results/',args{5},'-',iterationNumber,'.xlsx');
-if exist(nazwaPliku, 'file')
-    delete(nazwaPliku)
-end
 
 try
     s = pwd;
@@ -37,9 +41,10 @@ try
     pkg load windows;
 
 
-    if ~exist('prof_b2iseac2.m','file')
+    % if ~exist('prof_b2iseac2.m','file')
         addpath([s '/validation_results/'])
-    end
+        addpath([s strcat('/validation_results/',args{5},'/')]);
+    % end
 
     if ~exist('DigitalMaps_DN_Median.m','file')
         addpath([s '/octave-src/'])
@@ -51,6 +56,7 @@ try
         page_screen_output(0);
         page_output_immediately(1);
     end
+
 
 catch
     error('Folder ./octave-src/ does not appear to be on the MATLAB search path.');
@@ -80,15 +86,25 @@ end
 
      r1 = 1;
 
+
+    % xlswrite(nazwaPliku, A, pg, "A1:EI1");
+    % A={};
      for tpccnt = 1:length(Tpc_array)
-        for iteration = startVal:endVal
+        koncowy = endVal;
+        if iterationNumber == 5
+            koncowy = endVal + modulak;
+        end
+        disp(["start -> ", num2str(startVal), " end - >", num2str(koncowy)]);
+        for iteration = startVal:koncowy
             % printf("---- %d", iteration);
+
             fName = strcat('prof_', num2str(iteration));
             funtionFromStr = str2func(['@(x,y,z)' fName]);
             Data_array = funtionFromStr();
 
 
-
+            % disp(['pyta --- ', num2str(pyta)]);
+            pyta=pyta+1;
             for index = 1:length(Data_array)
 
                 retrieved = Data_array{index};
@@ -104,11 +120,13 @@ end
                 ReceiversData = funtionFromStrReceiver();
 
                 r1 = ReceiversData{index};
+                % disp(["Rec ", num2str(r1),'fNameRec ', fNameRec  ])
 
                 receiverLatitude = r1(:,1);
                 receiverLongitude = r1(:,2);
 
-                disp(['Processing ' num2str(tpccnt) '/' num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  'Tpc = ' num2str(Tpc) ' ...']);
+
+                disp(['Processing ' num2str(pyta) '/' num2str(iteration) " " num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  ' Tpc = ' num2str(Tpc) ' ...']);
 
                 p2001 = tl_p2001(d, h, z, GHz, Tpc_array(tpccnt), receiverLatitude, receiverLongitude, Phite, Phitn, Hrg, Htg, Grx, Gtx, FlagVP);
                 row = [...
@@ -126,35 +144,77 @@ end
                     Profile, ...
                     struct2cell(p2001).'
                     ];
-
+                    % if(length(A) > 0)
                     A = [A; row];
+                    % else
+                    %     A = row;
+                    % end
+                    % row = [];
+                    % rr = index;
+                    % print('oooo, %d', index)
+                    % step = 25;
+                    % disp(["A length ", num2str(length(A)) ])
+                    % if pyta == step
+                    %     % divider = pyta / step;
+                    %     % startRange = step * (divider - 1);
+                    %     xlswrite(nazwaPliku, A, pg, strcat('A2:EI', num2str(pyta + 2) ));
+                    %     % A=[];
+                    %     nazwaPliku = strcat('validation_results/',args{5},'/',args{5},'-',iterationNumber,'-',num2str(iterationCounter),'.xlsx');
+                    %     iterationCounter = iterationCounter + 1;
+                    %     AB = {'FlagVp', 'GHz', 'Grx', 'Grt', 'Hrg', 'Htg', 'Phire', 'Phirn',  'Phite', ...
+                    %     'Phitn', 'Tpc',	'Profile',	'FlagLos50', 'FlagLospa', 'FlagLosps', 'FlagSea', ...
+                    %     'FlagShort', 'A1', 'A2', 'A2r',	'A2t',	'Aac',	'Aad',	'dAat',	'Ags',	'Agsur', ...
+                    %     'Aorcv', 'Aos',	'Aosur', 'Aotcv', 'Awrcv',	'Awrrcv', 'Awrs', 'Awrsur',	'Awrtcv', ...
+                    %     'Aws', 'Awsur',	'Awtcv', 'Bt2rDeg',	'Cp', 'D',	'Dcr',	'Dct',	'Dgc',	'Dlm', ...
+                    %     'Dlr',	'Dlt',	'Drcv',	'Dtcv',	'Dtm',	'Foes1', 'Foes2', 'Fsea', 'Fwvr', 'Fwvrrx',	'Fwvrxt', ...
+                    %     'GAM1',	'GAM2',	'Gamo',	'Gamw',	'Gamwr', 'H1', 'Hcv', 'Hhi', 'Hlo',	'Hm', 'Hmid', ...
+                    %     'Hn', 	'Hrea',	'Hrep',	'Hrs',	'Hsrip',	'Hsripa',	'Hstip',	'Hstipa',	'Htea', ...
+                    %     'Htep',	'Hts',	'Lb',	'Lba',	'Lbes1',	'Lbes2',	'Lbfs',	'Lbm1',	'Lbm2',	'Lbm3',	...
+                    %     'Lbm4',	'Lbs',	'Ld',	'Ldba',	'Ldbka',    'Ldbks',	'Ldbs',	'dLdsph',	'Lp1r',	'Lp1t', ...
+                    %     'Lp2r',	'Lp2t',	'Mses',	'N',	'Nd1km50',	'Nd1kmp',	'Nd65m1',	'Nlr',	'Nlt',	'Nsrima',...
+                    %     'Nsrims',	'Nstima',	'Nstims',	'Phi1qe',	'Phi1qn',	'Phi3qe',	'Phi3qn',	'Phicve', ...
+                    %     'Phicvn',	'Phime',	'Phimn',	'Phircve',	'Phircvn',	'Phitcve',	'Phitcvn',	'Qoca', ...
+                    %     'Reff50',	'Reffp',	'Sp',	'Thetae',	'Thetar',	'Thetarpos',	'Thetas',	'Thetat', ...
+                    %     'Thetatpos',	'Tpcp',	'Tpcq',	'Tpcscale',	'Wave',	'Wvsur',	'WvSurrx',	'WvSurtx',	'Ztropo'};
+                    %     xlswrite(nazwaPliku, AB, pg, "A1:EI1");
+                    %     pyta = 0;
+                    % end
 
                 r1 = tpccnt + 1;
             end
         end
-     end
-     printf("%s %s", "ZAPISTWANIE ROW");
-    xlswrite(nazwaPliku,A, pg);
+        % if pyta < step && pyta != 0
+            disp(['Jest tu w pierwszym i A ------', num2str(length(A)), " pytka ", num2str(pyta)]);
+            nazwaPliku = strcat('validation_results/',args{5},'/',args{5},'-',iterationNumber,"-",num2str(globalCounter),'.xlsx');
 
+            % AB = {'FlagVp', 'GHz', 'Grx', 'Grt', 'Hrg', 'Htg', 'Phire', 'Phirn',  'Phite', ...
+            % 'Phitn', 'Tpc',	'Profile',	'FlagLos50', 'FlagLospa', 'FlagLosps', 'FlagSea', ...
+            % 'FlagShort', 'A1', 'A2', 'A2r',	'A2t',	'Aac',	'Aad',	'dAat',	'Ags',	'Agsur', ...
+            % 'Aorcv', 'Aos',	'Aosur', 'Aotcv', 'Awrcv',	'Awrrcv', 'Awrs', 'Awrsur',	'Awrtcv', ...
+            % 'Aws', 'Awsur',	'Awtcv', 'Bt2rDeg',	'Cp', 'D',	'Dcr',	'Dct',	'Dgc',	'Dlm', ...
+            % 'Dlr',	'Dlt',	'Drcv',	'Dtcv',	'Dtm',	'Foes1', 'Foes2', 'Fsea', 'Fwvr', 'Fwvrrx',	'Fwvrxt', ...
+            % 'GAM1',	'GAM2',	'Gamo',	'Gamw',	'Gamwr', 'H1', 'Hcv', 'Hhi', 'Hlo',	'Hm', 'Hmid', ...
+            % 'Hn', 	'Hrea',	'Hrep',	'Hrs',	'Hsrip',	'Hsripa',	'Hstip',	'Hstipa',	'Htea', ...
+            % 'Htep',	'Hts',	'Lb',	'Lba',	'Lbes1',	'Lbes2',	'Lbfs',	'Lbm1',	'Lbm2',	'Lbm3',	...
+            % 'Lbm4',	'Lbs',	'Ld',	'Ldba',	'Ldbka',    'Ldbks',	'Ldbs',	'dLdsph',	'Lp1r',	'Lp1t', ...
+            % 'Lp2r',	'Lp2t',	'Mses',	'N',	'Nd1km50',	'Nd1kmp',	'Nd65m1',	'Nlr',	'Nlt',	'Nsrima',...
+            % 'Nsrims',	'Nstima',	'Nstims',	'Phi1qe',	'Phi1qn',	'Phi3qe',	'Phi3qn',	'Phicve', ...
+            % 'Phicvn',	'Phime',	'Phimn',	'Phircve',	'Phircvn',	'Phitcve',	'Phitcvn',	'Qoca', ...
+            % 'Reff50',	'Reffp',	'Sp',	'Thetae',	'Thetar',	'Thetarpos',	'Thetas',	'Thetat', ...
+            % 'Thetatpos',	'Tpcp',	'Tpcq',	'Tpcscale',	'Wave',	'Wvsur',	'WvSurrx',	'WvSurtx',	'Ztropo'};
+            % xlswrite(nazwaPliku, AB, pg, "A1:EI1");
+            % disp(['zapisał tytuły ! ']);
+            xlswrite(nazwaPliku, A, pg);
+            % xlswrite(nazwaPliku, A, pg, strcat('A2:EI', num2str(pyta + 2)));
+            disp(['zapisał dane do enda ! ']);
+        % else
+        %     dividerLast = floor(pyta/step);
+        %     disp(['Jest tu i A ------', length(A), " pytka ", pyta]);
+        %     xlswrite(nazwaPliku, A, pg, strcat('A', num2str(dividerLast * step + 2),':EI', num2str(pyta + 2)));
+        end
+    %  end
 
- %write the profile file
-
-% B = {...
-%     'File', 'Profile', ''; ...
-% 'Locations',	'Yes', ''; ...
-% 'Coords'	'LlatDeg', ''; ...
-% 'TxCoordE',	Phite, ''; ...
-% 'TxCoordN', Phitn, ''; ...
-% 'RxCoordE', Phire, ''; ...
-% 'RxCoordN', Phirn, ''; ...
-% 'Data',	'DHZ', ''; ...
-% 'Points', length(d), ''};
-
-% for i = 1:length(d)
-%     row = {d(i), h(i), z(i)};
-%     B = [B; row];
-% end
-% printf("%s", "writing !!!!!!!!!!")
+printf("%s", "writing !!!!!!!!!!")
 % xlswrite(nazwaPliku,B, Profile);
 
 exit(0)

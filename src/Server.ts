@@ -5,10 +5,14 @@ import logger from 'morgan';
 import path from 'path';
 import BaseRouter from './routes';
 import bodyParser from 'body-parser'
+import { EventEmitter } from 'events';
+import { setMaxListeners } from 'process';
 var http = require('http');
 
 const app = express();
-
+// setMaxListeners(
+// 50
+// );
 app.use(cors());
 app.use(logger('dev'));
 app.use(cookieParser());

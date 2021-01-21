@@ -24,6 +24,7 @@ Initialize a global interface. This can grow quite large, because it has a cache
 interface = GDALTileInterface('data/', 'data/summary.json')
 interface.create_summary_json()
 
+counter = 0
 def get_elevation(lat, lng):
     """
     Get the elevation at point (lat,lng) using the currently opened interface
@@ -424,6 +425,8 @@ def body_to_line_distance_all():
         adapterLongitude = request.json['body'].get('adapterLongitude', None)
         distance = request.json['body'].get('distance', None)
         receivers = request.json['body'].get('receivers', None)
+        iteration = request.json['body'].get('iteration', None)
+        currentIteration = request.json['body'].get('currentIteration', None)
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -447,10 +450,14 @@ def body_to_line_distance_all():
     latLngFull = []
 
     d = dict();
-    # print("JEST",
+    # global counter
+    # counter = counter + 1;
+    # print("JEST", currentIteration);
     a = json.loads(locations)
-
-    return a
+    d['results'] = a
+    d['iteration'] = iteration
+    d['currentIteration'] = currentIteration
+    return d
 
 def body_to_line():
     try:
@@ -550,11 +557,11 @@ def do_lookup_line_distance(get_locations_func):
         response.content_type = 'application/json'
         return e.args[0]
 
-def do_write_to_file(results):
+def do_write_to_file(results, pathToFile):
     # print("JEST !!! ")
     # f = None
-    my_path = os.path.abspath(os.path.dirname(__file__))
-    pathToFile = os.path.join(my_path, "../full-result.json")
+    # my_path = os.path.abspath(os.path.dirname(__file__))
+    # pathToFile = os.path.join(my_path, "../full-result.json")
 
     # global globalArray
     try:
@@ -571,7 +578,9 @@ def do_write_to_file(results):
         response.content_type = 'application/json'
         return e.args[0]
 
+
 def do_lookup_line_distance_all(get_locations_func):
+
     """
     Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
     and returns an answer ready to go to the client.
@@ -582,19 +591,26 @@ def do_lookup_line_distance_all(get_locations_func):
         f = None
         my_path = os.path.abspath(os.path.dirname(__file__))
         path = os.path.join(my_path, "../full-result.json")
-        # f.write(path, '[')
+        path2 = os.path.join(my_path, "../full-result-2.json")
+        path3 = os.path.join(my_path, "../full-result-3.json")
+        path4 = os.path.join(my_path, "../full-result-4.json")
+        # global counter
 
-
-
-        # f = open(path, "a")
-        # f.write(path, "[")
         allData = get_locations_func();
-        for data in allData:
+        currentIt = allData['currentIteration']
+        iterations = allData['iteration']
+        # print("CI ", currentIt, " -- all - ", iterations/2, " kurwa ",currentIt < iterations/2 )
+        for data in allData['results']:
             xxx = fullResult({'latitude': data['coords']['latitude'], 'longitude': data['coords']['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
-            do_write_to_file(xxx.__dict__);
+            # if currentIt < iterations/4:
+            #     do_write_to_file(xxx.__dict__,path);
+            # elif currentIt >= iterations/4 and currentIt < iterations/2:
+            #     do_write_to_file(xxx.__dict__,path2)
+            # elif currentIt >= iterations/2 and currentIt < iterations*3/4:
+            #     do_write_to_file(xxx.__dict__,path3);
+            # else:
+            #      do_write_to_file(xxx.__dict__,path4);
 
-
-        # print("finalResult --------------------------- ",resultArray)
         return {'results': 'oki'}
     except InternalException as e:
         response.status = 401

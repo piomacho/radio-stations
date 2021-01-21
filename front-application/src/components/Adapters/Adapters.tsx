@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { callApiFetch } from '../../common/global';
 import SelectBox from '../SelectBox/SelectBox';
 import store from "../../Store/Store";
@@ -16,6 +16,7 @@ interface AdapterType{
     id_antena: string;
     id_nadajnik: string;
     id_program: string;
+    _mapahash: string;
 }
 
 interface OptionType {
@@ -34,7 +35,8 @@ const setParameters = (adapters: Array<AdapterType>): Array<OptionType> => {
           czestotliwosc: adapter.czestotliwosc,
           id_antena: adapter.id_antena,
           id_nadajnik: adapter.id_nadajnik,
-          id_program: adapter.id_program
+          id_program: adapter.id_program,
+          _mapahash: adapter._mapahash
         }
     });
 }
@@ -43,10 +45,10 @@ const Adapters = () => {
     const { useGlobalState } = store;
     const [station] = useGlobalState('station');
     const [adapter, setAdapter] = useGlobalState('adapter');
-    const [ adapters, setAdapters ] = useState([{value: '', label: ''}]);
-    const [ loading, setLoading ] = useState(false);
+    const [ adapters, setAdapters ] = React.useState([{value: '', label: ''}]);
+    const [ loading, setLoading ] = React.useState(false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         setLoading(true);
         callApiFetch(`api/adapters/all/${station.value}`)
         .then(response =>  setParameters(response))
