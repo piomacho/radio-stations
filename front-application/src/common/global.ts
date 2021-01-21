@@ -95,7 +95,6 @@ export const lineFromPoints = (P: PointType, Q: PointType, ) =>
 
 export const getCorners = async(results: Array<LocationType>) => {
   const grouped = sortAndGroupResultElements(results);
-  console.log("GRUPED ", grouped)
   const keysOfGroupedArray = Object.keys(grouped).map((item: string) =>  Number(item));
   const minLat = Math.min(...keysOfGroupedArray);
   const maxLat = Math.max(...keysOfGroupedArray);
@@ -105,7 +104,6 @@ export const getCorners = async(results: Array<LocationType>) => {
 
   const maxLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`].slice(-1)[0].longitude;
   const minLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`][0].longitude;
-  console.log("min ",minLongMaxLat,"--- ",maxLat)
   return {
       maxLongMaxLat: {
           lat: maxLat,

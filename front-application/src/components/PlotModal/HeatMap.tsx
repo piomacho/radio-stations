@@ -99,7 +99,6 @@ export const MyResponsiveHeatMap = () => {
         };
         setLoading(true);
         callApiFetch(`api/coordinates/generate-template`, requestOptions).then(response => {
-            console.log("EEE ", response)
             OEClient.postLookup({
                 locations: response.coordinates
               }).then(async (results) => {

@@ -38,7 +38,6 @@ const allDataArray: any = [];
 //@ts-ignore
 glob(path.join(__dirname, `../../validation_results/${fileName}/`) + '*.xlsx', {}, (err:string, files: Array<string>)=>{
   console.log("Problem with finding files - ", err);
-  // console.log("FF -- ", files);
   const xlxsFiles = files;
   // console.log("files ---- >> ", files);
   for (let i = 0; i < xlxsFiles.length; i++) {
@@ -49,14 +48,12 @@ glob(path.join(__dirname, `../../validation_results/${fileName}/`) + '*.xlsx', {
     for(let i=0;i<rowArr.length;i++){
 
       var data = rowArr[i];
-      // console.log(" ROW ARR ", {phire: data.Phire, phirn: data.Phirn, lb: data.Lb});
       allDataArray.push({phire: data.Phire, phirn: data.Phirn, lb: data.Lb})
     }
   }
 
   const pointInfo: Array<ImageCoordinatesType> = [];
 // E [dBuV/m] = Ptx [dBm] - Lb [dB] + 107
-// console.log("---- -- - --- -- -> ,", allDataArray.length, "12122 ", allDataArray[1]);
  for (let i = 0; i < allDataArray.length; i++) {
     const phire = allDataArray[i].phire;
     const phirn = allDataArray[i].phirn;
@@ -77,11 +74,8 @@ fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: s
   })
 
 const allCoordinates = [...pointInfo, ...formattedCordsUnused]
-// console.log("All ", allCoordinates[2])
 const sortedDataMap = sortAndGroupResultElements(allCoordinates);
-// console.log("kurwa ", sortedDataMap)
 const sortedDataMapKeys = Object.keys(sortedDataMap);
-// console.log("sort ", sortedDataMapKeys)
 
 fs.stat(path.join(__dirname, `../../${fileName}.kml`), function (err: string, stats: string) {
 

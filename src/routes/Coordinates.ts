@@ -70,15 +70,10 @@ const makeRequest = (
   .post(urlWithParams, {
     body
   }).then(async(response: any) => {
-        // console.log("1  ")
         return response.data;
     }).then(async(body: any) => {
-        // console.log("2  ")
-        // console.log("2  ")
-
         return Promise.resolve(body.results)
     }).catch((error: any) => {
-        console.log("3  ", error);
         return null;
     });
 };
@@ -90,25 +85,21 @@ const removeResultsFile = () => {
             console.error(err);
         }
         fs.unlink(path.join(__dirname, '../../full-result.json'),function () {
-            console.log("JSON removed");
             fs.writeFile(path.join(__dirname, '../../full-result.json'), '[', function () {
 
             });
         });
         fs.unlink(path.join(__dirname, '../../full-result-2.json'),function () {
-            console.log("JSON removed");
             fs.writeFile(path.join(__dirname, '../../full-result-2.json'), '[', function () {
 
             });
         });
         fs.unlink(path.join(__dirname, '../../full-result-3.json'),function () {
-            console.log("JSON removed");
             fs.writeFile(path.join(__dirname, '../../full-result-3.json'), '[', function () {
 
             });
         });
         fs.unlink(path.join(__dirname, '../../full-result-4.json'),function () {
-            console.log("JSON removed");
             fs.writeFile(path.join(__dirname, '../../full-result-4.json'), '[', function () {
 
             });
@@ -286,29 +277,6 @@ const destinationPoint = (brng: number, dist: number, lat: number, lng: number) 
     return {lat: radians_to_degrees(lat2), lon: radians_to_degrees(lon2)};
  }
 
-
-const checkNextPoint = (bearing: number, distance: number, latitude: number, longitude: number) => {
-    const R = 6371 //Radius of the Earth
-    const brng = degrees_to_radians(bearing); //Bearing is 90 degrees converted to radians.
-    console.log("brng ", brng)
-    const d = distance; //Distance in km
-
-    const lat1 = degrees_to_radians(latitude)
-    const lon1 = degrees_to_radians(longitude)
-
-    const lat2 = Math.asin( Math.sin(lat1)*Math.cos(d/R) +
-     Math.cos(lat1)*Math.sin(d/R)*Math.cos(brng))
-
-    const lon2 = lon1 + Math.atan2(Math.sin(brng)*Math.sin(d/R)*Math.cos(lat1),
-             Math.cos(d/R)-Math.sin(lat1)*Math.sin(lat2))
-
-    const lat2Res = radians_to_degrees(lat2)
-    const lon2Res = radians_to_degrees(lon2)
-
-    return {lat: lat2Res, lon: lon2Res};
-
-}
-
 const degrees_to_radians = (degrees: number) => {
   var pi = Math.PI;
   return degrees * (pi/180);
@@ -317,22 +285,6 @@ const degrees_to_radians = (degrees: number) => {
 const radians_to_degrees = (radians: number) => {
   var pi = Math.PI;
   return radians * (180/pi);
-}
-
-const constructDataForOctave = (data: any, latitude: number, longitude: number, height: string, frequency: string):any  => {
-    const resultArray:any  = [];
-
-    data && data.map((element:SegmentFullResultType, iterator: number) => {
-        // console.log("--- ", element.)
-        if(element.receiver) {
-            resultArray.push({
-                coordinates: element.points,
-                adapter: { latitude: latitude, longitude: longitude, height: height, frequency: frequency},
-                receiver:  { latitude: +element.receiver.latitude, longitude: +element.receiver.longitude }
-              });
-        }
-      });
-      return resultArray;
 }
 
 

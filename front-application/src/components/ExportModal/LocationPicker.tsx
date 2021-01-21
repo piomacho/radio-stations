@@ -52,11 +52,6 @@ export const LocationPickerComponent = ({handleChangeX, handleChangeY, recLongit
     setLocation({lat: event.lat, lng: event.lng});
   }
 
-  function handleResetLocation(){
-    setDefaultLocation({ ... DefaultLocation});
-    // setZoom(DefaultZoom);
-  }
-
   return (
     <>
   <div style={{ height: '100vh', width: '100%' }}>

@@ -30,7 +30,6 @@ const fetchKMLByMapHash = async (url) => {
       //   msg: res.body,
       // });
     }
-    console.log('tuuu ', res.url);
     return { text: res.text(), status: res.status };
   });
 

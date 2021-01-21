@@ -87,7 +87,6 @@ export const TypeSpan = styled("span")`
 export const InputContainer = styled('div')`
     display: flex;
     height: 45px;
-    /* margin-right: 20px; */
     align-items: center;
     position: absolute;
     bottom: 15%;

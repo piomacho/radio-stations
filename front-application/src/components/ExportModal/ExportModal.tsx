@@ -176,7 +176,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
               <TypeSpan>.xlsx</TypeSpan>
               <ExportWrapper>
               <Button
-                onClick={allowedSubmit ? handleExportClick : null}
+                onClick={allowedSubmit ? handleExportClick : () => void 0}
                 label={"Exportuj"}
                 backColor={"#0f1626"}
                 backColorHover={"#f5f5f5"}

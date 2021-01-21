@@ -98,8 +98,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [error, setError] = useState(EmptyError);
   const [octaveLoader, setOctaveLoader] = useState(false);
   const [loaderValue, setLoaderValue] = useState(-1);
-  // const [fileName, setFileName] = useState("");
-  // const [segmentsElevations, setSegmentsElevations] = useState<Array<SegmentResultType>>([]);
   const [radius, setRadius] = useState("");
   const [pointsDistance, setPointsDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -115,7 +113,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const socket = io(ENDPOINT);
     //@ts-ignore
     socket.on("loaderGenerate", data => {
-      console.log("received ", data);
       setLoaderValue(data);
     });
      //@ts-ignore
@@ -130,27 +127,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
      }
   }, []);
 
-  // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-  //   const value = e.target.value;
-  //   setSuccessMessage("");
-  //   setError({...error, fileNameError: null});
-  //   setFileName(value);
-  //   const rg1 = /^[^\\/:\*\?"<>\|]+$/; // forbidden characters \ / : * ? " < > |
-  //   const rg2 = /^\./; // cannot start with dot (.)
-  //   const rg3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; // forbidden file names
-  //   const isAllowed = rg1.test(value) && !rg2.test(value) && !rg3.test(value);
-  //   // setAllowedName(isAllowed);
-  //   if (!isAllowed && value.length > 0) {
-  //     setError({...error, fileNameError: "Name is not allowed !"});
-  //   }
-  // };
-
   const handleChangeRadius = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setError({...error, xError: null});
     const rg = /^[0-9]+$/;
     const isAllowed = rg.test(value);
-    // setAllowedName(isAllowed);
     if (!isAllowed) {
       setError({...error, xError: "Radius value is not allowed !"});
     }
@@ -177,7 +158,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
     setLoaderValue(0);
     const dataFactor =  Number(radius)/Number(pointsDistance)
-    console.log(" data factor ", dataFactor);
 
     if(dataFactor > 150 && dataFactor < 300) {
       ITERATIONS = 200
@@ -205,152 +185,16 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         .then(async(results: ResultCoordinateType) => {
           const corners123 = await getCorners(results.coordinates);
           setCorners(corners123);
-        //   handleExportFull(results, Number(pointsDistance)).then((data: any) => {
-        //    try {
-
-        //       // setSegmentsElevations(data);
-        //       //@ts-ignore
-        //       // exportToOctave(globalAr, dataFactor, corners123);
-
-        //     } catch (e) {
-        //       console.error("Parsing error ->", e);
-        //     }
-        //   })
         })
         .catch((error: any) => {
           console.log("Error postLookupLine:" + error);
         });
   }
-
-  const constructDataForOctave = (data: Array<SegmentFullResultType>):any  => {
-    const resultArray:any  = [];
-    // console.log("DATA ", data);
-    data && data.map((element:SegmentFullResultType, iterator: number) => {
-      resultArray.push({
-        coordinates: element.points,
-        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-        receiver:  { latitude: +element.receiver.latitude, longitude: +element.receiver.longitude }
-      });
-    });
-
-    return resultArray;
-  }
-
-  const exportToOctave = async(data: Array<SegmentFullResultType>, dataFactor: number, corners123: any) => {
-    const dataConstructedForOctave: Array<SegmentFullResultType> = constructDataForOctave(data);
-
-
-    const chunkedArray: Array<Array<SegmentFullResultType>> = chunkArray(dataConstructedForOctave, ITERATIONS, true);
-    let numberOfCalls = chunkedArray.length;
-
-    while(numberOfCalls > 0){
-
-      const bodyObject =  JSON.stringify( {
-        // fileName: `${id_antena}_${id_nadajnik}_${id_program}+${Math.random()}`,
-        fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
-        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-        data: chunkedArray[numberOfCalls - 1],
-        postNumber: numberOfCalls,
-        dataFactor: dataFactor,
-        corners: corners123
-      });
-      // console.log("wth");
-      //@ts-ignore
-      const awaited: postLookUpLineResultType = await fireOctaveExport(bodyObject, numberOfCalls);
-      numberOfCalls = numberOfCalls - 1;
-
-      if(awaited) {
-        try {
-
-        } catch(err) {
-          console.error("getLineInfoFull() -> parsing error: ", err);
-        }
-
-      }
-    }
-  };
-
-
-  const fireOctaveExport = async(data: Array<SegmentFullResultType>, postNumber: number) => {
-    // console.log("fireOctaveExport",fireOctaveExport)
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: data,
-    };
-    return new Promise(resolve => {
-        resolve(
-          callApiFetch(`api/export-octave/send-all/`, requestOptions)
-        .then(async(file) => {
-          if(postNumber === 1) {
-            setSuccessMessage("Pomyślnie przesłano dane ! Trwa proces Octave ... ");
-            setOctaveLoader(true);
-          }
-          return postNumber;
-        })
-        .catch(err => {
-          console.log("error ", err);
-          setError(err)
-        })
-        );
-    });
-
-
-
-  }
-
   interface postLookUpLineResultType {
     results: string;
   }
 
-  const getLineInfoFull = async(results: ResultCoordinateType, distance: number) => {
-    let numberOfCalls = ITERATIONS;
-    // const resultArray = [];
-    const chunkedArray = chunkArray(results.coordinates, numberOfCalls, true);
-
-    console.log("results.coordinates ", results.coordinates)
-
-    while(numberOfCalls > 0){
-      //@ts-ignore
-      const awaited: postLookUpLineResultType = await postLookupDistanceForAllPoint(+adapterX, +adapterY, distance, chunkedArray[numberOfCalls - 1]);
-      if(awaited) {
-        numberOfCalls = numberOfCalls - 1;
-        // setLoaderValue(ITEloaderValue - numberOfCalls)
-        try {
-          console.log("----> ", awaited);
-          const parsedResponse = JSON.parse(awaited.results);
-
-          globalAr.push(...parsedResponse)
-          // resultArray.push(...parsedResponse);
-
-        } catch(err) {
-          console.error("getLineInfoFull() -> parsing error: ", err);
-        }
-
-      }
-    }
-    return true;
-  };
-
-  const postLookupDistanceForAllPoint = (adapterX: number, adapterY: number, distance: number, coordinates: ResultType[]) => {
-    console.log("coo ",coordinates)
-    return OEClient.postLookupLineDistanceAll({
-      adapterLongitude: +adapterY,
-      adapterLatitude: +adapterX,
-      distance: distance,
-      receivers: coordinates
-    }).then(async function(results) {
-      return Promise.resolve(results)
-    });
-  };
-
-  const handleExportFull = async(results: ResultCoordinateType, distance: number) => {
-    return getLineInfoFull(results, distance);
-  }
-
   const allowedSubmit = Object.values(error).every(x => (x === null)) && pointsDistance !== "" && radius !== '' && successMessage === '';
-  const adapterX = +(+adapter.szerokosc).toFixed(2);
-  const adapterY = +(+adapter.dlugosc).toFixed(2);
 
   const customStyles = {
     content : {
@@ -391,7 +235,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
             <ExportWrapper>
               <Button
-                onClick={allowedSubmit ? handleExportClick : null}
+                onClick={allowedSubmit ? handleExportClick : () => void 0}
                 label={"Wyeksportuj"}
                 backColor={"#88d317"}
                 backColorHover={"#0e8044"}
