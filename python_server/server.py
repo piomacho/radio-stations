@@ -602,14 +602,14 @@ def do_lookup_line_distance_all(get_locations_func):
         # print("CI ", currentIt, " -- all - ", iterations/2, " kurwa ",currentIt < iterations/2 )
         for data in allData['results']:
             xxx = fullResult({'latitude': data['coords']['latitude'], 'longitude': data['coords']['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
-            # if currentIt < iterations/4:
-            #     do_write_to_file(xxx.__dict__,path);
-            # elif currentIt >= iterations/4 and currentIt < iterations/2:
-            #     do_write_to_file(xxx.__dict__,path2)
-            # elif currentIt >= iterations/2 and currentIt < iterations*3/4:
-            #     do_write_to_file(xxx.__dict__,path3);
-            # else:
-            #      do_write_to_file(xxx.__dict__,path4);
+            if currentIt < iterations/4:
+                do_write_to_file(xxx.__dict__,path);
+            elif currentIt >= iterations/4 and currentIt < iterations/2:
+                do_write_to_file(xxx.__dict__,path2)
+            elif currentIt >= iterations/2 and currentIt < iterations*3/4:
+                do_write_to_file(xxx.__dict__,path3);
+            else:
+                 do_write_to_file(xxx.__dict__,path4);
 
         return {'results': 'oki'}
     except InternalException as e:

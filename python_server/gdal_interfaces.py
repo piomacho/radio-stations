@@ -13,6 +13,7 @@ class GDALInterface(object):
     def __init__(self, tif_path):
         super(GDALInterface, self).__init__()
         self.tif_path = tif_path
+
         self.loadMetadata()
 
     def get_corner_coords(self):
@@ -33,7 +34,6 @@ class GDALInterface(object):
         if self.src is None:
             raise Exception('Could not load GDAL file "%s"' % self.tif_path)
         spatial_reference_raster = osr.SpatialReference(self.src.GetProjection())
-
         # get the WGS84 spatial reference
         spatial_reference = osr.SpatialReference()
         spatial_reference.ImportFromEPSG(4326)  # WGS84
@@ -58,7 +58,6 @@ class GDALInterface(object):
 
     def lookup(self, lat, lon):
         try:
-
             # get coordinate of the raster
             xgeo, ygeo, zgeo = self.coordinate_transform.TransformPoint(lon, lat, 0)
 
@@ -125,7 +124,6 @@ class GDALTileInterface(object):
     def create_summary_json(self):
         all_coords = []
         for file in self._all_files():
-
             full_path = join(self.tiles_folder,file)
             i = self._open_gdal_interface(full_path)
             coords = i.get_corner_coords()
@@ -162,7 +160,6 @@ class GDALTileInterface(object):
             raise Exception('Invalid latitude/longitude')
         else:
             coords = nearest[0].object
-
             gdal_interface = self._open_gdal_interface(coords['file'])
             return float(gdal_interface.lookup(lat, lng))
 

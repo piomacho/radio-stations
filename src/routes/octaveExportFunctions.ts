@@ -40,7 +40,8 @@ export interface SegmentResultType {
   }
 
 let ITERATIONS = 5;
-let GLOWNE = 200;
+// let GLOWNE = 200 - 100km;
+let GLOWNE = 1;
 let globalProcessCounter: number = 0;
 let processCounter: number = 0;
 let maxProcessCounter: number = 0;

@@ -10,6 +10,7 @@ magmapy-bb9815bb7548.json
 *.hgt
 *.bmp
 *.zip
+*.rar
 
 /node_modules
 /octave-src

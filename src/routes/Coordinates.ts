@@ -118,10 +118,10 @@ router.post('/generate', async (req: Request, res: Response) => {
         const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
         const coords = generateCoordinates(radius, pointsDistance, adapter.latitude, adapter.longitude);
         const corners = await getCorners(coords);
-        // removeResultsFile();
+        removeResultsFile();
 
-
-        let ITERATIONS = 800;
+        let ITERATIONS = 20;
+        // let ITERATIONS = 800; 50
         if(dataFactor >= 300) {
             ITERATIONS = 3000;
         }
@@ -151,8 +151,8 @@ router.post('/generate', async (req: Request, res: Response) => {
                 iteration: ITERATIONS,
                 currentIteration: i
             };
-            const result = true
-            // const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
+            // const result = true
+            const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
             if(result) {
                 try {
 
@@ -160,18 +160,18 @@ router.post('/generate', async (req: Request, res: Response) => {
                        //@ts-ignore
                     req.app.io.emit("loaderGenerate", counter);
                    if(counter === ITERATIONS){
-                    // fs.appendFile(path.join(__dirname, '../../full-result.json'), '""]', function (err: string) {
-                    //     fs.appendFile(path.join(__dirname, '../../full-result-2.json'), '""]', function (err: string) {
-                    //         fs.appendFile(path.join(__dirname, '../../full-result-3.json'), '""]', function (err: string) {
-                    //             fs.appendFile(path.join(__dirname, '../../full-result-4.json'), '""]', function (err: string) {
+                    fs.appendFile(path.join(__dirname, '../../full-result.json'), '""]', function (err: string) {
+                        fs.appendFile(path.join(__dirname, '../../full-result-2.json'), '""]', function (err: string) {
+                            fs.appendFile(path.join(__dirname, '../../full-result-3.json'), '""]', function (err: string) {
+                                fs.appendFile(path.join(__dirname, '../../full-result-4.json'), '""]', function (err: string) {
                                     if (!fs.existsSync(path.join(__dirname, `../../validation_results/${fileName}`))){
                                         fs.mkdirSync(path.join(__dirname, `../../validation_results/${fileName}`));
                                     }
                                     handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
-                    //             });
-                    //         });
-                    //     });
-                    // });
+                                });
+                            });
+                        });
+                    });
 
                    }
                 }catch (err) {
