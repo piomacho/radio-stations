@@ -104,7 +104,10 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [ isFinished, setIsFinihed ] = useState(false);
   const [corners, setCorners] = useState({});
   const ENDPOINT = "http://localhost:5000";
-  const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
+  // const computerName = os.hostname();
+
+  // const domain = `http://${computerName}:10000`;
+  const OEClient = new OpenElevationClient(`http://0.0.0.0/api/v1`);
   // const socket = io('http://localhost:5000')
 
   const limit = pLimit(5);

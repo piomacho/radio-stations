@@ -5,11 +5,15 @@ import bottle
 import math
 import numpy
 import os
+import socket
 from bottle import route, run, request, response, hook
 
 from gdal_interfaces import GDALTileInterface
 
 import jsonpickle
+
+ff = open(os.devnull, 'w')
+sys.stdout = ff
 
 class InternalException(ValueError):
     """
@@ -721,6 +725,6 @@ def post_lookup_line_distance_all():
         :return:
         """
     return do_lookup_line_distance_all(body_to_line_distance_all)
-
-run(host='0.0.0.0', port=10000, server='gunicorn', workers=4)
+# hostname123 = socket.gethostname()
+run(host='0.0.0.0', port=10000, server='waitress', workers=4)
 

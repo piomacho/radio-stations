@@ -1,11 +1,7 @@
 args = argv();
-%fName = '/Users/piotrmachowski/Documents/octave/wyniki_orginalne.xlsx';
-%frequency = [0.03 0.2 2 20 50];
 frequency = 0.1;
-% Page      = {'Page1', 'Page2', 'Page3', 'Page4', 'Page5', 'Page6'};
 Tpc_array = [50];
 
-printf(args{5})
 FlagVP = 1;
 Gtx = 0;
 Grx = 0;
@@ -25,13 +21,6 @@ Tpc = 0.001;
 Profile = 'Prof_b2iseac';
 pyta = 0;
 iterationCounter = 0;
-
-% printf("start %d , end %d", startVal, endVal);
-% nazwaPliku = strcat('validation_results/',args{5},'/',args{5},'-',iterationNumber,'---start.xlsx');
-% if exist(nazwaPliku, 'file')
-%     delete(nazwaPliku)
-% end
-
 
 try
     s = pwd;
@@ -146,39 +135,6 @@ end
                     ];
                     % if(length(A) > 0)
                     A = [A; row];
-                    % else
-                    %     A = row;
-                    % end
-                    % row = [];
-                    % rr = index;
-                    % print('oooo, %d', index)
-                    % step = 25;
-                    % disp(["A length ", num2str(length(A)) ])
-                    % if pyta == step
-                    %     % divider = pyta / step;
-                    %     % startRange = step * (divider - 1);
-                    %     xlswrite(nazwaPliku, A, pg, strcat('A2:EI', num2str(pyta + 2) ));
-                    %     % A=[];
-                    %     nazwaPliku = strcat('validation_results/',args{5},'/',args{5},'-',iterationNumber,'-',num2str(iterationCounter),'.xlsx');
-                    %     iterationCounter = iterationCounter + 1;
-                    %     AB = {'FlagVp', 'GHz', 'Grx', 'Grt', 'Hrg', 'Htg', 'Phire', 'Phirn',  'Phite', ...
-                    %     'Phitn', 'Tpc',	'Profile',	'FlagLos50', 'FlagLospa', 'FlagLosps', 'FlagSea', ...
-                    %     'FlagShort', 'A1', 'A2', 'A2r',	'A2t',	'Aac',	'Aad',	'dAat',	'Ags',	'Agsur', ...
-                    %     'Aorcv', 'Aos',	'Aosur', 'Aotcv', 'Awrcv',	'Awrrcv', 'Awrs', 'Awrsur',	'Awrtcv', ...
-                    %     'Aws', 'Awsur',	'Awtcv', 'Bt2rDeg',	'Cp', 'D',	'Dcr',	'Dct',	'Dgc',	'Dlm', ...
-                    %     'Dlr',	'Dlt',	'Drcv',	'Dtcv',	'Dtm',	'Foes1', 'Foes2', 'Fsea', 'Fwvr', 'Fwvrrx',	'Fwvrxt', ...
-                    %     'GAM1',	'GAM2',	'Gamo',	'Gamw',	'Gamwr', 'H1', 'Hcv', 'Hhi', 'Hlo',	'Hm', 'Hmid', ...
-                    %     'Hn', 	'Hrea',	'Hrep',	'Hrs',	'Hsrip',	'Hsripa',	'Hstip',	'Hstipa',	'Htea', ...
-                    %     'Htep',	'Hts',	'Lb',	'Lba',	'Lbes1',	'Lbes2',	'Lbfs',	'Lbm1',	'Lbm2',	'Lbm3',	...
-                    %     'Lbm4',	'Lbs',	'Ld',	'Ldba',	'Ldbka',    'Ldbks',	'Ldbs',	'dLdsph',	'Lp1r',	'Lp1t', ...
-                    %     'Lp2r',	'Lp2t',	'Mses',	'N',	'Nd1km50',	'Nd1kmp',	'Nd65m1',	'Nlr',	'Nlt',	'Nsrima',...
-                    %     'Nsrims',	'Nstima',	'Nstims',	'Phi1qe',	'Phi1qn',	'Phi3qe',	'Phi3qn',	'Phicve', ...
-                    %     'Phicvn',	'Phime',	'Phimn',	'Phircve',	'Phircvn',	'Phitcve',	'Phitcvn',	'Qoca', ...
-                    %     'Reff50',	'Reffp',	'Sp',	'Thetae',	'Thetar',	'Thetarpos',	'Thetas',	'Thetat', ...
-                    %     'Thetatpos',	'Tpcp',	'Tpcq',	'Tpcscale',	'Wave',	'Wvsur',	'WvSurrx',	'WvSurtx',	'Ztropo'};
-                    %     xlswrite(nazwaPliku, AB, pg, "A1:EI1");
-                    %     pyta = 0;
-                    % end
 
                 r1 = tpccnt + 1;
             end
@@ -186,24 +142,6 @@ end
         % if pyta < step && pyta != 0
             disp(['Jest tu w pierwszym i A ------', num2str(length(A)), " pytka ", num2str(pyta)]);
             nazwaPliku = strcat('validation_results/',args{5},'/',args{5},'-',iterationNumber,"-",num2str(globalCounter),'.xlsx');
-
-            % AB = {'FlagVp', 'GHz', 'Grx', 'Grt', 'Hrg', 'Htg', 'Phire', 'Phirn',  'Phite', ...
-            % 'Phitn', 'Tpc',	'Profile',	'FlagLos50', 'FlagLospa', 'FlagLosps', 'FlagSea', ...
-            % 'FlagShort', 'A1', 'A2', 'A2r',	'A2t',	'Aac',	'Aad',	'dAat',	'Ags',	'Agsur', ...
-            % 'Aorcv', 'Aos',	'Aosur', 'Aotcv', 'Awrcv',	'Awrrcv', 'Awrs', 'Awrsur',	'Awrtcv', ...
-            % 'Aws', 'Awsur',	'Awtcv', 'Bt2rDeg',	'Cp', 'D',	'Dcr',	'Dct',	'Dgc',	'Dlm', ...
-            % 'Dlr',	'Dlt',	'Drcv',	'Dtcv',	'Dtm',	'Foes1', 'Foes2', 'Fsea', 'Fwvr', 'Fwvrrx',	'Fwvrxt', ...
-            % 'GAM1',	'GAM2',	'Gamo',	'Gamw',	'Gamwr', 'H1', 'Hcv', 'Hhi', 'Hlo',	'Hm', 'Hmid', ...
-            % 'Hn', 	'Hrea',	'Hrep',	'Hrs',	'Hsrip',	'Hsripa',	'Hstip',	'Hstipa',	'Htea', ...
-            % 'Htep',	'Hts',	'Lb',	'Lba',	'Lbes1',	'Lbes2',	'Lbfs',	'Lbm1',	'Lbm2',	'Lbm3',	...
-            % 'Lbm4',	'Lbs',	'Ld',	'Ldba',	'Ldbka',    'Ldbks',	'Ldbs',	'dLdsph',	'Lp1r',	'Lp1t', ...
-            % 'Lp2r',	'Lp2t',	'Mses',	'N',	'Nd1km50',	'Nd1kmp',	'Nd65m1',	'Nlr',	'Nlt',	'Nsrima',...
-            % 'Nsrims',	'Nstima',	'Nstims',	'Phi1qe',	'Phi1qn',	'Phi3qe',	'Phi3qn',	'Phicve', ...
-            % 'Phicvn',	'Phime',	'Phimn',	'Phircve',	'Phircvn',	'Phitcve',	'Phitcvn',	'Qoca', ...
-            % 'Reff50',	'Reffp',	'Sp',	'Thetae',	'Thetar',	'Thetarpos',	'Thetas',	'Thetat', ...
-            % 'Thetatpos',	'Tpcp',	'Tpcq',	'Tpcscale',	'Wave',	'Wvsur',	'WvSurrx',	'WvSurtx',	'Ztropo'};
-            % xlswrite(nazwaPliku, AB, pg, "A1:EI1");
-            % disp(['zapisał tytuły ! ']);
             xlswrite(nazwaPliku, A, pg);
             % xlswrite(nazwaPliku, A, pg, strcat('A2:EI', num2str(pyta + 2)));
             disp(['zapisał dane do enda ! ']);
@@ -215,6 +153,5 @@ end
     %  end
 
 printf("%s", "writing !!!!!!!!!!")
-% xlswrite(nazwaPliku,B, Profile);
 
 exit(0)

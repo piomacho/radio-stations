@@ -11,9 +11,9 @@ magmapy-bb9815bb7548.json
 *.bmp
 *.zip
 *.rar
+*.tif
 
 /node_modules
-/octave-src
 /.pnp
 .pnp.js
 
@@ -36,7 +36,7 @@ otherCoords.json
 # production
 /front-application/build
 /front-application/src/keys.ts
-/python_server/data
+/python_server/data/summary.json
 # misc
 .DS_Store
 .env.local

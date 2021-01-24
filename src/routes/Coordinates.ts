@@ -8,6 +8,7 @@ var fs = require('fs');
 const json = require('big-json');
 const path = require('path');
 const oboe = require('oboe');
+const os = require('os');
 
 
 axiosRetry(axios, { retries: 3 });
@@ -61,7 +62,6 @@ const makeRequest = (
     ): string | null => {
     const queryParams = queryParameters && Object.keys(queryParameters).length ? serializeQueryParams(queryParameters) : null;
     const urlWithParams = url + (queryParams ? '?' + queryParams : '');
-
     if (body && !Object.keys(body).length) {
         body = undefined;
     }
@@ -125,7 +125,10 @@ router.post('/generate', async (req: Request, res: Response) => {
         if(dataFactor >= 300) {
             ITERATIONS = 3000;
         }
-        const domain = 'http://0.0.0.0:10000';
+        const computerName = os.platform() === 'win32' ? os.hostname() : '0.0.0.0';
+
+        const domain = `http://${computerName}:10000`;
+        console.log("DOMAIN ", domain);
         const chunkedArray = chunkArray(coords, ITERATIONS, true);
         const queryParameters: Record<string, any> = {}
         const allCoordinates: any = [];

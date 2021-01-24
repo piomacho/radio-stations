@@ -1,3 +1,4 @@
+import { exec } from "child_process";
 import path from "path";
 import { chunkArray } from "./chunkArray";
 import { createBitmap } from "./createBitmap";
@@ -296,13 +297,13 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
                 }
                 end = start + rangeValGlobal > filesNumber ? filesNumber : start + rangeValGlobal;
                 console.log("start-> ", start, " end -> ", end);
-                ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}`, height, frequencyStr, i, start, end, moduloValGlobal, globalProcessCounter]);
+                ls1 = exec(`octave -i --persist validate-new.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
             } else {
                 start = (rangeValGlobal + 1) * i + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1);
                 end = (rangeValGlobal + 1) * i  + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1) + rangeValGlobal;
                 globalEnd = end;
                 console.log("start-> ", start, " end -> ", end);
-                ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}`, height, frequencyStr, i, start, end, moduloValGlobal, globalProcessCounter]);
+                ls1 = exec(`octave -i --persist validate-new.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
 
             }
 
