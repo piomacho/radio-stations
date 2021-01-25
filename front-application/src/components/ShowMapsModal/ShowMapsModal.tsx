@@ -11,6 +11,8 @@ import { callApiFetch, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
 import { CloseButton, Title } from "../ExportModal/ExportModal.style";
 import {LeafletMap} from "./LeafletMap/LeafletMap";
+import { ToggleSwitch } from "../ToggleSwitch/ToggleSwitch";
+import { ToggleWrapper, SourceTitle } from "./LeafletMap/ShowMapsModal.styles";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -88,6 +90,11 @@ const ShowMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     >
       <CloseButton onClick={showModal(false, "show-maps", false)}><span>&#10006;</span></CloseButton>
       <Title>Obliczone mapy </Title>
+      <ToggleWrapper>
+        <SourceTitle>Mapy radiopolska</SourceTitle>
+        <ToggleSwitch />
+      <SourceTitle>tl_p2001</SourceTitle>
+      </ToggleWrapper>
         <LeafletMap />
     </Modal>
   );

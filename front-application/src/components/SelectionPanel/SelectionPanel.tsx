@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback } from "react";
 import Stations from "../Stations/Stations";
 import Adapters from "../Adapters/Adapters";
 import {
@@ -6,7 +6,6 @@ import {
   ButtonWrapper,
   LoaderOverLay,
   SubmitPlotMemoButton,
-  SubmitMapsButton,
   SendToOctaveButton,
   NavigationPanel,
   NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton
@@ -18,7 +17,6 @@ import Loader from "react-loader-spinner";
 import { LoaderContainer } from "../Adapters/Adapters.style";
 import GMapsModal from "../GMapsModal/GMapsModal";
 import ExportModal from "../ExportModal/ExportModal";
-import { lineFromPoints } from "../../common/global";
 import ExportAllModal from "../ExportAllModal/ExportAllModal";
 import ShowMapsModal from "../ShowMapsModal/ShowMapsModal";
 
@@ -64,10 +62,10 @@ const SelectionPanel = () => {
   const [showMapsModalVisiblity, setShowMapsModalVisiblity] = useState(false);
   const [loading, setLoading] = useState(false);
   const [plotData, setPlotData] = useState<Array<any>>([]);
-  const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
-  const [adapter, setAdapter] = useGlobalState("adapter");
+  const [setTrialCoords] = useGlobalState("trialCoords");
+  const [adapter] = useGlobalState("adapter");
   const [coordinates, setCoordinates] = useGlobalState("coordinates");
-  const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
+  const [setElevationResults] = useGlobalState("elevationResults");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
   const getCoordinates = () => {

@@ -1,10 +1,12 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from "react";
 import store from "../../../Store/Store";
 import L from 'leaflet';
-import { fetchKMLsArray } from '../helpers/maps-layers.js';
 import { MapLeaflet } from './LeafletMap.style';
+import {parseString} from 'xml2js';
+
 
 import 'leaflet/dist/leaflet.css';
+import { callApiFetch } from "../../../common/global";
 // import '../styles/Map.css';
 const icon = require('../images/transmitter_half.png').default;
 
@@ -39,6 +41,22 @@ config.tileLayer = {
     accessToken: '',
   },
 };
+const mapKMLToBounds = (response: any) => {
+  const kml = response.kml.GroundOverlay;
+  console.log("Bounds ", kml)
+  // const kml = xml2js(response, { ignoreAttributes: true, compact: true }).kml.GroundOverlay;
+  const boundsArray = [];
+  if(kml.length > 0) {
+    boundsArray.push(Number(kml[0].LatLonBox[0].east[0]));
+    boundsArray.push(Number(kml[0].LatLonBox[0].north[0]));
+    boundsArray.push(Number(kml[0].LatLonBox[0].south[0]));
+    boundsArray.push(Number(kml[0].LatLonBox[0].west[0]));
+    const corner1 = L.latLng(Number(boundsArray[1]), Number(boundsArray[0]));
+    const corner2 = L.latLng(Number(boundsArray[2]), Number(boundsArray[3]));
+    return L.latLngBounds(corner1, corner2);
+  }
+
+};
 
 export const LeafletMap = () => {
   const { useGlobalState } = store;
@@ -47,30 +65,41 @@ export const LeafletMap = () => {
 
   useEffect(() => {
     const layersGroup = init(mapNode);
-    fetchKMLsArray(
-       adapter
-      ).then((res) => {
-        if(res !== null) {
-          newDrawLayers(res, layersGroup)
+
+    const mapahash = adapter._mapahash;
+    callApiFetch(`api/comparison-map/kml/${mapahash}`).then((res) => {
+
+     parseString(res.text, function (err, result) {
+        console.dir(result);
+        if(res.status === 200) {
+          const bounds = mapKMLToBounds(result);
+          if(bounds !== undefined){
+            newDrawLayers(bounds, layersGroup)
+          }
+
+        } else {
+          throw Error('Brak opisu mapy pokrycia o podanym id w bazie danych');
         }
 
       });
+
+    });
+
   }, [mapNode])
 
 
 
 
   const newDrawLayers = (bounds: L.LatLngBounds, layersGroup: L.LayerGroup<any> | null) => {
-
+    console.log(" bunds ", bounds );
     const url = `https://mapy.radiopolska.pl/files/get/fm-std/${adapter._mapahash}.png`;
     //   const url = `https://bitmap-hosting.herokuapp.com/api/images/get-image/${element._mapahash}`;
     if(layersGroup !== null) {
-      fetch(url)
-      .then(() => {
-        const layer = L.imageOverlay(url, bounds, { opacity: 0.6 });
-        layersGroup.addLayer(layer);
-        console.log('layer ', layer);
-      })
+      callApiFetch(`api/comparison-map/image/${adapter._mapahash}`)
+        .then(() => {
+          const layer = L.imageOverlay(url, bounds, { opacity: 0.6 });
+          layersGroup.addLayer(layer);
+        })
       .catch((e) => console.log(e));
     }
 

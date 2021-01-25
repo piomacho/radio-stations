@@ -44,14 +44,14 @@ interface InitialStateType {
     adapter: {
         value: string;
         label: string;
-        dlugosc: string;
-        szerokosc: string;
-        wys_npm: number | undefined;
-        czestotliwosc: string;
-        id_antena: string;
-        id_nadajnik: string;
-        id_program: string;
-        _mapahash: string;
+        dlugosc?: string;
+        szerokosc?: string;
+        wys_npm?: number | undefined;
+        czestotliwosc?: string;
+        id_antena?: string;
+        id_nadajnik?: string;
+        id_program?: string;
+        _mapahash?: string;
     },
     // todo remove any
     coordinates: {elevations: Array<Array<number>>, distances: Array<Array<number>>},

@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { Component } from "react";
 import { compose } from "recompose";
 import {
   withScriptjs,
@@ -6,12 +6,9 @@ import {
   GoogleMap,
   Marker,
   Polygon,
-  InfoWindow
 } from "react-google-maps";
-import { Wrapper } from "./Map.style";
 import store from "../../Store/Store";
 import Keys from "../../keys";
-import { DrawingManager } from "react-google-maps/lib/components/drawing/DrawingManager";
 
 const MapWithMarker = compose(
   withScriptjs,

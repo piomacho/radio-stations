@@ -52,7 +52,12 @@ const Adapters = () => {
         setLoading(true);
         callApiFetch(`api/adapters/all/${station.value}`)
         .then(response =>  setParameters(response))
-        .then(adapters =>  { setAdapters(adapters); setAdapter(adapters[0]);  setLoading(false); })
+        .then(adapters =>  {
+          setAdapters(adapters);
+          if(adapters.length > 0) {
+            setAdapter(adapters[0]);
+          }
+          setLoading(false) })
         .catch(err => console.log(err));
       }, [station])
 

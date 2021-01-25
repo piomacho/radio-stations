@@ -3,10 +3,6 @@ import Keys from "../../keys";
 import GoogleMapReact, {ClickEventValue} from 'google-map-react';
 import { AdapterIcon, TransmitterIcon } from './ExportModal.style';
 import store from "../../Store/Store";
-import { useEffect } from 'react';
-
-
-const DefaultZoom = 7;
 
 interface LatLongType {
     lat: number,
@@ -38,13 +34,10 @@ export const LocationPickerComponent = ({handleChangeX, handleChangeY, recLongit
   const [adapter] = useGlobalState('adapter');
   const DefaultLocation = { lat: Number(adapter.szerokosc), lng: Number(adapter.dlugosc)};
 
-  const [defaultLocation, setDefaultLocation] = useState(DefaultLocation);
+  const [defaultLocation] = useState(DefaultLocation);
 
 
   const [location, setLocation] = useState(defaultLocation);
-  const [zoom, setZoom] = useState(DefaultZoom);
-
-
 
   function handleChangeLocation (event: ClickEventValue){
     handleChangeX(`${event.lng}`);

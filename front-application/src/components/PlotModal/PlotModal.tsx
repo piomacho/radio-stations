@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Modal from "react-modal";
-import store, { CoordinatesType } from "../../Store/Store";
-import Button from "../Button/Button";
-
-import createPlotlyComponent from "react-plotlyjs";
-import Plotly from "plotly.js-gl3d-dist";
-import { ButtonWrapper } from "../Button/Button.styles";
 import { MyResponsiveHeatMap } from "./HeatMap";
 import Map from '../Map/MapComparison'
 import {CloseButtonWrapper, MapWrapper } from "./PlotModal.style";

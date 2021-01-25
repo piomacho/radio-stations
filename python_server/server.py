@@ -12,8 +12,8 @@ from gdal_interfaces import GDALTileInterface
 
 import jsonpickle
 
-ff = open(os.devnull, 'w')
-sys.stdout = ff
+# ff = open(os.devnull, 'w')
+# sys.stdout = ff
 
 class InternalException(ValueError):
     """
@@ -573,6 +573,7 @@ def do_write_to_file(results, pathToFile):
             # str_q = str(results)[1 : -1]
             json.dump(results, outfile)
             outfile.write(',')
+        outfile.close()
 
 
     except InternalException as e:

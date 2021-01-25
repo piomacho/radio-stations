@@ -1,11 +1,9 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import Modal from "react-modal";
-import store, { CoordinatesType } from "../../Store/Store";
-import { CircularProgressbar } from 'react-circular-progressbar';
+import store from "../../Store/Store";
+import { buildStyles, CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import io from "socket.io-client";
-import Loader from 'react-loader-spinner';
-import path from "path";
 
 import Button from "../Button/Button";
 import {
@@ -20,20 +18,17 @@ import {
   Coord,
   AdaptersHeader,
   ExportInputWrapper,
-  DistanceDisplay,
   ProgressBarWrapper,
   DownloadIcon,
   DownloadArea,
-  ResultMessage
+  ResultMessage,
+  ProgressBarOctaveWrapper,
+  SuccessOctaveWrapper
 } from "./ExportAllModal.style";
-import { ButtonWrapper } from "../Button/Button.styles";
-import { callApiFetch, getCorners, measureDistance } from "../../common/global";
-import OpenElevationClient from "../../OECient/OpenElevationClient";
-import { chunkArray } from "./chunkArray";
+import { callApiFetch, getCorners } from "../../common/global";
 import { LoaderOverLay } from "../SelectionPanel/SelectionPanel.styles";
 import { LoaderContainer } from "../Adapters/Adapters.style";
 import { CloseButton } from "../ExportModal/ExportModal.style";
-import pLimit from 'p-limit';
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -44,13 +39,11 @@ interface ErrorsType {
   xError: null | string;
   yError: null | string;
   pointsError: null | string;
-  // fileNameError: null | string;
 }
 
 const EmptyError: ErrorsType = { xError: null,
   yError: null,
   pointsError: null,
-  // fileNameError: null
 }
 
 interface ResultCoordinateType {
@@ -61,62 +54,43 @@ interface ResultType {
   latitude: number;
 }
 
-
-
-interface ElevationSegmentType {
-  latitude: number,
-  longitude: number,
-  elevation: number,
-  distance: number
-}
-
-interface SegmentResultType {
-  results: Array<ElevationSegmentType>
-  receiver: {
-    longitude: number,
-    latitude: number
-  }
-}
-
-interface SegmentFullResultType {
-  receiver: {
-    longitude: number,
-    latitude: number
-  },
-  points: Array<ElevationSegmentType>
-}
-
-let ITERATIONS = 200;
-//@ts-ignore
-let globalAr = [];
+let ITERATIONS = 100;
 
 const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
-  const [elevationResults] = useGlobalState("elevationResults");
   const [adapter] = useGlobalState('adapter');
   const { id_nadajnik, id_antena, id_program} = adapter;
   const [error, setError] = useState(EmptyError);
   const [octaveLoader, setOctaveLoader] = useState(false);
   const [loaderValue, setLoaderValue] = useState(-1);
+  const [octaveValueLoader, setOctaveValueLoader] = useState(-1);
   const [radius, setRadius] = useState("");
   const [pointsDistance, setPointsDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [ isFinished, setIsFinihed ] = useState(false);
-  const [corners, setCorners] = useState({});
+  const [setCorners] = useState({});
   const ENDPOINT = "http://localhost:5000";
-  // const computerName = os.hostname();
-
-  // const domain = `http://${computerName}:10000`;
-  const OEClient = new OpenElevationClient(`http://0.0.0.0/api/v1`);
-  // const socket = io('http://localhost:5000')
-
-  const limit = pLimit(5);
 
   useEffect(() => {
     const socket = io(ENDPOINT);
     //@ts-ignore
     socket.on("loaderGenerate", data => {
       setLoaderValue(data);
+    });
+    //@ts-ignore
+    socket.on("octaveStart", data => {
+      setSuccessMessage(data);
+      setOctaveLoader(true);
+    });
+    //@ts-ignore
+    socket.on("octaveError", data => {
+      setErrorMessage(data);
+    });
+    //@ts-ignore
+    socket.on("octaveLoader", data => {
+      setOctaveValueLoader(data);
+
     });
      //@ts-ignore
     socket.on("finishMapProcessing", data => {
@@ -136,7 +110,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     const rg = /^[0-9]+$/;
     const isAllowed = rg.test(value);
     if (!isAllowed) {
-      setError({...error, xError: "Radius value is not allowed !"});
+      setError({...error, xError: "Nieprawidłowy zakres !"});
     }
 
     setRadius(value);
@@ -145,10 +119,10 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const handleChangePointsDistance = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setError({...error, pointsError: null});
-    const rg = /.*/;
+    const rg = /^\d+(\.\d+)?$/;
     const isAllowed = rg.test(value);
     if (!isAllowed) {
-      setError({...error, pointsError: "Points distance is invalid !"});
+      setError({...error, pointsError: "Nieprawidłowy krok !"});
     }
 
     setPointsDistance(value);
@@ -160,10 +134,14 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       const adapterLongitude = +(+adapter.dlugosc).toFixed(2);
 
     setLoaderValue(0);
-    const dataFactor =  Number(radius)/Number(pointsDistance)
-
-    if(dataFactor > 150 && dataFactor < 300) {
+    const dataFactor =  Number(radius)/Number(pointsDistance);
+console.log("dataFActor", dataFactor)
+    if(dataFactor > 100 && dataFactor < 200) {
       ITERATIONS = 200
+    }else if(dataFactor >= 200 && dataFactor < 250){
+      ITERATIONS = 300
+    }else if(dataFactor > 250 && dataFactor < 350){
+      ITERATIONS = 500;
     } else if(dataFactor >= 300) {
       ITERATIONS = 2700;
     }
@@ -187,14 +165,12 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     callApiFetch(`api/coordinates/generate`, requestOptions)
         .then(async(results: ResultCoordinateType) => {
           const corners123 = await getCorners(results.coordinates);
+          //@ts-ignore
           setCorners(corners123);
         })
         .catch((error: any) => {
           console.log("Error postLookupLine:" + error);
         });
-  }
-  interface postLookUpLineResultType {
-    results: string;
   }
 
   const allowedSubmit = Object.values(error).every(x => (x === null)) && pointsDistance !== "" && radius !== '' && successMessage === '';
@@ -249,7 +225,6 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
         </ExportInputWrapper> :
         <DownloadArea>
-          <ResultMessage>Odwiedź stronę <a target="_blank" href="https://mapy.radiopolska.pl/">https://mapy.radiopolska.pl/</a> aby zobaczyć otrzymaną mapę.</ResultMessage>
           <div>
             <ResultMessage>Pobierz plik .kml:</ResultMessage>
             <a href={`https://storage.googleapis.com/klm-map-storage/${id_antena}_${id_nadajnik}_${id_program}.kml`} download={`${id_antena}_${id_nadajnik}_${id_program}.kml`}><DownloadIcon /></a> </div>
@@ -258,10 +233,16 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
         <Message key={idx} error={true}>{error}</Message>
       ))}
-      {successMessage &&  <div>
+      {successMessage && <SuccessOctaveWrapper>
         <Message>{successMessage}</Message>
-        { octaveLoader && <LoaderContainer><Loader type="Circles" color="#88d317" height={40} width={40}/></LoaderContainer>}
-        {/* <a onClick={downloadFile} download={`${id_antena}_${id_nadajnik}_${id_program}.bmp`}>Download file ! </a> */}
+        { octaveLoader && octaveValueLoader >= 0 &&
+        <ProgressBarOctaveWrapper>
+            <CircularProgressbar background={true} styles={buildStyles({textColor: '#88d317', pathColor: '#88d317'})} value={octaveValueLoader} maxValue={1} text={`${Math.round((octaveValueLoader) * 100)}%`} />;
+        </ProgressBarOctaveWrapper>
+        }</SuccessOctaveWrapper>}
+
+        {errorMessage &&  <div>
+        <Message error={true}>{errorMessage}</Message>
         </div>}
 
        {loaderValue >= 0 && (loaderValue/ITERATIONS) < 1 ?
@@ -273,6 +254,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           </LoaderContainer>
         </LoaderOverLay>
        : null}
+       {/* {loaderValue/ITERATIONS === 1 ? <Message>Przesłano dane, rozpoczęcie procesów Octave...</Message> : null} */}
     </Modal>
   );
 };

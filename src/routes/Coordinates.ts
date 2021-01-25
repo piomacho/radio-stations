@@ -120,11 +120,16 @@ router.post('/generate', async (req: Request, res: Response) => {
         const corners = await getCorners(coords);
         removeResultsFile();
 
-        let ITERATIONS = 20;
-        // let ITERATIONS = 800; 50
-        if(dataFactor >= 300) {
-            ITERATIONS = 3000;
-        }
+        let ITERATIONS = 100;
+        if(dataFactor > 100 && dataFactor < 200) {
+            ITERATIONS = 200
+          }else if(dataFactor >= 200 && dataFactor < 250){
+            ITERATIONS = 300
+          }else if(dataFactor > 250 && dataFactor < 350){
+            ITERATIONS = 800;
+          } else if(dataFactor >= 300) {
+            ITERATIONS = 2700;
+          }
         const computerName = os.platform() === 'win32' ? os.hostname() : '0.0.0.0';
 
         const domain = `http://${computerName}:10000`;
@@ -158,7 +163,6 @@ router.post('/generate', async (req: Request, res: Response) => {
             const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
             if(result) {
                 try {
-
                     counter = counter + 1;
                        //@ts-ignore
                     req.app.io.emit("loaderGenerate", counter);
@@ -170,6 +174,8 @@ router.post('/generate', async (req: Request, res: Response) => {
                                     if (!fs.existsSync(path.join(__dirname, `../../validation_results/${fileName}`))){
                                         fs.mkdirSync(path.join(__dirname, `../../validation_results/${fileName}`));
                                     }
+                                    //@ts-ignore
+                                    req.app.io.emit("octaveStart", "Rozpoczęto obliczenia w Octave...");
                                     handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
                                 });
                             });
@@ -178,7 +184,8 @@ router.post('/generate', async (req: Request, res: Response) => {
 
                    }
                 }catch (err) {
-                    console.error("parsing erorr")
+                     //@ts-ignore
+                    req.app.io.emit("octaveError", "Wystąpił błąd !");
                     return res.status(404).json({
                         error: err.message,
                 }
@@ -187,6 +194,9 @@ router.post('/generate', async (req: Request, res: Response) => {
             }
         }}
     } catch (err) {
+        //@ts-ignore
+        req.app.io.emit("octaveError", "Wystąpił błąd !");
+
         return res.status(404).json({
             error: err.message,
         });

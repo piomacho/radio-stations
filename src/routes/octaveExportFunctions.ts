@@ -42,7 +42,7 @@ export interface SegmentResultType {
 
 let ITERATIONS = 5;
 // let GLOWNE = 200 - 100km;
-let GLOWNE = 1;
+let GLOWNE = 4;
 let globalProcessCounter: number = 0;
 let processCounter: number = 0;
 let maxProcessCounter: number = 0;
@@ -247,7 +247,6 @@ const writeToReceiverFile = (numberOfIteration: number, receiverArray: string, f
         end`, (err: string) => {
             if (err) {
                 console.log(err);
-                // reject(err);
             }
             else {
                 resolve(numberOfIteration);
@@ -262,7 +261,6 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string,
             end`, (err: string) => {
             if (err) {
                 console.log(err);
-                // reject(err);
             }
             else {
                 resolve(numberOfIteration);
@@ -276,6 +274,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
     if(globalProcessCounter !== -1 ){
 
         globalProcessCounter = globalProcessCounter + 1;
+        req.app.io.emit("octaveLoader", globalProcessCounter/GLOWNE);
 
         const moduloValGlobal = globalProcessCounter !== GLOWNE ? podstawa_glowny % ITERATIONS : (podstawa_glowny + modulo_glowny) % ITERATIONS;
         const rangeValGlobal = globalProcessCounter !== GLOWNE ? (podstawa_glowny - moduloValGlobal) / ITERATIONS : ((podstawa_glowny + modulo_glowny) - moduloValGlobal) / ITERATIONS;
@@ -283,7 +282,6 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
         if(globalProcessCounter === GLOWNE) {
             globalProcessCounter = -1;
         }
-        // let start = 0;
         let end = rangeValGlobal;
         for(let i = 0; i< ITERATIONS; i++) {
             let ls1: any;
@@ -323,6 +321,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
             ls1.on("close", (code: string) => {
                 if(+code === 0) {
                     processCounter = processCounter + 1;
+
                     if(processCounter === ITERATIONS) {
                         processCounter = 0;
                         if(globalProcessCounter === -1){
@@ -333,9 +332,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
                             ls1.kill()
                         } else {
                             setTimeout(function() {
-                                // runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, 0, podstawa_glowny, dataFactor, modulo_glowny );
                                 runOctave(adapterLon, adapterLat, null, null, fName, height, frequencyStr, req, podstawa_glowny, dataFactor, corners, modulo_glowny, filesNumber);
-                                // return 1;
                             }, 2000);
                         }
 
@@ -343,7 +340,6 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
 
                 }
                 console.log(`child process exited with code ${code}`);
-            // })
         });
         }
 

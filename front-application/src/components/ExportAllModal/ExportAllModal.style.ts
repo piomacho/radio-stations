@@ -98,7 +98,7 @@ export const ExportWrapper = styled('div')`
 `;
 
 export const Message = styled('p')<ExportModalType>`
-    color: ${props => props.error ? `#ff0000` : `#88d317`};
+    color: ${props => props.error ? `#b82601` : `#88d317`};
     font-weight: 700;
     font-size: 18px;
 `;
@@ -139,4 +139,15 @@ export const ProgressBarWrapper = styled('div')`
     width: 350px;
     margin-left: 30px;
     margin-top: 20px;
+`;
+
+export const ProgressBarOctaveWrapper = styled('div')`
+    width: 100px;
+    margin-left: 30px;
+    margin-top: 20px;
+`;
+
+export const SuccessOctaveWrapper = styled('div')`
+    display: flex;
+    align-items: center;
 `;
