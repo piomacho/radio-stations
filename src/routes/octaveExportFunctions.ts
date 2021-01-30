@@ -1,12 +1,10 @@
 import { exec } from "child_process";
 import path from "path";
-import { chunkArray } from "./chunkArray";
 import { createBitmap } from "./createBitmap";
 import { CoordinatesType, CornersType } from "./OctaveExport";
-
+const rimraf = require('rimraf');
 const pLimit = require('p-limit');
 const fs = require('fs');
-const { execFile } = require("child_process");
 const oboe = require('oboe');
 const json = require('big-json');
 
@@ -16,14 +14,6 @@ interface ElevationSegmentType {
     elevation: number,
     distance: number
   }
-
-//   interface SegmentResultType {
-//     results: Array<ElevationSegmentType>
-//     receiver: {
-//       longitude: number,
-//       latitude: number
-//     }
-//   }
 
   interface ElevationSegmentType {
     latitude: number,
@@ -41,39 +31,31 @@ export interface SegmentResultType {
   }
 
 let ITERATIONS = 5;
-// let GLOWNE = 200 - 100km;
-let GLOWNE = 4;
+let OCTAVE_ITERATIONS = 1;
 let globalProcessCounter: number = 0;
 let processCounter: number = 0;
-let maxProcessCounter: number = 0;
 let start = 0;
 let globalEnd = 0;
 
 export const handleExportToOctave = (
-    // coordinatesArray: Array<SegmentResultType>,
     adapterLon: number,
     adapterLat: number,
     height: number,
     fName: string, dataFactor: number, corners: any, frequency: string, req: any) => {
     try {
         const segmentsArray: Array<Array<string>> = [];
-        const receiversArray: Array<string> = [];
         const segmentsArrayStr: Array<string> = [];
         const notInlcudedCoordintesArray: Array<SegmentResultType> = [];
-        const limit = pLimit(10);
 
-        // if(dataFactor < 20) {
-            // ITERATIONS = 10;
-        // }
-        // if (dataFactor > 100 && dataFactor < 150) {
-        //     ITERATIONS = 50;
-        // }
-        // else if(dataFactor >= 150 && dataFactor < 300) {
-        //     ITERATIONS = 250;
-        //   }
-        //   else if(dataFactor >= 300) {
-        //     ITERATIONS = 800;
-        //   }
+        if(dataFactor > 95 && dataFactor <= 180) {
+            OCTAVE_ITERATIONS = 2;
+        }
+        if (dataFactor > 180 && dataFactor <= 250) {
+            OCTAVE_ITERATIONS = 4;
+        }
+        else if(dataFactor >= 250) {
+            OCTAVE_ITERATIONS = 8;
+        }
 
         for (let i = 0; i < ITERATIONS; i++) {
             segmentsArray.push([]);
@@ -81,91 +63,89 @@ export const handleExportToOctave = (
         }
 
         //----------------------------------------------
-        if(true) {
-            let koko = 0;
+            let profleObjects = 0;
 
             const readStream = fs.createReadStream(path.join(__dirname, '../../full-result.json'));
             const readStream2 = fs.createReadStream(path.join(__dirname, '../../full-result-2.json'));
             const readStream3 = fs.createReadStream(path.join(__dirname, '../../full-result-3.json'));
             const readStream4 = fs.createReadStream(path.join(__dirname, '../../full-result-4.json'));
             oboe(readStream)
-            .node('!.*', function(drink: any){
-               const k = JSON.parse(JSON.stringify(drink));
-               if(k.coordinates && k.coordinates.length <= 10) {
+            .node('!.*', function(streamData: any){
+               const k = JSON.parse(JSON.stringify(streamData));
+               if(k.coordinates && k.coordinates.length <= 3) {
                    notInlcudedCoordintesArray.push(k);
                    return oboe.drop;
                }
                if(k.receiver && k.coordinates){
 
-                 writeToReceiverFile(koko, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
+                 writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
                  const a = prepareProfileData(k);
-                 writeToProfileFile(koko, a, fName);
+                 writeToProfileFile(profleObjects, a, fName);
                }
 
 
-               koko = koko + 1;
+               profleObjects = profleObjects + 1;
                return oboe.drop;
 
-            }).done(function( finalJson: any ){
-                koko = koko - 1;
+            }).done(function(finalJson: any){
+                profleObjects = profleObjects - 1;
                 oboe(readStream2)
-                .node('!.*', function(drink: any){
-                   const k = JSON.parse(JSON.stringify(drink));
-                   if(k.coordinates && k.coordinates.length <= 10) {
+                .node('!.*', function(streamData: any){
+                   const k = JSON.parse(JSON.stringify(streamData));
+                   if(k.coordinates && k.coordinates.length <= 3) {
                        notInlcudedCoordintesArray.push(k);
                        return oboe.drop;
                    }
                    if(k.receiver && k.coordinates){
 
-                     writeToReceiverFile(koko, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
+                     writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
                      const a = prepareProfileData(k);
-                     writeToProfileFile(koko, a, fName);
+                     writeToProfileFile(profleObjects, a, fName);
                    }
 
 
-                   koko = koko + 1;
+                   profleObjects = profleObjects + 1;
                    return oboe.drop;
 
-                }).done(function( finalJson: any ){
-                    koko = koko - 1;
+                }).done(function(finalJson: any){
+                    profleObjects = profleObjects - 1;
                     oboe(readStream3)
-                    .node('!.*', function(drink: any){
-                        const k = JSON.parse(JSON.stringify(drink));
-                           if(k.coordinates && k.coordinates.length <= 10) {
+                    .node('!.*', function(streamData: any){
+                        const k = JSON.parse(JSON.stringify(streamData));
+                           if(k.coordinates && k.coordinates.length <= 3) {
                                notInlcudedCoordintesArray.push(k);
                                return oboe.drop;
                            }
                            if(k.receiver && k.coordinates){
 
-                             writeToReceiverFile(koko, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
+                             writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
                              const a = prepareProfileData(k);
-                             writeToProfileFile(koko, a, fName);
+                             writeToProfileFile(profleObjects, a, fName);
                            }
 
 
-                           koko = koko + 1;
+                           profleObjects = profleObjects + 1;
                            return oboe.drop;
-                }).done(function( finalJson: any ){
-                    koko = koko - 1;
+                }).done(function(finalJson: any){
+                    profleObjects = profleObjects - 1;
                     oboe(readStream4)
-                    .node('!.*', function(drink: any){
-                        const k = JSON.parse(JSON.stringify(drink));
-                        //    console.log("-- ", k);
-                           if(k.coordinates && k.coordinates.length <= 10) {
+                    .node('!.*', function(streamData: any){
+                        const k = JSON.parse(JSON.stringify(streamData));
+                           if(k.coordinates && k.coordinates.length <= 3) {
                                notInlcudedCoordintesArray.push(k);
                                return oboe.drop;
                            }
                            if(k.receiver && k.coordinates){
 
-                             writeToReceiverFile(koko, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
+                             writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
                              const a = prepareProfileData(k);
-                             writeToProfileFile(koko, a, fName);
+                             writeToProfileFile(profleObjects, a, fName);
                            }
 
 
-                           koko = koko + 1;
+                           profleObjects = profleObjects + 1;
                            return oboe.drop;
-                }).done(function( finalJson: any ){
+                }).done(function(finalJson: any){
 
                 notInlcudedCoordintesArray.push({
                     coordinates: [],
@@ -191,12 +171,12 @@ export const handleExportToOctave = (
                             console.log("JSON data is saved.");
 
                             globalProcessCounter = 0;
-                            const allKokos = koko - 1;
+                            const allProfleObjects = profleObjects - 1;
 
-                            const modulo_glowny = allKokos % GLOWNE;
-                            const podstawa_glowny = (allKokos - modulo_glowny) / GLOWNE;
+                            const main_modulo = allProfleObjects % OCTAVE_ITERATIONS;
+                            const podstawa_glowny = (allProfleObjects - main_modulo) / OCTAVE_ITERATIONS;
 
-                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, podstawa_glowny, dataFactor, corners, modulo_glowny, allKokos - 2 );
+                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, podstawa_glowny, dataFactor, corners, main_modulo, allProfleObjects - 2 );
 
                         });
                         });
@@ -204,16 +184,15 @@ export const handleExportToOctave = (
                 });
             });
                 });
-                //----------------------------------------
 
-                console.log("this is the end ! ")
+                console.log("Zakończono pisanie do plików - receivers / profiles ! ")
             })
 
-    } else {
-    }
+
 
     } catch (err) {
-        console.error("Some Error")
+        console.error("Error connected with writting !")
+        rimraf(path.join(__dirname, `../../validation_results/${fName}`), function () { console.log("Catalog with profiles and receviers is removed !"); });
     }
 };
 
@@ -270,16 +249,16 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string,
 }
 
 
-const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, receiverLat: null, fName: string, height: number,  frequencyStr: string, req:any, podstawa_glowny:number, dataFactor:number, corners: CornersType, modulo_glowny: number, filesNumber: number): void | number => {
+const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, receiverLat: null, fName: string, height: number,  frequencyStr: string, req:any, podstawa_glowny:number, dataFactor:number, corners: CornersType, main_modulo: number, filesNumber: number): void | number => {
     if(globalProcessCounter !== -1 ){
 
         globalProcessCounter = globalProcessCounter + 1;
-        req.app.io.emit("octaveLoader", globalProcessCounter/GLOWNE);
+        req.app.io.emit("octaveLoader", globalProcessCounter/OCTAVE_ITERATIONS);
 
-        const moduloValGlobal = globalProcessCounter !== GLOWNE ? podstawa_glowny % ITERATIONS : (podstawa_glowny + modulo_glowny) % ITERATIONS;
-        const rangeValGlobal = globalProcessCounter !== GLOWNE ? (podstawa_glowny - moduloValGlobal) / ITERATIONS : ((podstawa_glowny + modulo_glowny) - moduloValGlobal) / ITERATIONS;
+        const moduloValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? podstawa_glowny % ITERATIONS : (podstawa_glowny + main_modulo) % ITERATIONS;
+        const rangeValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? (podstawa_glowny - moduloValGlobal) / ITERATIONS : ((podstawa_glowny + main_modulo) - moduloValGlobal) / ITERATIONS;
 
-        if(globalProcessCounter === GLOWNE) {
+        if(globalProcessCounter === OCTAVE_ITERATIONS) {
             globalProcessCounter = -1;
         }
         let end = rangeValGlobal;
@@ -294,14 +273,14 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
 
                 }
                 end = start + rangeValGlobal > filesNumber ? filesNumber : start + rangeValGlobal;
-                console.log("start-> ", start, " end -> ", end);
-                ls1 = exec(`octave -i --persist validate-new.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
+                console.log("New Octave iteration...");
+                ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
             } else {
                 start = (rangeValGlobal + 1) * i + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1);
                 end = (rangeValGlobal + 1) * i  + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1) + rangeValGlobal;
                 globalEnd = end;
-                console.log("start-> ", start, " end -> ", end);
-                ls1 = exec(`octave -i --persist validate-new.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
+                console.log("New Octave iteration...");
+                ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
 
             }
 
@@ -332,7 +311,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
                             ls1.kill()
                         } else {
                             setTimeout(function() {
-                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequencyStr, req, podstawa_glowny, dataFactor, corners, modulo_glowny, filesNumber);
+                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequencyStr, req, podstawa_glowny, dataFactor, corners, main_modulo, filesNumber);
                             }, 2000);
                         }
 

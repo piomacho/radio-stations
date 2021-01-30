@@ -29,16 +29,17 @@ import { callApiFetch, getCorners } from "../../common/global";
 import { LoaderOverLay } from "../SelectionPanel/SelectionPanel.styles";
 import { LoaderContainer } from "../Adapters/Adapters.style";
 import { CloseButton } from "../ExportModal/ExportModal.style";
+import { ConfirmationDialog } from "../ConfirmationDialog/ConfirmationDialog";
 
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string, query: boolean) => any;
+  showModal: (value: boolean, type: string, query: boolean, onClose?: () => void) => any;
 }
 
 interface ErrorsType {
-  xError: null | string;
   yError: null | string;
   pointsError: null | string;
+  xError: null | string;
 }
 
 const EmptyError: ErrorsType = { xError: null,
@@ -69,6 +70,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [ isFinished, setIsFinihed ] = useState(false);
+  const [ showConfirmationBox, setShowConfirmationBox ] = useState(false);
+  const [ isConfirmed, setIsConfirmed] = useState(false);
   const [setCorners] = useState({});
   const ENDPOINT = "http://localhost:5000";
 
@@ -104,6 +107,13 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
      }
   }, []);
 
+  useEffect(() => {
+   if(isConfirmed) {
+    handleExportClick();
+   }
+   setShowConfirmationBox(false);
+ }, [isConfirmed, showConfirmationBox]);
+
   const handleChangeRadius = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setError({...error, xError: null});
@@ -129,48 +139,89 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
 
   }
 
-  const handleExportClick = () => {
-      const adapterLatitude = +(+adapter.szerokosc).toFixed(2);
-      const adapterLongitude = +(+adapter.dlugosc).toFixed(2);
+  const onCloseModal = () => {
+    setIsFinihed(false);
+    setSuccessMessage('');
+  }
 
-    setLoaderValue(0);
-    const dataFactor =  Number(radius)/Number(pointsDistance);
-console.log("dataFActor", dataFactor)
-    if(dataFactor > 100 && dataFactor < 200) {
-      ITERATIONS = 200
-    }else if(dataFactor >= 200 && dataFactor < 250){
-      ITERATIONS = 300
-    }else if(dataFactor > 250 && dataFactor < 350){
-      ITERATIONS = 500;
-    } else if(dataFactor >= 300) {
-      ITERATIONS = 2700;
+  const checkIfAlreadyExists = (): Promise<boolean> => {
+    return callApiFetch(`api/kml/check-kml/${id_antena}_${id_nadajnik}_${id_program}`).then(response =>  {
+      return response.exists;
+    });
+
+  }
+  const removeCurrentDataFromStorage = () => {
+    return callApiFetch(`api/kml/delete-kml/${id_antena}_${id_nadajnik}_${id_program}`).then(response =>  {
+      return response;
+    });
+  }
+
+  const handleConfirmation = (value: string) => {
+    const confirmation = value === 'yes';
+    setIsConfirmed(confirmation);
+  }
+
+  const handleExportClick = async() => {
+    const adapterLatitude = adapter.szerokosc &&  +(+adapter.szerokosc).toFixed(2);
+    const adapterLongitude = adapter.dlugosc && +(+adapter.dlugosc).toFixed(2);
+    const doExists = await checkIfAlreadyExists();
+    if(doExists === true && isConfirmed !== true) {
+      setShowConfirmationBox(true);
     }
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        adapter:{
-          latitude: adapterLatitude,
-          longitude: adapterLongitude,
-          height: +adapter.wys_npm,
-          frequency: adapter.czestotliwosc
-        },
-        radius: Number(radius),
-        pointsDistance: Number(pointsDistance),
-        fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
-        dataFactor: dataFactor
-      })
-    };
 
-    callApiFetch(`api/coordinates/generate`, requestOptions)
-        .then(async(results: ResultCoordinateType) => {
-          const corners123 = await getCorners(results.coordinates);
-          //@ts-ignore
-          setCorners(corners123);
+    if(doExists !== true || isConfirmed) {
+      if(doExists === true) {
+        removeCurrentDataFromStorage();
+      }
+      const dataFactor =  Number(radius)/Number(pointsDistance);
+      if(dataFactor < 14) {
+        setError({...error, pointsError: "Nieprawidłowe dane, wybierz inne wartości !"});
+        setLoaderValue(-1);
+        return;
+      }
+      setLoaderValue(0);
+
+      if(dataFactor > 100 && dataFactor < 200) {
+        ITERATIONS = 200
+      }else if(dataFactor >= 200 && dataFactor < 250){
+        ITERATIONS = 300
+      }else if(dataFactor > 250 && dataFactor < 350){
+        ITERATIONS = 500;
+      } else if(dataFactor >= 300) {
+        ITERATIONS = 2700;
+      }
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adapter:{
+            latitude: adapterLatitude,
+            longitude: adapterLongitude,
+            height: adapter.wys_npm && +adapter.wys_npm,
+            frequency: adapter.czestotliwosc
+          },
+          radius: Number(radius),
+          pointsDistance: Number(pointsDistance),
+          fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
+          dataFactor: dataFactor
         })
-        .catch((error: any) => {
-          console.log("Error postLookupLine:" + error);
-        });
+      };
+
+
+
+      callApiFetch(`api/coordinates/generate`, requestOptions)
+          .then(async(results: ResultCoordinateType) => {
+            const corners123 = await getCorners(results.coordinates);
+            //@ts-ignore
+            setCorners(corners123);
+          })
+          .catch((error: any) => {
+            console.log("Error postLookupLine:" + error);
+          });
+    }
+
+
+
   }
 
   const allowedSubmit = Object.values(error).every(x => (x === null)) && pointsDistance !== "" && radius !== '' && successMessage === '';
@@ -184,18 +235,24 @@ console.log("dataFActor", dataFactor)
   return (
     <Modal
       isOpen={modalVisiblity}
-      onRequestClose={showModal(false, "export", false)}
+      onRequestClose={showModal(false, "export-all", false)}
       ariaHideApp={false}
       contentLabel="Export Modal"
       style={ customStyles }
     >
-      <CloseButton onClick={showModal(false, "export-all", false)}><span>&#10006;</span></CloseButton>
+      <CloseButton onClick={showModal(false, "export-all", false, onCloseModal)}><span>&#10006;</span></CloseButton>
       <FloppyIcon />
       <InputWrapper>
+        {showConfirmationBox === true ?
+          <ConfirmationDialog title="Dla danej anteny wykonano już obliczenia !" message="Czy na pewno chcesz nadpisać istniejące dane?" onClickYes={()=>handleConfirmation("yes")} onClickNo={()=>handleConfirmation("no")} /> : null}
         <AdapterCoordsWrapper>
+          {adapter.dlugosc && adapter.szerokosc ?
+          <>
           <AdaptersHeader>Współrzędne nadajnika:</AdaptersHeader>
             <Coord>Długość geograficzna: {(+adapter.dlugosc).toFixed(2)} </Coord>
             <Coord>Szerokość geograficzna: {(+adapter.szerokosc).toFixed(2)}</Coord>
+          </>:
+            null }
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
           <AdaptersHeader>Wprowadź promień obszaru wokół nadajnika:</AdaptersHeader>
@@ -207,6 +264,7 @@ console.log("dataFActor", dataFactor)
         </AdapterCoordsWrapper>
 
         {isFinished === false ?
+
         <ExportInputWrapper>
           <InputContainer>
             <Input value={`${id_antena}_${id_nadajnik}_${id_program}`} disabled={true}/>
@@ -228,7 +286,9 @@ console.log("dataFActor", dataFactor)
           <div>
             <ResultMessage>Pobierz plik .kml:</ResultMessage>
             <a href={`https://storage.googleapis.com/klm-map-storage/${id_antena}_${id_nadajnik}_${id_program}.kml`} download={`${id_antena}_${id_nadajnik}_${id_program}.kml`}><DownloadIcon /></a> </div>
+
         </DownloadArea>}
+
       </InputWrapper>
       {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
         <Message key={idx} error={true}>{error}</Message>
@@ -254,7 +314,6 @@ console.log("dataFActor", dataFactor)
           </LoaderContainer>
         </LoaderOverLay>
        : null}
-       {/* {loaderValue/ITERATIONS === 1 ? <Message>Przesłano dane, rozpoczęcie procesów Octave...</Message> : null} */}
     </Modal>
   );
 };

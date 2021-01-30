@@ -6,6 +6,7 @@ import axiosRetry from 'axios-retry';
 const axios = require('axios')
 var fs = require('fs');
 const json = require('big-json');
+const rimraf = require('rimraf');
 const path = require('path');
 const oboe = require('oboe');
 const os = require('os');
@@ -20,12 +21,9 @@ interface ElevationSegmentType {
     distance: number
   }
 
-interface SegmentFullResultType {
-    receiver: {
+interface CoordinateType {
       longitude: number,
       latitude: number
-    },
-    points: Array<ElevationSegmentType>
   }
 
 
@@ -109,9 +107,12 @@ const removeResultsFile = () => {
 router.post('/generate-template', async (req: Request, res: Response) => {
     const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
     const coords = await generateCoordinates(radius, pointsDistance, adapter.latitude, adapter.longitude);
+    const roundedCoords = coords.map((coord: CoordinateType) => {
+        return {latitude: Number(coord.latitude.toFixed(4)), longitude: Number(coord.longitude.toFixed(4))}
+    })
 
 
-    res.send({coordinates: coords});
+    res.send({coordinates: roundedCoords});
 });
 router.post('/generate', async (req: Request, res: Response) => {
     try {
@@ -133,7 +134,6 @@ router.post('/generate', async (req: Request, res: Response) => {
         const computerName = os.platform() === 'win32' ? os.hostname() : '0.0.0.0';
 
         const domain = `http://${computerName}:10000`;
-        console.log("DOMAIN ", domain);
         const chunkedArray = chunkArray(coords, ITERATIONS, true);
         const queryParameters: Record<string, any> = {}
         const allCoordinates: any = [];
@@ -173,10 +173,19 @@ router.post('/generate', async (req: Request, res: Response) => {
                                 fs.appendFile(path.join(__dirname, '../../full-result-4.json'), '""]', function (err: string) {
                                     if (!fs.existsSync(path.join(__dirname, `../../validation_results/${fileName}`))){
                                         fs.mkdirSync(path.join(__dirname, `../../validation_results/${fileName}`));
+                                        handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+                                    } else {
+                                        rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () {
+                                            console.log("Catalog with profiles and receviers is removed !");
+                                            fs.mkdir(path.join(__dirname, `../../validation_results/${fileName}`), () => {
+                                                handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+                                            });
+                                         });
                                     }
                                     //@ts-ignore
                                     req.app.io.emit("octaveStart", "Rozpoczęto obliczenia w Octave...");
-                                    handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+
+
                                 });
                             });
                         });

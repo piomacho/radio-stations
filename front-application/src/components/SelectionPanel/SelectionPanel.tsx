@@ -62,10 +62,10 @@ const SelectionPanel = () => {
   const [showMapsModalVisiblity, setShowMapsModalVisiblity] = useState(false);
   const [loading, setLoading] = useState(false);
   const [plotData, setPlotData] = useState<Array<any>>([]);
-  const [setTrialCoords] = useGlobalState("trialCoords");
+  const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
   const [adapter] = useGlobalState("adapter");
   const [coordinates, setCoordinates] = useGlobalState("coordinates");
-  const [setElevationResults] = useGlobalState("elevationResults");
+  const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
   const getCoordinates = () => {
@@ -109,13 +109,16 @@ const SelectionPanel = () => {
   };
 
   const showModal = useCallback(
-    (value: boolean, type: string, query: boolean) => () => {
+    (value: boolean, type: string, query: boolean, onClose?: () => void) => () => {
+      if(onClose){
+        onClose();
+      }
       triggerState(value, type);
       if (value && query) {
         getCoordinates();
       }
     },
-    [plotModalVisiblity, plotModalVisiblity, adapter]
+    [plotModalVisiblity, adapter, exportAllModalVisiblity ]
   );
 
   return (

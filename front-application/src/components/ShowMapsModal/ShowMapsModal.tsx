@@ -1,19 +1,11 @@
-import React, { useState, ChangeEvent, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import Modal from "react-modal";
-import store from "../../Store/Store";
-import L, { Circle, FeatureGroup, LayerGroup, Popup, Rectangle, TileLayer } from 'leaflet';
+import L from 'leaflet';
 // postCSS import of Leaflet's CSS
 import 'leaflet/dist/leaflet.css';
 
-import Button from "../Button/Button";
-
-import { callApiFetch, measureDistance } from "../../common/global";
-import OpenElevationClient from "../../OECient/OpenElevationClient";
 import { CloseButton, Title } from "../ExportModal/ExportModal.style";
 import {LeafletMap} from "./LeafletMap/LeafletMap";
-import { ToggleSwitch } from "../ToggleSwitch/ToggleSwitch";
-import { ToggleWrapper, SourceTitle } from "./LeafletMap/ShowMapsModal.styles";
-
 interface PlotModalType {
   modalVisiblity: boolean;
   showModal: (value: boolean, type: string, query: boolean) => any;
@@ -24,12 +16,6 @@ interface ErrorsType {
   yError: null | string;
   pointsError: null | string;
   fileNameError: null | string;
-}
-
-const EmptyError: ErrorsType = { xError: null,
-  yError: null,
-  pointsError: null,
-  fileNameError: null
 }
 
 const config: any = {};
@@ -43,7 +29,6 @@ config.params = {
 };
 config.tileLayer = {
   uri: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  // uri: process.env.TILE_PROVIDER_2_URL,
   params: {
     minZoom: 4,
     maxZoom: 16,
@@ -54,32 +39,23 @@ config.tileLayer = {
   },
 };
 
-// config.myIcon = L.icon({
-//   iconUrl: icon,
-//   iconSize: [30, 65],
-//   // iconAnchor: [22, 94],
-//   popupAnchor: [0, -35],
-// });
-
-// config.gpsIcon = L.icon({
-//   iconUrl: gpsIcon,
-//   iconSize: [30, 65],
-//   // iconAnchor: [22, 94],
-//   popupAnchor: [-10, -35],
-// });
-
-
 const ShowMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-  const { useGlobalState } = store;
-  const [adapter] = useGlobalState('adapter');
-
+  const [isTl2001, setTl2001] = useState<boolean>(false);
 
   const customStyles = {
     content : {
       backgroundColor: 'rgb(223, 220, 227)',
     }
   };
+
+  const handleOnChange = (isChecked: boolean, layer: L.LayerGroup<any> | null) => {
+    setTl2001(isChecked);
+
+    if(layer !== null) {
+      layer.clearLayers();
+    }
+  }
+
   return (
     <Modal
       isOpen={modalVisiblity}
@@ -90,12 +66,8 @@ const ShowMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     >
       <CloseButton onClick={showModal(false, "show-maps", false)}><span>&#10006;</span></CloseButton>
       <Title>Obliczone mapy </Title>
-      <ToggleWrapper>
-        <SourceTitle>Mapy radiopolska</SourceTitle>
-        <ToggleSwitch />
-      <SourceTitle>tl_p2001</SourceTitle>
-      </ToggleWrapper>
-        <LeafletMap />
+
+        <LeafletMap isTl2001={isTl2001} handleOnChange={handleOnChange}/>
     </Modal>
   );
 };

@@ -44,8 +44,8 @@ interface InitialStateType {
     adapter: {
         value: string;
         label: string;
-        dlugosc?: string;
-        szerokosc?: string;
+        dlugosc: string;
+        szerokosc: string;
         wys_npm?: number | undefined;
         czestotliwosc?: string;
         id_antena?: string;

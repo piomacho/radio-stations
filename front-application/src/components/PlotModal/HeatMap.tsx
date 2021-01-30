@@ -73,12 +73,12 @@ const getCorners = (results: Array<CoordinatesType>) => {
 
 export const MyResponsiveHeatMap = () => {
     const { useGlobalState } = store;
-    const [ setHeatMapData] = useState<Array<any>>([]);
+    const [heatMapData, setHeatMapData] = useState<Array<any>>([]);
     const [heatMapArray, setHeatMapArray] = useState<Array<any>>([]);
     const [longitudes, setLongitudes] = useState<Array<string>>([]);
     const [isLoading, setLoading] = useState(false);
     const [adapter] = useGlobalState('adapter');
-    const [setCorners] = useGlobalState('corners');
+    const [corners, setCorners] = useGlobalState('corners');
     const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
     const heatMapDataArray: Array<HeatMapDatum> = [];
 
@@ -117,6 +117,7 @@ export const MyResponsiveHeatMap = () => {
                         if(!tempArr.includes(longitudeStringified)) {
                             tempArr.push(longitudeStringified)
                         }
+                        return null;
                     })
 
                     const array = groupedLatitudes[value];
@@ -125,8 +126,10 @@ export const MyResponsiveHeatMap = () => {
 
                     result.map((el: HeatmapType) => {
                         obj[`${el.longitude}`] = el.elevation;
+                        return null;
                     });
                     heatMapDataArray.push(obj);
+                    return null;
                 });
                 setLongitudes(tempArr);
                 setHeatMapArray(heatMapDataArray);

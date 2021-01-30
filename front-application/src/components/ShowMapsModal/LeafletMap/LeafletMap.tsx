@@ -1,18 +1,16 @@
-import React, { useState, ChangeEvent, useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import store from "../../../Store/Store";
-import L from 'leaflet';
+import L, { LayerGroup, Rectangle } from 'leaflet';
 import { MapLeaflet } from './LeafletMap.style';
 import {parseString} from 'xml2js';
 
 
 import 'leaflet/dist/leaflet.css';
 import { callApiFetch } from "../../../common/global";
+import { SourceTitle, ToggleWrapper } from "./ShowMapsModal.styles";
+import { CheckBox, CheckBoxLabel, CheckBoxWrapper } from "../../ToggleSwitch/ToggleSwitch.styles";
 // import '../styles/Map.css';
 const icon = require('../images/transmitter_half.png').default;
-
-
-const { PROD_FILES_URL } = process.env;
-const { PROD_LIST_URL } = process.env;
 
 const config: Record<string, any> = {};
 
@@ -41,10 +39,8 @@ config.tileLayer = {
     accessToken: '',
   },
 };
-const mapKMLToBounds = (response: any) => {
+const mapKMLToBounds = (response: Record<string, any>) => {
   const kml = response.kml.GroundOverlay;
-  console.log("Bounds ", kml)
-  // const kml = xml2js(response, { ignoreAttributes: true, compact: true }).kml.GroundOverlay;
   const boundsArray = [];
   if(kml.length > 0) {
     boundsArray.push(Number(kml[0].LatLonBox[0].east[0]));
@@ -53,19 +49,34 @@ const mapKMLToBounds = (response: any) => {
     boundsArray.push(Number(kml[0].LatLonBox[0].west[0]));
     const corner1 = L.latLng(Number(boundsArray[1]), Number(boundsArray[0]));
     const corner2 = L.latLng(Number(boundsArray[2]), Number(boundsArray[3]));
+
     return L.latLngBounds(corner1, corner2);
   }
 
 };
 
-export const LeafletMap = () => {
+const mapKMLToBoundsNew = (response: Record<string, any>) => {
+  const kml = response.kml;
+  const corner1 = L.latLng(Number(kml['maxLongMaxLat-latitude'][0]), Number(kml['maxLongMaxLat-longitude'][0]));
+  const corner2 = L.latLng(Number(kml['minLongMinLat-latitude'][0]), Number(kml['minLongMinLat-longitude'][0]));
+  return L.latLngBounds(corner1, corner2);
+}
+
+
+interface LeafletMapType {
+  handleOnChange: (isChecked: boolean, l: L.LayerGroup<any> | null) => void;
+  isTl2001: boolean;
+}
+
+export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
   const { useGlobalState } = store;
   const [adapter] = useGlobalState('adapter');
   const [ mapNode, setMapNode ] = React.useState<HTMLDivElement | null>(null);
+  const [ layersGroup, setLayersGroup ] = React.useState<L.LayerGroup<any> | null>(null);
 
   useEffect(() => {
-    const layersGroup = init(mapNode);
-
+    const layersGroup123 = init(mapNode);
+    setLayersGroup(layersGroup123);
     const mapahash = adapter._mapahash;
     callApiFetch(`api/comparison-map/kml/${mapahash}`).then((res) => {
 
@@ -74,7 +85,7 @@ export const LeafletMap = () => {
         if(res.status === 200) {
           const bounds = mapKMLToBounds(result);
           if(bounds !== undefined){
-            newDrawLayers(bounds, layersGroup)
+            newDrawLayers(bounds, layersGroup123)
           }
 
         } else {
@@ -84,23 +95,76 @@ export const LeafletMap = () => {
       });
 
     });
+  }, [mapNode]);
 
-  }, [mapNode])
+
+  useEffect(() => {
+    if(isTl2001){
+      getTl2001Map();
+
+    } else {
+      getMRPMap();
+    }
 
 
+  }, [isTl2001])
+
+
+  const getMRPMap = () => {
+    const mapahash = adapter._mapahash;
+
+    callApiFetch(`api/comparison-map/kml/${mapahash}`).then((res) => {
+
+      parseString(res.text, function (err, result) {
+         if(res.status === 200) {
+           const bounds = mapKMLToBounds(result);
+           if(bounds !== undefined){
+             newDrawLayers(bounds, layersGroup)
+           }
+
+         } else {
+           throw Error('Brak opisu mapy pokrycia o podanym id w bazie danych');
+         }
+
+       });
+
+     });
+  }
+
+
+  const getTl2001Map = () => {
+    const {id_antena, id_nadajnik, id_program} = adapter;
+    callApiFetch(`api/comparison-map/kml-new/${id_antena}_${id_nadajnik}_${id_program}`).then((res) => {
+      parseString(res.text, function (err, result) {
+        console.dir(result);
+          const bounds = mapKMLToBoundsNew(result);
+          if(bounds !== undefined){
+            newDrawLayersNew(bounds, layersGroup)
+          }
+
+      });
+
+     });
+  }
 
 
   const newDrawLayers = (bounds: L.LatLngBounds, layersGroup: L.LayerGroup<any> | null) => {
-    console.log(" bunds ", bounds );
     const url = `https://mapy.radiopolska.pl/files/get/fm-std/${adapter._mapahash}.png`;
-    //   const url = `https://bitmap-hosting.herokuapp.com/api/images/get-image/${element._mapahash}`;
     if(layersGroup !== null) {
-      callApiFetch(`api/comparison-map/image/${adapter._mapahash}`)
-        .then(() => {
-          const layer = L.imageOverlay(url, bounds, { opacity: 0.6 });
-          layersGroup.addLayer(layer);
-        })
-      .catch((e) => console.log(e));
+      const layer = L.imageOverlay(url, bounds, { opacity: 0.6 });
+      layersGroup.addLayer(layer);
+    }
+
+  }
+
+  const newDrawLayersNew = (bounds: L.LatLngBounds, layersGroup: L.LayerGroup<any> | null) => {
+    const bucketName = 'klm-map-storage';
+    const {id_nadajnik, id_program, id_antena} = adapter;
+
+    const url = `http://${bucketName}.storage.googleapis.com/${id_antena}_${id_nadajnik}_${id_program}.bmp`;
+    if(layersGroup !== null) {
+      const layer = L.imageOverlay(url, bounds, { opacity: 0.6 });
+      layersGroup.addLayer(layer);
     }
 
   }
@@ -127,12 +191,27 @@ export const LeafletMap = () => {
     return null
   }
 
-
   const mapRef = (node: HTMLDivElement) => {
     setMapNode(node)
   };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    handleOnChange(isChecked,layersGroup)
+  }
+
   return (
+    <>
+      <ToggleWrapper>
+        <SourceTitle>Mapy radiopolska</SourceTitle>
+        <CheckBoxWrapper>
+        <CheckBox id="checkbox" type="checkbox" onChange={onChange}/>
+        <CheckBoxLabel htmlFor="checkbox" />
+      </CheckBoxWrapper>
+      <SourceTitle>tl_p2001</SourceTitle>
+      </ToggleWrapper>
       <MapLeaflet ref={mapRef} id="map" />
+    </>
   );
 
 }

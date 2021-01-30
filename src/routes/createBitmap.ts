@@ -7,7 +7,7 @@ const xlsx = require('xlsx');
 let Jimp = require('jimp')
 const glob = require('glob');
 const { getColorFotLegend } = require("../../getColorForLegend.js");
-const { uploadFile } = require('../../uploadFile.js');
+const { uploadFile } = require('../../storageBucketFunctions.js');
 
 const { sortAndGroupResultElements, sortAndGroupResultElementsNew } = require("../../sortAndGroupResultElements.js");
 var fs = require('fs');
@@ -31,15 +31,17 @@ interface CoordinatesType {
 export const createBitmap = (fileName: string, size: number, corners: CornersType ) => {
 
 // Creates a client from a Google service account key.
-const storage = new Storage({keyFilename: path.join(__dirname, "../../magmapy-bb9815bb7548.json"), projectId: 'magmapy'});
+const storage = new Storage({keyFilename: path.join(__dirname, "../../magmapy-49829cb5b2d7.json"), projectId: 'magmapy'});
 const bucketName = 'klm-map-storage';
 
 const allDataArray: any = [];
 //@ts-ignore
 glob(path.join(__dirname, `../../validation_results/${fileName}/`) + '*.xlsx', {}, (err:string, files: Array<string>)=>{
-  console.log("Problem with finding files - ", err);
+  if(err){
+    console.log("Problem with finding files - ", err);
+  }
+
   const xlxsFiles = files;
-  // console.log("files ---- >> ", files);
   for (let i = 0; i < xlxsFiles.length; i++) {
     const workbook = xlsx.readFile(xlxsFiles[i]);
     const worksheet = workbook.Sheets['Page1'];
@@ -70,7 +72,7 @@ fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: s
   }
   const unusedArray= JSON.parse(data);
   const formattedCordsUnused = unusedArray.map((elem: CoordinatesType) => {
-    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13)), color: 0xff0000ff}
+    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13)), color: 0xffffffff}
   })
 
 const allCoordinates = [...pointInfo, ...formattedCordsUnused]
@@ -95,22 +97,20 @@ Jimp.read(path.join(__dirname, `../../initial.bmp`)).then((image: any) => {
       const mapKey = elementFromAll;
         for(let ii = 0; ii < +size; ii++){
           if(sortedDataMap[mapKey][ii] === undefined){
-            console.log("myk -> ",sortedDataMap[mapKey][ii], " =-=- > ", mapKey)
+            console.log("Błąd w rysowaniu klucza -> ",sortedDataMap[mapKey][ii], " wartość - > ", mapKey)
           }
           image.setPixelColor(sortedDataMap[mapKey][ii] ? sortedDataMap[mapKey][ii].color : 0xff0000ff, ii, index);
         }
         console.log(index)
     if (index == sortedDataMapKeys.length - 1) {
-      console.log("all is saved now !")
       image.write(path.join(__dirname, `../../${fileName}.bmp`));
       const kmlFile = createKml(corners, `${fileName}.bmp`);
       fs.appendFile(`${fileName}.kml`, kmlFile, function (err: string) {
         if (err) throw err;
-        // rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () { console.log("Catalog is removed !"); });
-        console.log('Saved!');
+        rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () { console.log("Catalog with profiles and receviers is removed !"); });
       });
-    //   uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.bmp`)).catch(console.error);
-    //   uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.kml`)).catch(console.error);
+      uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.bmp`)).catch(console.error);
+      uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.kml`)).catch(console.error);
 
     }
     });
@@ -120,10 +120,6 @@ Jimp.read(path.join(__dirname, `../../initial.bmp`)).then((image: any) => {
 
 });
 })
-
-
-
-
 
 }
 

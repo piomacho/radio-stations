@@ -159,7 +159,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: number, 
                 if(globalProcessCounter < ITERATIONS) {
                     globalProcessCounter = globalProcessCounter + 1;
                 }
-            const ls1 = execFile("octave", ["-i", "--persist", "validate-new.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${globalProcessCounter-1}`, height, frequencyStr, globalProcessCounter-1]);
+            const ls1 = execFile("octave", ["-i", "--persist", "octave-script.m", adapterLon, adapterLat, receiverLon, receiverLat, `${fName}${globalProcessCounter-1}`, height, frequencyStr, globalProcessCounter-1]);
 
             ls1.stdout.on("data", (data: string) => {
                 console.log(data);
