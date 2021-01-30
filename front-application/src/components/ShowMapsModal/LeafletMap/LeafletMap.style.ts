@@ -6,4 +6,5 @@ export const MapLeaflet = styled('div')`
     position: relative;
     z-index: 0;
     border-radius: 5px;
+    margin: 20px;
 `;

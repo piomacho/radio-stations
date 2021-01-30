@@ -5,8 +5,10 @@ import {chunkArray} from './chunkArray';
 import {getCorners}  from '../common/global'
 import { createBitmap } from './createBitmap';
 const { spawn, execFile } = require("child_process");
+const { uploadFile } = require('../../storageBucketFunctions.js');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const {Storage} = require('@google-cloud/storage');
 
 
 const fs = require('fs');
@@ -77,7 +79,7 @@ router.post('/send/', async (req: Request, res: Response) => {
         const receiverLon = req.body.receiver.longitude;
         const receiverLat = req.body.receiver.latitude;
         const fName = req.body.fileName;
-        const frequency = Number(req.body.frequency)/100;
+        const frequency = Number(req.body.adapter.frequency);
 
         const frequencyStr = frequency.toString();
 
@@ -91,6 +93,15 @@ router.post('/send/', async (req: Request, res: Response) => {
 
           ls.stdout.on("data", (data: string) => {
               console.log(data);
+
+              setTimeout(
+                () => {
+                    //@ts-ignore
+                    req.app.io.emit("finishXlsProcessing", "Zakończono !");
+                },
+                4000
+              );
+
           });
 
           ls.stderr.on("data", (data: string) => {
@@ -364,5 +375,33 @@ const prepareProfileData = (chunkedFilterArray: Array<Array<SegmentResultType>>,
     }
 
 }
+
+router.get('/upload-xls/:id', async (req: Request, res: Response) => {
+    try {
+        const xlsName = req.params.id;
+        console.log("xls ",xlsName)
+        try {
+            const storage = new Storage({keyFilename: path.join(__dirname, "../../magmapy-49829cb5b2d7.json"), projectId: 'magmapy'});
+            const bucketName = 'klm-map-storage';
+            //@ts-ignore
+            uploadFile(storage, bucketName, path.join(__dirname, `../../validation_results/${xlsName}.xlsx`)).catch(console.error);
+
+
+            return res.status(200).json({
+                msg: "Uploaded"
+            });
+
+
+    } catch (err) {
+        return res.status(404).json({
+            error: err.message,
+        });
+    }
+} catch (err) {
+    return res.status(404).json({
+        error: err.message,
+    });
+}
+});
 
 export default router;

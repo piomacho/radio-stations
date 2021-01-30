@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import Modal from "react-modal";
 import store from "../../Store/Store";
 
@@ -23,10 +23,12 @@ import {
 import { callApiFetch, measureDistance } from "../../common/global";
 import OpenElevationClient from "../../OECient/OpenElevationClient";
 import {LocationPickerComponent} from "./LocationPicker";
+import { DownloadArea, DownloadIcon, ResultMessage } from "../ExportAllModal/ExportAllModal.style";
+import io from "socket.io-client";
 
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string, query: boolean) => any;
+  showModal: (value: boolean, type: string, query: boolean, onClose?: () => void) => any;
 }
 
 interface ErrorsType {
@@ -52,8 +54,26 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [recLatitude, setRecLatitude] = useState("");
   const [distance, setDistance] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [ isFinished, setIsFinihed ] = useState(false);
   const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
+  const ENDPOINT = "http://localhost:5000";
 
+  useEffect(() => {
+    const socket = io(ENDPOINT);
+     //@ts-ignore
+    socket.on("finishXlsProcessing", data => {
+
+      callApiFetch(`api/export-octave/upload-xls/${fileName}`)
+      .then(() => {
+        setSuccessMessage(data);
+        setIsFinihed(true);
+      });
+    });
+
+    return ()=>{
+      socket.disconnect();
+     }
+  }, [fileName]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -92,7 +112,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         range: measureDistance( adapterX, adapterY, +recLatitude, +recLongitude).toFixed(2),
         distance: distance,
         receiverLongitude: +recLongitude,
-        receiverLatitude: +recLatitude
+        receiverLatitude: +recLatitude,
       })
         .then((results: any) => {
           handleExport(results);
@@ -104,6 +124,11 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         });
   }
 
+  const onCloseModal = () => {
+    setIsFinihed(false);
+    setSuccessMessage('');
+  }
+
   const handleExport = (results: any) => {
     const requestOptions = {
       method: "POST",
@@ -112,7 +137,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         coordinates: results.results,
         fileName: fileName,
         adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
-        receiver: { latitude: +recLatitude, longitude: +recLongitude }
+        receiver: { latitude: +recLatitude, longitude: +recLongitude },
       })
     };
 
@@ -141,7 +166,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       contentLabel="Export Modal"
       style={ customStyles }
     >
-      <CloseButton onClick={showModal(false, "export", false)}><span>&#10006;</span></CloseButton>
+      <CloseButton onClick={showModal(false, "export", false, onCloseModal)}><span>&#10006;</span></CloseButton>
       <Title>Wybierz punkt na mapie: </Title>
       <TemplateWrapper>
         <LocationPickerComponent
@@ -170,6 +195,13 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             <AdaptersHeader>Odległość między punktami [km]:</AdaptersHeader>
               <Coord><Input onChange={handleChangeDistance} placeholder="Odległość: " /></Coord>
           </AdapterCoordsWrapper>
+          {isFinished ?
+          <DownloadArea>
+            <div>
+              <ResultMessage>Pobierz plik .xls:</ResultMessage>
+              <a href={`https://storage.googleapis.com/klm-map-storage/${fileName}.xlsx`} download={`${fileName}.xls`}><DownloadIcon /></a> </div>
+
+          </DownloadArea> :
           <ExportInputWrapper>
             <InputContainer>
               <Input onChange={handleChange} placeholder="Wpisz nazwę pliku:" />
@@ -187,13 +219,14 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             </ExportWrapper>
             </InputContainer>
 
-          </ExportInputWrapper>
+          </ExportInputWrapper> }
         </InputWrapper>
 
         {!allowedSubmit &&  Object.values(error).map((error:ErrorsType, idx:number) => (
           <Message key={idx} error={true}>{error}</Message>
         ))}
         {successMessage && <Message>{successMessage}</Message>}
+
       </TemplateWrapper>
 
     </Modal>

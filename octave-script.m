@@ -21,8 +21,6 @@ Profile = 'Prof_b2iseac';
 octaveIteration = 0;
 iterationCounter = 0;
 
-
-disp(['====>> ! ', num2str(frequency)]);
 try
     s = pwd;
     % pkg install -forge io;

@@ -210,7 +210,7 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
       </CheckBoxWrapper>
       <SourceTitle>tl_p2001</SourceTitle>
       </ToggleWrapper>
-      <MapLeaflet ref={mapRef} id="map" />
+        <MapLeaflet ref={mapRef} id="map" />
     </>
   );
 

@@ -244,7 +244,7 @@ class OpenElevationRestClient extends React.Component {
                 distance: parameters['distance'],
                 range: parameters['range'],
                 receiverLatitude: parameters['receiverLatitude'],
-                receiverLongitude: parameters['receiverLongitude']
+                receiverLongitude: parameters['receiverLongitude'],
             };
         }
 

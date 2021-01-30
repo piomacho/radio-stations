@@ -66,8 +66,7 @@ const ShowMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     >
       <CloseButton onClick={showModal(false, "show-maps", false)}><span>&#10006;</span></CloseButton>
       <Title>Obliczone mapy </Title>
-
-        <LeafletMap isTl2001={isTl2001} handleOnChange={handleOnChange}/>
+      <LeafletMap isTl2001={isTl2001} handleOnChange={handleOnChange}/>
     </Modal>
   );
 };

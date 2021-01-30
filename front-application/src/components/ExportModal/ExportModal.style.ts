@@ -31,7 +31,9 @@ export const InputWrapper = styled("div")`
     flex-direction: column;
 `;
 
-export const TemplateWrapper = styled('div')``;
+export const TemplateWrapper = styled('div')`
+    padding-bottom: 20px;
+`;
 
 export const CloseButton = styled('div')`
     float: right;
