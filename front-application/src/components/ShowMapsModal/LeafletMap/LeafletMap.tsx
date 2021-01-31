@@ -81,7 +81,6 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
     callApiFetch(`api/comparison-map/kml/${mapahash}`).then((res) => {
 
      parseString(res.text, function (err, result) {
-        console.dir(result);
         if(res.status === 200) {
           const bounds = mapKMLToBounds(result);
           if(bounds !== undefined){
@@ -136,10 +135,13 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
     const {id_antena, id_nadajnik, id_program} = adapter;
     callApiFetch(`api/comparison-map/kml-new/${id_antena}_${id_nadajnik}_${id_program}`).then((res) => {
       parseString(res.text, function (err, result) {
-        console.dir(result);
-          const bounds = mapKMLToBoundsNew(result);
-          if(bounds !== undefined){
-            newDrawLayersNew(bounds, layersGroup)
+          if(result.kml){
+            const bounds = mapKMLToBoundsNew(result);
+            if(bounds !== undefined){
+              newDrawLayersNew(bounds, layersGroup)
+            }
+          } else{
+            console.log("Missing map in storage ! ")
           }
 
       });
