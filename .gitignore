@@ -186,3 +186,8 @@ dmypy.json
 .pytype/
 
 otherCoords.json
+full-result-2.json
+.gitignore
+full-result-4.json
+.gitignore
+full-result-3.json
