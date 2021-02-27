@@ -12,9 +12,6 @@ from gdal_interfaces import GDALTileInterface
 
 import jsonpickle
 
-# ff = open(os.devnull, 'w')
-# sys.stdout = ff
-
 class InternalException(ValueError):
     """
     Utility exception class to handle errors internally and return error codes to the client
@@ -390,7 +387,6 @@ def body_to_line_distance():
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
 
-        # print("CO JEST KURŁA 00 ", request.json);
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
 
@@ -444,19 +440,12 @@ def body_to_line_distance_all():
     if not receivers:
         raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
 
-    # GENEROWANIE SIATKI PUNKTOW
-    # print("CO JEST KURŁA",adapterLatitude);
-
     locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
-    # print("CO JEST KURŁA 011 ", locations );
 
     latlng = []
     latLngFull = []
 
     d = dict();
-    # global counter
-    # counter = counter + 1;
-    # print("JEST", currentIteration);
     a = json.loads(locations)
     d['results'] = a
     d['iteration'] = iteration
@@ -472,7 +461,6 @@ def body_to_line():
         receiverLatitude = request.json.get('receiverLatitude', None)
         receiverLongitude = request.json.get('receiverLongitude', None)
         rangePar = request.json.get('range', None)
-        # print("CO JEST KURŁA 01 ", request.json);
 
     except Exception:
         raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
@@ -562,23 +550,14 @@ def do_lookup_line_distance(get_locations_func):
         return e.args[0]
 
 def do_write_to_file(results, pathToFile):
-    # print("JEST !!! ")
-    # f = None
-    # my_path = os.path.abspath(os.path.dirname(__file__))
-    # pathToFile = os.path.join(my_path, "../full-result.json")
-
-    # global globalArray
     try:
         with open(pathToFile, 'a') as outfile:
-            # str_q = str(results)[1 : -1]
             json.dump(results, outfile)
             outfile.write(',')
         outfile.close()
 
 
     except InternalException as e:
-        # f.close()
-        # globalArray = []
         response.status = 400
         response.content_type = 'application/json'
         return e.args[0]
@@ -599,12 +578,10 @@ def do_lookup_line_distance_all(get_locations_func):
         path2 = os.path.join(my_path, "../full-result-2.json")
         path3 = os.path.join(my_path, "../full-result-3.json")
         path4 = os.path.join(my_path, "../full-result-4.json")
-        # global counter
 
         allData = get_locations_func();
         currentIt = allData['currentIteration']
         iterations = allData['iteration']
-        # print("CI ", currentIt, " -- all - ", iterations/2, " kurwa ",currentIt < iterations/2 )
         for data in allData['results']:
             xxx = fullResult({'latitude': data['coords']['latitude'], 'longitude': data['coords']['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
             if currentIt < iterations/4:
@@ -726,6 +703,5 @@ def post_lookup_line_distance_all():
         :return:
         """
     return do_lookup_line_distance_all(body_to_line_distance_all)
-# hostname123 = socket.gethostname()
 run(host='0.0.0.0', port=10000, server='waitress', workers=4)
 

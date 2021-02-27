@@ -67,7 +67,6 @@ class GDALInterface(object):
             # FIXME this int() is probably bad idea, there should be half cell size thing needed
             xpix = int(self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
             ylin = int(self.geo_transform_inv[4] * u + self.geo_transform_inv[5] * v)
-            # print("1. ",self.geo_transform_inv[1] * u + self.geo_transform_inv[2] * v)
             # look the value up
             v = self.points_array[ylin, xpix]
 
