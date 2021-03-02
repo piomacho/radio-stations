@@ -350,6 +350,22 @@ def generateCoordinates(range1, x0, y0):
             longitudeNew =  round(((y0 - unitDistance * y3) + sys.float_info.epsilon) * 1000) / 1000
             cArray += [{"latitude": latitudeNew, "longitude": longitudeNew, "distance": measureDistance( x0, y0, latitudeNew, longitudeNew ) }]
     return cArray
+def body_to_lookup_adapter():
+    try:
+        adapterLatitude = request.json.get('adapterLatitude', None)
+        adapterLongitude = request.json.get('adapterLongitude', None)
+
+    except Exception:
+        raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
+
+    if not adapterLatitude:
+        raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
+    if not adapterLongitude:
+        raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    d = dict();
+    d['adapterLatitude'] = adapterLatitude
+    d['adapterLongitude'] = adapterLongitude
+    return d;
 
 def body_to_adapter():
     try:
@@ -582,6 +598,7 @@ def do_lookup_line_distance_all(get_locations_func):
         allData = get_locations_func();
         currentIt = allData['currentIteration']
         iterations = allData['iteration']
+
         for data in allData['results']:
             xxx = fullResult({'latitude': data['coords']['latitude'], 'longitude': data['coords']['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
             if currentIt < iterations/4:
@@ -593,7 +610,7 @@ def do_lookup_line_distance_all(get_locations_func):
             else:
                  do_write_to_file(xxx.__dict__,path4);
 
-        return {'results': 'oki'}
+        return {'results': 'ok'}
     except InternalException as e:
         response.status = 401
         response.content_type = 'application/json'
@@ -613,6 +630,14 @@ def do_lookup_new(get_locations_func):
         response.content_type = 'application/json'
         return e.args[0]
 
+def do_lookup_adapter_height(get_locations_func):
+    try:
+        allData = get_locations_func();
+        return {'result': get_elevation(allData['adapterLatitude'], allData['adapterLongitude'])}
+    except InternalException as e:
+        response.status = 400
+        response.content_type = 'application/json'
+        return e.args[0]
 # Base Endpoint
 URL_ENDPOINT = '/api/v1/lookup'
 
@@ -669,6 +694,23 @@ def post_lookup_line():
         :return:
         """
     return do_lookup_distance(body_to_line)
+
+
+# Base Endpoint
+URL_ENDPOINT_ADAPTER_LOOKUP = '/api/v1/lookup-adapter'
+
+# For CORS
+@route(URL_ENDPOINT_ADAPTER_LOOKUP, method=['OPTIONS'])
+def cors_handler():
+    return {}
+
+@route(URL_ENDPOINT_ADAPTER_LOOKUP, method=['POST'])
+def post_lookup_adapter():
+    """
+        GET method. Uses body_to_locations.
+        :return:
+        """
+    return do_lookup_adapter_height(body_to_lookup_adapter)
 
 
 # Base Endpoint

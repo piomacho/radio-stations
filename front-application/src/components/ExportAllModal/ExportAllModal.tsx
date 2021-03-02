@@ -30,6 +30,7 @@ import { LoaderOverLay } from "../SelectionPanel/SelectionPanel.styles";
 import { LoaderContainer } from "../Adapters/Adapters.style";
 import { CloseButton } from "../ExportModal/ExportModal.style";
 import { ConfirmationDialog } from "../ConfirmationDialog/ConfirmationDialog";
+import OpenElevationClient from "../../OECient/OpenElevationClient";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -74,6 +75,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [ isConfirmed, setIsConfirmed] = useState(false);
   const [setCorners] = useState({});
   const ENDPOINT = "http://localhost:5000";
+  const OEClient = new OpenElevationClient("http://0.0.0.0:10000/api/v1");
 
   useEffect(() => {
     const socket = io(ENDPOINT);
@@ -181,6 +183,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       }
       setLoaderValue(0);
 
+
       if(dataFactor > 100 && dataFactor < 200) {
         ITERATIONS = 200
       }else if(dataFactor >= 200 && dataFactor < 250){
@@ -190,25 +193,29 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       } else if(dataFactor >= 300) {
         ITERATIONS = 2700;
       }
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          adapter:{
-            latitude: adapterLatitude,
-            longitude: adapterLongitude,
-            height: adapter.wys_npm && +adapter.wys_npm,
-            frequency: adapter.czestotliwosc
-          },
-          radius: Number(radius),
-          pointsDistance: Number(pointsDistance),
-          fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
-          dataFactor: dataFactor
-        })
-      };
 
 
-
+      return OEClient.postLookupAdapterHeight({
+        adapterLongitude: +adapter.dlugosc,
+        adapterLatitude: +adapter.szerokosc,
+      }).then(async(answear: any) => {
+        const adapterElevation = Number(answear.result.elevation);
+        const requestOptions = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            adapter:{
+              latitude: adapterLatitude,
+              longitude: adapterLongitude,
+              height: adapter.wys_npm && (+adapter.wys_npm - adapterElevation),
+              frequency: adapter.czestotliwosc
+            },
+            radius: Number(radius),
+            pointsDistance: Number(pointsDistance),
+            fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
+            dataFactor: dataFactor
+          })
+        };
       callApiFetch(`api/coordinates/generate`, requestOptions)
           .then(async(results: ResultCoordinateType) => {
             const corners123 = await getCorners(results.coordinates);
@@ -218,6 +225,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
           .catch((error: any) => {
             console.log("Error postLookupLine:" + error);
           });
+
+        }).catch((error: any) => {
+          console.log("Error find adapter height:" + error);
+        });
+
     }
 
 
