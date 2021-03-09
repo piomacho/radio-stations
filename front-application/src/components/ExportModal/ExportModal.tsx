@@ -104,8 +104,8 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExportClick = () => {
-      const adapterX = +(+adapter.szerokosc).toFixed(2);
-      const adapterY = +(+adapter.dlugosc).toFixed(2);
+      const adapterX = +(+adapter.szerokosc).toFixed(5);
+      const adapterY = +(+adapter.dlugosc).toFixed(5);
       return OEClient.postLookupLine({
         adapterLongitude: +adapterY,
         adapterLatitude: +adapterX,
@@ -136,7 +136,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       body: JSON.stringify({
         coordinates: results.results,
         fileName: fileName,
-        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.wys_npm, frequency: adapter.czestotliwosc},
+        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.antena_npt, frequency: adapter.czestotliwosc},
         receiver: { latitude: +recLatitude, longitude: +recLongitude },
       })
     };
@@ -209,7 +209,7 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
               <ExportWrapper>
               <Button
                 onClick={allowedSubmit ? handleExportClick : () => void 0}
-                label={"Exportuj"}
+                label={"Wykonaj obliczenia"}
                 backColor={"#0f1626"}
                 backColorHover={"#f5f5f5"}
                 color={"#f5f5f5"}
