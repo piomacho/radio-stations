@@ -164,8 +164,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExportClick = async() => {
-    const adapterLatitude = adapter.szerokosc &&  +(+adapter.szerokosc).toFixed(2);
-    const adapterLongitude = adapter.dlugosc && +(+adapter.dlugosc).toFixed(2);
+    const adapterLatitudeToQuery = adapter.szerokosc &&  +(+adapter.szerokosc).toFixed(5);
+    const adapterLongitudeToQuery = adapter.dlugosc &&  +(+adapter.dlugosc).toFixed(5);
     const doExists = await checkIfAlreadyExists();
     if(doExists === true && isConfirmed !== true) {
       setShowConfirmationBox(true);
@@ -194,40 +194,30 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
         ITERATIONS = 2700;
       }
 
-
-      return OEClient.postLookupAdapterHeight({
-        adapterLongitude: +adapter.dlugosc,
-        adapterLatitude: +adapter.szerokosc,
-      }).then(async(answear: any) => {
-        const adapterElevation = Number(answear.result.elevation);
-        const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            adapter:{
-              latitude: adapterLatitude,
-              longitude: adapterLongitude,
-              height: adapter.wys_npm && (+adapter.wys_npm - adapterElevation),
-              frequency: adapter.czestotliwosc
-            },
-            radius: Number(radius),
-            pointsDistance: Number(pointsDistance),
-            fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
-            dataFactor: dataFactor
-          })
-        };
-      callApiFetch(`api/coordinates/generate`, requestOptions)
-          .then(async(results: ResultCoordinateType) => {
-            const corners123 = await getCorners(results.coordinates);
-            //@ts-ignore
-            setCorners(corners123);
-          })
-          .catch((error: any) => {
-            console.log("Error postLookupLine:" + error);
-          });
-
-        }).catch((error: any) => {
-          console.log("Error find adapter height:" + error);
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adapter:{
+            latitude: adapterLatitudeToQuery,
+            longitude: adapterLongitudeToQuery,
+            height: adapter.antena_npt && +adapter.antena_npt,
+            frequency: adapter.czestotliwosc
+          },
+          radius: Number(radius),
+          pointsDistance: Number(pointsDistance),
+          fileName: `${id_antena}_${id_nadajnik}_${id_program}`,
+          dataFactor: dataFactor
+        })
+      };
+    callApiFetch(`api/coordinates/generate`, requestOptions)
+        .then(async(results: ResultCoordinateType) => {
+          const corners123 = await getCorners(results.coordinates);
+          //@ts-ignore
+          setCorners(corners123);
+        })
+        .catch((error: any) => {
+          console.log("Error postLookupLine:" + error);
         });
 
     }

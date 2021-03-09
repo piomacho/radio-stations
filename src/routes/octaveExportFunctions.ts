@@ -15,18 +15,28 @@ interface ElevationSegmentType {
     distance: number
   }
 
+// COMMENT
+// lat - latitude,
+// lng - longitude,
+// e - elevation,
+// d - distance
   interface ElevationSegmentType {
-    latitude: number,
-    longitude: number,
-    elevation: number,
-    distance: number
+    lat: number,
+    lng: number,
+    e: number,
+    d: number
   }
 
+// COMMENT
+// c - coordinates,
+// r - receiver,
+// lat - latitude,
+// lng - longitude
 export interface SegmentResultType {
-    coordinates: Array<ElevationSegmentType>
-    receiver: {
-      longitude: number,
-      latitude: number
+    c: Array<ElevationSegmentType>
+    r: {
+      lng: number,
+      lat: number
     }
   }
 
@@ -71,15 +81,15 @@ export const handleExportToOctave = (
             const readStream4 = fs.createReadStream(path.join(__dirname, '../../full-result-4.json'));
             oboe(readStream)
             .node('!.*', function(streamData: any){
-               const k = JSON.parse(JSON.stringify(streamData));
-               if(k.coordinates && k.coordinates.length <= 3) {
-                   notInlcudedCoordintesArray.push(k);
+               const parsedData = JSON.parse(JSON.stringify(streamData));
+               if(parsedData.c && parsedData.c.length <= 3) {
+                   notInlcudedCoordintesArray.push(parsedData);
                    return oboe.drop;
                }
-               if(k.receiver && k.coordinates){
+               if(parsedData.r && parsedData.c){
 
-                 writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
-                 const a = prepareProfileData(k);
+                 writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                 const a = prepareProfileData(parsedData);
                  writeToProfileFile(profleObjects, a, fName);
                }
 
@@ -91,15 +101,15 @@ export const handleExportToOctave = (
                 profleObjects = profleObjects - 1;
                 oboe(readStream2)
                 .node('!.*', function(streamData: any){
-                   const k = JSON.parse(JSON.stringify(streamData));
-                   if(k.coordinates && k.coordinates.length <= 3) {
-                       notInlcudedCoordintesArray.push(k);
+                   const parsedData = JSON.parse(JSON.stringify(streamData));
+                   if(parsedData.c && parsedData.c.length <= 3) {
+                       notInlcudedCoordintesArray.push(parsedData);
                        return oboe.drop;
                    }
-                   if(k.receiver && k.coordinates){
+                   if(parsedData.r && parsedData.c){
 
-                     writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
-                     const a = prepareProfileData(k);
+                     writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                     const a = prepareProfileData(parsedData);
                      writeToProfileFile(profleObjects, a, fName);
                    }
 
@@ -111,15 +121,15 @@ export const handleExportToOctave = (
                     profleObjects = profleObjects - 1;
                     oboe(readStream3)
                     .node('!.*', function(streamData: any){
-                        const k = JSON.parse(JSON.stringify(streamData));
-                           if(k.coordinates && k.coordinates.length <= 3) {
-                               notInlcudedCoordintesArray.push(k);
+                        const parsedData = JSON.parse(JSON.stringify(streamData));
+                           if(parsedData.c && parsedData.c.length <= 3) {
+                               notInlcudedCoordintesArray.push(parsedData);
                                return oboe.drop;
                            }
-                           if(k.receiver && k.coordinates){
+                           if(parsedData.r && parsedData.c){
 
-                             writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
-                             const a = prepareProfileData(k);
+                             writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                             const a = prepareProfileData(parsedData);
                              writeToProfileFile(profleObjects, a, fName);
                            }
 
@@ -130,15 +140,15 @@ export const handleExportToOctave = (
                     profleObjects = profleObjects - 1;
                     oboe(readStream4)
                     .node('!.*', function(streamData: any){
-                        const k = JSON.parse(JSON.stringify(streamData));
-                           if(k.coordinates && k.coordinates.length <= 3) {
-                               notInlcudedCoordintesArray.push(k);
+                        const parsedData = JSON.parse(JSON.stringify(streamData));
+                           if(parsedData.c && parsedData.c.length <= 3) {
+                               notInlcudedCoordintesArray.push(parsedData);
                                return oboe.drop;
                            }
-                           if(k.receiver && k.coordinates){
+                           if(parsedData.r && parsedData.c){
 
-                             writeToReceiverFile(profleObjects, `[${k.receiver.latitude} ${k.receiver.longitude}];`, fName);
-                             const a = prepareProfileData(k);
+                             writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                             const a = prepareProfileData(parsedData);
                              writeToProfileFile(profleObjects, a, fName);
                            }
 
@@ -148,12 +158,12 @@ export const handleExportToOctave = (
                 }).done(function(finalJson: any){
 
                 notInlcudedCoordintesArray.push({
-                    coordinates: [],
-                    receiver: {
-                      longitude: adapterLon,
-                      latitude: adapterLat
+                    c: [],
+                    r: {
+                      lng: adapterLon,
+                      lat: adapterLat
                     }});
-                    const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
+                    const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.r);
                     const stringifyStream = json.createStringifyStream({
                         body: notIncludedReceivers
                     });
@@ -198,16 +208,16 @@ export const handleExportToOctave = (
 
 
 
-const prepareProfileData = (k: SegmentResultType ) => {
+const prepareProfileData = (parsedData: SegmentResultType ) => {
             let segment = '[ ';
-            k.coordinates.map((c: CoordinatesType, iterator:number) => {
-                if(iterator < k.coordinates.length - 1 && iterator !== 0){
-                    segment += `\t    ${c.distance} ${c.elevation} 4;`;
+            parsedData.c.map((c: CoordinatesType, iterator:number) => {
+                if(iterator < parsedData.c.length - 1 && iterator !== 0){
+                    segment += `\t    ${c.d} ${c.e} 4;`;
                     segment += '\n';
                 } else if(iterator === 0) {
-                    segment += `0 ${c.elevation} 4;\n`;
+                    segment += `0 ${c.e} 4;\n`;
                 } else {
-                    segment += `\t    ${c.distance} ${c.elevation} 4;`
+                    segment += `\t    ${c.d} ${c.e} 4;`
                 }
 
             })

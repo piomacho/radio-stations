@@ -79,19 +79,19 @@ def get_elevation_distance_all(point):
 
     """
     try:
-        elevation = interface.lookup(point['latitude'], point['longitude'])
+        elevation = interface.lookup(point['lat'], point['lng'])
     except:
         return {
-            'latitude': point['latitude'],
-            'longitude': point['longitude'],
-            'error': 'No such coordinate (%s, %s)' % (point['latitude'], point['longitude'])
+            'latitude': point['lat'],
+            'longitude': point['lng'],
+            'error': 'No such coordinate (%s, %s)' % (point['lat'], point['lng'])
         }
 
     return {
-        'latitude': point['latitude'],
-        'longitude': point['longitude'],
-        'elevation': elevation,
-        'distance': point['distance']
+        'lat': point['lat'],
+        'lng': point['lng'],
+        'e': elevation,
+        'd': point['d']
     }
 
 @hook('after_request')
@@ -260,8 +260,8 @@ class result:
 
 class fullResult:
     def __init__(self, coords, points):
-        self.receiver = coords
-        self.coordinates = points
+        self.r = coords
+        self.c = points
 
 def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers):
     cArray = []
@@ -269,8 +269,8 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
     for i in range(int(len(receivers))):
         cArray = []
 
-        brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receivers[i]['longitude']), degrees_to_radians(receivers[i]['latitude']))
-        range1 = measureDistance(adapterLatitude, adapterLongitude, receivers[i]['latitude'], receivers[i]['longitude'])
+        brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(receivers[i]['lng']), degrees_to_radians(receivers[i]['lat']))
+        range1 = measureDistance(adapterLatitude, adapterLongitude, receivers[i]['lat'], receivers[i]['lng'])
 
         numberOfPoints = float(range1)/float(distance)
         for x in range(int(numberOfPoints)):
@@ -289,9 +289,9 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
 
             lat2 = round(math.degrees(lat2), 5)
             lon2 = round(math.degrees(lon2), 5)
-            cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
+            cArray += [{"d": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"lat": lat2, "lng": lon2}]
             if(x == int(numberOfPoints) - 1):
-                xx = result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray)
+                xx = result({"lat": receivers[i]['lat'], "lng": receivers[i]['lng']}, cArray)
                 resultArray.append(xx.__dict__)
 
     return jsonpickle.encode(resultArray, unpicklable=False)
@@ -600,7 +600,7 @@ def do_lookup_line_distance_all(get_locations_func):
         iterations = allData['iteration']
 
         for data in allData['results']:
-            xxx = fullResult({'latitude': data['coords']['latitude'], 'longitude': data['coords']['longitude'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
+            xxx = fullResult({'lat': data['coords']['lat'], 'lng': data['coords']['lng'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
             if currentIt < iterations/4:
                 do_write_to_file(xxx.__dict__,path);
             elif currentIt >= iterations/4 and currentIt < iterations/2:

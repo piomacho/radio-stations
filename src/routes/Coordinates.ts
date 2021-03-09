@@ -227,7 +227,7 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
             const results = destinationPoint(0, distance * j, lat, long);
             const latitudeNew = results && Number(results.lat.toFixed(5));
             const longitudeNew =  results && Number(results.lon.toFixed(5));
-            cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
+            cArray.push({"lat": latitudeNew, "lng": longitudeNew});
         }
         const a = destinationPoint(90, distance, latitude0, long)
         long = a !== null ? Number(a.lon.toFixed(5)) : 0;
@@ -241,7 +241,7 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
             const results = destinationPoint(180, distance * j2, lat, long);
             const latitudeNew = results && Number(results.lat.toFixed(5));
             const longitudeNew =  results && Number(results.lon.toFixed(5));
-            cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
+            cArray.push({"lat": latitudeNew, "lng": longitudeNew});
         }
         const a = destinationPoint(90, distance, latitude0, long)
         long = a !== null ? Number(a.lon.toFixed(5)) : 0;
@@ -255,7 +255,7 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
             const results = destinationPoint(180, distance * j3, lat, long);
             const latitudeNew = results && Number(results.lat.toFixed(5));
             const longitudeNew = results && Number(results.lon.toFixed(5));
-            cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
+            cArray.push({"lat": latitudeNew, "lng": longitudeNew});
         }
         const a = destinationPoint(270, distance, latitude0, long)
         long = a !== null ? Number(a.lon.toFixed(5)) : 0;
@@ -268,7 +268,7 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
             const results = destinationPoint(0, distance * j4, lat, long);
             const latitudeNew = results && Number(results.lat.toFixed(5));
             const longitudeNew =  results && Number(results.lon.toFixed(5));
-            cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
+            cArray.push({"lat": latitudeNew, "lng": longitudeNew});
         }
         const a = destinationPoint(270, distance, latitude0, long)
         long = a !== null ? Number(a.lon.toFixed(5)) : 0;

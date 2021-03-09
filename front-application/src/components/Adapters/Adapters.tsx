@@ -12,6 +12,7 @@ interface AdapterType{
     szerokosc: string;
     id_obiekt: string;
     wys_npm: string;
+    antena_npt: string;
     czestotliwosc: string;
     id_antena: string;
     id_nadajnik: string;
@@ -32,6 +33,7 @@ const setParameters = (adapters: Array<AdapterType>): Array<OptionType> => {
           szerokosc: adapter.szerokosc,
           dlugosc: adapter.dlugosc,
           wys_npm: adapter.wys_npm,
+          antena_npt: adapter.antena_npt,
           czestotliwosc: adapter.czestotliwosc,
           id_antena: adapter.id_antena,
           id_nadajnik: adapter.id_nadajnik,

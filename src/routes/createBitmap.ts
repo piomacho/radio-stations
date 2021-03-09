@@ -22,8 +22,8 @@ interface ImageCoordinatesType {
 }
 
 interface CoordinatesType {
-    latitude: number,
-    longitude: number,
+    lat: number,
+    lng: number,
 }
 
 
@@ -72,7 +72,7 @@ fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: s
   }
   const unusedArray= JSON.parse(data);
   const formattedCordsUnused = unusedArray.map((elem: CoordinatesType) => {
-    return {phire: parseFloat((+elem.latitude).toFixed(5)), phirn: parseFloat((+elem.longitude).toFixed(5)), color: 0xff0000ff}
+    return {phire: parseFloat((+elem.lat).toFixed(5)), phirn: parseFloat((+elem.lng).toFixed(5)), color: 0xff0000ff}
   })
 
 const allCoordinates = [...pointInfo, ...formattedCordsUnused]

@@ -21,10 +21,10 @@ const pLimit = require('p-limit');
 
 
 export interface CoordinatesType {
-    latitude: number;
-    elevation: number;
-    longitude: number;
-    distance: number;
+    lat: number;
+    e: number;
+    lng: number;
+    d: number;
 }
 
 export interface CornersType {
@@ -36,33 +36,27 @@ export interface CornersType {
 }
 
 interface ElevationSegmentType {
-    latitude: number,
-    longitude: number,
-    elevation: number,
-    distance: number
+    lat: number,
+    lng: number,
+    e: number,
+    d: number
   }
 
   interface SegmentResultType {
-    coordinates: Array<ElevationSegmentType>
-    receiver: {
-      longitude: number,
-      latitude: number
+    c: Array<ElevationSegmentType>
+    r: {
+      lng: number,
+      lat: number
     }
   }
 
-  interface SegmentFullResultType {
-    receiver: {
-      longitude: number,
-      latitude: number
-    },
-    points: Array<ElevationSegmentType>
-  }
+
 const router = Router();
 
 
 const formatCoordinates1 = (coords: any) => {
     return coords.map((c: CoordinatesType) => {
-         return  `${c.distance.toString().replace(',', '.')} ${c.elevation.toString().replace(',', '.')} 4;`;
+         return  `${c.d.toString().replace(',', '.')} ${c.e.toString().replace(',', '.')} 4;`;
      });
  };
 
@@ -258,17 +252,17 @@ router.post('/send-all/', async (req: Request, res: Response) => {
             ITERATIONS = 2500;
           }
 
-            const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length > 5);
+            const filteredCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.c.length > 5);
 
-            const notInlcudedCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.coordinates.length <= 5);
+            const notInlcudedCoordintesArray = globalStorage.filter((coords: SegmentResultType) => coords.c.length <= 5);
             notInlcudedCoordintesArray.push({
-                coordinates: [],
-                receiver: {
-                  longitude: adapterLon,
-                  latitude: adapterLat
+                c: [],
+                r: {
+                  lng: adapterLon,
+                  lat: adapterLat
                 }
             })
-            const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.receiver);
+            const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.r);
 
             const notInlcudedCoordintesReceivers = JSON.stringify(notIncludedReceivers);
 
@@ -332,7 +326,7 @@ const prepareProfileData = (chunkedFilterArray: Array<Array<SegmentResultType>>,
     for (let i = 0; i < ITERATIONS; i++) {
         let receivers123= ' ';
         chunkedFilterArray[i] && chunkedFilterArray[i].map((c: SegmentResultType) => {
-            receivers123 += `[${c.receiver.latitude} ${c.receiver.longitude}];`
+            receivers123 += `[${c.r.lat} ${c.r.lng}];`
             receivers123 += '\n';
 
             if(receivers123 !== '' && receivers123 !== '\n') {
@@ -345,14 +339,14 @@ const prepareProfileData = (chunkedFilterArray: Array<Array<SegmentResultType>>,
     for (let i = 0; i < ITERATIONS; i++) {
         chunkedFilterArray[i] && chunkedFilterArray[i].map((coordinateData: SegmentResultType) => {
             let segment = ' ';
-            coordinateData.coordinates.map((c: CoordinatesType, iterator:number) => {
-                if(iterator < coordinateData.coordinates.length - 1 && iterator !== 0){
-                    segment += `\t    ${c.distance} ${c.elevation} 4;`;
+            coordinateData.c.map((c: CoordinatesType, iterator:number) => {
+                if(iterator < coordinateData.c.length - 1 && iterator !== 0){
+                    segment += `\t    ${c.d} ${c.e} 4;`;
                     segment += '\n';
                 } else if(iterator === 0) {
-                    segment += `0 ${c.elevation} 4;\n`;
+                    segment += `0 ${c.e} 4;\n`;
                 } else {
-                    segment += `\t    ${c.distance} ${c.elevation} 4;`
+                    segment += `\t    ${c.d} ${c.e} 4;`
                 }
 
             })
