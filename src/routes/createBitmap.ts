@@ -72,7 +72,7 @@ fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: s
   }
   const unusedArray= JSON.parse(data);
   const formattedCordsUnused = unusedArray.map((elem: CoordinatesType) => {
-    return {phire: parseFloat((+elem.latitude).toFixed(13)), phirn: parseFloat((+elem.longitude).toFixed(13)), color: 0xffffffff}
+    return {phire: parseFloat((+elem.latitude).toFixed(5)), phirn: parseFloat((+elem.longitude).toFixed(5)), color: 0xff0000ff}
   })
 
 const allCoordinates = [...pointInfo, ...formattedCordsUnused]

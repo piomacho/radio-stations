@@ -178,7 +178,7 @@ def measureDistance(lat1, lon1, lat2, lon2):
 
     distance = R * c
 
-    return distance
+    return round(distance,5)
 
 
 def newCoordinates(latitude, longitude, dy, dx):
@@ -287,8 +287,8 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
             lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
                         math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
 
-            lat2 = math.degrees(lat2)
-            lon2 = math.degrees(lon2)
+            lat2 = round(math.degrees(lat2), 5)
+            lon2 = round(math.degrees(lon2), 5)
             cArray += [{"distance": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"latitude": lat2, "longitude": lon2}]
             if(x == int(numberOfPoints) - 1):
                 xx = result({"latitude": receivers[i]['latitude'], "longitude": receivers[i]['longitude']}, cArray)

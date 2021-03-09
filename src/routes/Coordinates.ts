@@ -225,12 +225,12 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
 
         for (let j = 0; j < numberOfPoints; j++) {
             const results = destinationPoint(0, distance * j, lat, long);
-            const latitudeNew = results && results.lat;
-            const longitudeNew =  results && results.lon;
+            const latitudeNew = results && Number(results.lat.toFixed(5));
+            const longitudeNew =  results && Number(results.lon.toFixed(5));
             cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
         }
         const a = destinationPoint(90, distance, latitude0, long)
-        long = a !== null ? a.lon : 0;
+        long = a !== null ? Number(a.lon.toFixed(5)) : 0;
 
     }
     long = longitude0;
@@ -239,12 +239,12 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
     for (let i2 = 0; i2 < numberOfPoints; i2++) {
         for (let j2 = 1; j2 < numberOfPoints; j2++) {
             const results = destinationPoint(180, distance * j2, lat, long);
-            const latitudeNew = results && results.lat;
-            const longitudeNew =  results && results.lon;
+            const latitudeNew = results && Number(results.lat.toFixed(5));
+            const longitudeNew =  results && Number(results.lon.toFixed(5));
             cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
         }
         const a = destinationPoint(90, distance, latitude0, long)
-        long = a !== null ? a.lon : 0;
+        long = a !== null ? Number(a.lon.toFixed(5)) : 0;
     }
     long = longitude0;
     lat = latitude0;
@@ -253,12 +253,12 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
     for (let i3= 0; i3 < numberOfPoints; i3++) {
         for (let j3 = 0; j3 < numberOfPoints; j3++) {
             const results = destinationPoint(180, distance * j3, lat, long);
-            const latitudeNew = results && results.lat;
-            const longitudeNew = results && results.lon;
+            const latitudeNew = results && Number(results.lat.toFixed(5));
+            const longitudeNew = results && Number(results.lon.toFixed(5));
             cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
         }
         const a = destinationPoint(270, distance, latitude0, long)
-        long = a !== null ? a.lon : 0;
+        long = a !== null ? Number(a.lon.toFixed(5)) : 0;
     }
     long = longitude0;
     lat = latitude0;
@@ -266,12 +266,12 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
     for (let i4 = 0; i4 < numberOfPoints; i4++) {
         for (let j4 = 1; j4 < numberOfPoints; j4++) {
             const results = destinationPoint(0, distance * j4, lat, long);
-            const latitudeNew = results && results.lat;
-            const longitudeNew =  results && results.lon;
+            const latitudeNew = results && Number(results.lat.toFixed(5));
+            const longitudeNew =  results && Number(results.lon.toFixed(5));
             cArray.push({"latitude": latitudeNew, "longitude": longitudeNew});
         }
         const a = destinationPoint(270, distance, latitude0, long)
-        long = a !== null ? a.lon : 0;
+        long = a !== null ? Number(a.lon.toFixed(5)) : 0;
 
     }
 
