@@ -99,7 +99,6 @@ const removeResultsFile = () => {
         });
         fs.unlink(path.join(__dirname, '../../full-result-4.json'),function () {
             fs.writeFile(path.join(__dirname, '../../full-result-4.json'), '[', function () {
-
             });
         });
     });

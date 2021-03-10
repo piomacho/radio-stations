@@ -8,7 +8,7 @@
     "start:dev": "nodemon --config nodemon.json",
     "client": "cd front-application && npm start",
     "python-server": "cd python_server && python server.py",
-    "start:all": "concurrently --kill-others-on-fail \"npm run python-server\" nodemon --config nodemon.json \"npm run client\"",
+    "start:all": "concurrently --kill-others-on-fail  \"kill-port --port 5000\" \"npm run python-server\" nodemon --config nodemon.json \"npm run client\"",
     "start:partial": "concurrently --kill-others-on-fail \"kill-port --port 5000\" nodemon --config nodemon.json \"npm run client\"",
     "test": "nodemon --config nodemon.test.json"
   },

@@ -1,7 +1,7 @@
 import { CoordinatesType } from "src/routes/OctaveExport";
 export interface LocationType {
-    latitude: number,
-    longitude: number
+    lat: number,
+    lng: number
 }
 
 interface LocationsType {
@@ -24,11 +24,11 @@ export const getCorners = async(results: Array<LocationType>) => {
     const minLat = Math.min(...keysOfGroupedArray);
     const maxLat = Math.max(...keysOfGroupedArray);
 
-    const maxLongMaxLat = maxLat && grouped[`${maxLat}`] && grouped[`${maxLat}`].slice(-1)[0].longitude;
-    const minLongMaxLat = maxLat && grouped[`${maxLat}`] && grouped[`${maxLat}`][0].longitude;
+    const maxLongMaxLat = maxLat && grouped[`${maxLat}`] && grouped[`${maxLat}`].slice(-1)[0].lng;
+    const minLongMaxLat = maxLat && grouped[`${maxLat}`] && grouped[`${maxLat}`][0].lng;
 
-    const maxLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`].slice(-1)[0].longitude;
-    const minLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`][0].longitude;
+    const maxLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`].slice(-1)[0].lng;
+    const minLongMinLat = minLat && grouped[`${minLat}`] && grouped[`${minLat}`][0].lng;
     return {
         maxLongMaxLat: {
             lat: maxLat,
@@ -52,15 +52,14 @@ export const getCorners = async(results: Array<LocationType>) => {
   const sortAndGroupResultElements = (results:Array<LocationType>): any => {
     //@ts-ignore
     return results.sort((a, b) => {
-           if (a.latitude === b.latitude) {
-              // Price is only important when cities are the same
-              return a.longitude - b.longitude ;
+           if (a.lat === b.lat) {
+              return a.lng - b.lng ;
            }
 
-           return a.latitude > b.latitude ? -1 : 1;
+           return a.lat > b.lat ? -1 : 1;
         }).reduce((r: Array<LocationType>, a: LocationType) => {
             //@ts-ignore
-            r[a.latitude] = [...r[a.latitude] || [], a !== undefined && a];
+            r[a.lat] = [...r[a.lat] || [], a !== undefined && a];
             return r;
            }, {});
   }
