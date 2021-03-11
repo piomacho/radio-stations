@@ -135,7 +135,6 @@ router.post('/generate', async (req: Request, res: Response) => {
         const domain = `http://${computerName}:10000`;
         const chunkedArray = chunkArray(coords, ITERATIONS, true);
         const queryParameters: Record<string, any> = {}
-        const allCoordinates: any = [];
 
         const headers: any = {};
         const form: Record<string, any> = {};
@@ -159,6 +158,7 @@ router.post('/generate', async (req: Request, res: Response) => {
                 currentIteration: i
             };
             // const result = true
+
             const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
             if(result) {
                 try {

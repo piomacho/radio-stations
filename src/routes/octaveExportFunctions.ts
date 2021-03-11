@@ -185,7 +185,7 @@ export const handleExportToOctave = (
 
                             const main_modulo = allProfleObjects % OCTAVE_ITERATIONS;
                             const podstawa_glowny = (allProfleObjects - main_modulo) / OCTAVE_ITERATIONS;
-
+                            console.log("------ > height ", height, " <> frequ ", frequency);
                                 runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, podstawa_glowny, dataFactor, corners, main_modulo, allProfleObjects - 2 );
 
                         });

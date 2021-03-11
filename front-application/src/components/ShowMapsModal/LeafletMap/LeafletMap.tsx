@@ -135,7 +135,7 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
     const {id_antena, id_nadajnik, id_program} = adapter;
     callApiFetch(`api/comparison-map/kml-new/${id_antena}_${id_nadajnik}_${id_program}`).then((res) => {
       parseString(res.text, function (err, result) {
-          if(result.kml){
+          if(result && result.kml){
             const bounds = mapKMLToBoundsNew(result);
             if(bounds !== undefined){
               newDrawLayersNew(bounds, layersGroup)
