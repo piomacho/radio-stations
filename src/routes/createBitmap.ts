@@ -72,7 +72,7 @@ fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: s
   }
   const unusedArray= JSON.parse(data);
   const formattedCordsUnused = unusedArray.map((elem: CoordinatesType) => {
-    return {phire: parseFloat((+elem.lat).toFixed(5)), phirn: parseFloat((+elem.lng).toFixed(5)), color: 0xffffffff}
+    return {phire: parseFloat((+elem.lat).toFixed(5)), phirn: parseFloat((+elem.lng).toFixed(5)), color: 0xffffff80}
   })
 
 const allCoordinates = [...pointInfo, ...formattedCordsUnused]
@@ -99,7 +99,7 @@ Jimp.read(path.join(__dirname, `../../initial.bmp`)).then((image: any) => {
           if(sortedDataMap[mapKey][ii] === undefined){
             console.log("Błąd w rysowaniu klucza -> ",sortedDataMap[mapKey][ii], " wartość - > ", mapKey)
           }
-          image.setPixelColor(sortedDataMap[mapKey][ii] ? sortedDataMap[mapKey][ii].color : 0xffffffff, ii, index);
+          image.setPixelColor(sortedDataMap[mapKey][ii] ? sortedDataMap[mapKey][ii].color : 0xffffff80, ii, index);
         }
         console.log(index)
     if (index == sortedDataMapKeys.length - 1) {

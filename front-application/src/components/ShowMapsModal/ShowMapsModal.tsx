@@ -40,7 +40,7 @@ config.tileLayer = {
 };
 
 const ShowMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
-  const [isTl2001, setTl2001] = useState<boolean>(false);
+
 
   const customStyles = {
     content : {
@@ -48,25 +48,28 @@ const ShowMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
     }
   };
 
-  const handleOnChange = (isChecked: boolean, layer: L.LayerGroup<any> | null) => {
-    setTl2001(isChecked);
+  const handleOnChange = (layer: L.LayerGroup<any> | null) => {
 
     if(layer !== null) {
       layer.clearLayers();
     }
   }
 
+  const closeModalHandler = () => {
+    showModal(false, "show-maps", false);
+  }
+
   return (
     <Modal
       isOpen={modalVisiblity}
-      onRequestClose={showModal(false, "show-maps", false)}
+      onRequestClose={closeModalHandler}
       ariaHideApp={false}
       contentLabel="Export Modal"
       style={ customStyles }
     >
       <CloseButton onClick={showModal(false, "show-maps", false)}><span>&#10006;</span></CloseButton>
       <Title>Obliczone mapy </Title>
-      <LeafletMap isTl2001={isTl2001} handleOnChange={handleOnChange}/>
+      <LeafletMap handleOnChange={handleOnChange}/>
     </Modal>
   );
 };

@@ -1,16 +1,15 @@
 import React, { useEffect } from "react";
 import store from "../../../Store/Store";
-import L, { LayerGroup, Rectangle } from 'leaflet';
-import { MapLeaflet } from './LeafletMap.style';
+import L from 'leaflet';
+import { MapLeaflet, OverLayElement, LoaderContainer } from './LeafletMap.style';
 import {parseString} from 'xml2js';
-
-
+import Loader from 'react-loader-spinner'
 import 'leaflet/dist/leaflet.css';
 import { callApiFetch } from "../../../common/global";
 import { SourceTitle, ToggleWrapper } from "./ShowMapsModal.styles";
 import { CheckBox, CheckBoxLabel, CheckBoxWrapper } from "../../ToggleSwitch/ToggleSwitch.styles";
-// import '../styles/Map.css';
-const icon = require('../images/transmitter_half.png').default;
+import icon from '../images/transmitter_half.png';
+import { MissingMapDialog } from "../../ConfirmationDialog/MissingMapDialog";
 
 const config: Record<string, any> = {};
 
@@ -25,7 +24,6 @@ config.params = {
 config.myIcon = L.icon({
     iconUrl: icon,
     iconSize: [30, 65],
-    // iconAnchor: [22, 94],
     popupAnchor: [0, -35],
   });
 config.tileLayer = {
@@ -64,13 +62,15 @@ const mapKMLToBoundsNew = (response: Record<string, any>) => {
 
 
 interface LeafletMapType {
-  handleOnChange: (isChecked: boolean, l: L.LayerGroup<any> | null) => void;
-  isTl2001: boolean;
+  handleOnChange: (l: L.LayerGroup<any> | null) => void;
 }
 
-export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
+export const LeafletMap = ({handleOnChange}: LeafletMapType) => {
   const { useGlobalState } = store;
   const [adapter] = useGlobalState('adapter');
+  const [isTl2001, setTl2001] = React.useState<boolean>(false);
+  const [ loading, setLoading ] = React.useState(false);
+  const [ showConfirmationBox, setConfirmationBox ] = React.useState(false);
   const [ mapNode, setMapNode ] = React.useState<HTMLDivElement | null>(null);
   const [ layersGroup, setLayersGroup ] = React.useState<L.LayerGroup<any> | null>(null);
 
@@ -108,7 +108,6 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
 
   }, [isTl2001])
 
-
   const getMRPMap = () => {
     const mapahash = adapter._mapahash;
 
@@ -133,20 +132,29 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
 
   const getTl2001Map = () => {
     const {id_antena, id_nadajnik, id_program} = adapter;
+
+    setLoading(true);
     callApiFetch(`api/comparison-map/kml-new/${id_antena}_${id_nadajnik}_${id_program}`).then((res) => {
       parseString(res.text, function (err, result) {
           if(result && result.kml){
             const bounds = mapKMLToBoundsNew(result);
             if(bounds !== undefined){
+              setLoading(false);
               newDrawLayersNew(bounds, layersGroup)
             }
           } else{
+            setLoading(false);
+            setConfirmationBox(true);
             console.log("Missing map in storage ! ")
           }
 
       });
 
      });
+  }
+
+  const closeConfirmationModal = () => {
+    setConfirmationBox(false);
   }
 
 
@@ -179,8 +187,10 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
       const layersGroup = new L.LayerGroup();
       layersGroup.addTo(newMap);
 
-      // L.control.scale({ position: 'bottomleft' }).addTo(map);
-      // a TileLayer is used as the "basemap"
+      const marker = L.marker([+adapter.szerokosc, +adapter.dlugosc], {
+        icon: config.myIcon,
+      }).addTo(newMap);
+
       new L.TileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(
         newMap,
       );
@@ -199,9 +209,9 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
-    handleOnChange(isChecked,layersGroup)
+    setTl2001(isChecked);
+    handleOnChange(layersGroup)
   }
-
   return (
     <>
       <ToggleWrapper>
@@ -213,6 +223,12 @@ export const LeafletMap = ({handleOnChange, isTl2001}: LeafletMapType) => {
       <SourceTitle>tl_p2001</SourceTitle>
       </ToggleWrapper>
         <MapLeaflet ref={mapRef} id="map" />
+      <OverLayElement active={loading} >
+        <LoaderContainer><Loader type="Circles" color="#22a6b3" height={40} width={40}/></LoaderContainer>
+       </OverLayElement>
+       {showConfirmationBox === true ?
+          <MissingMapDialog title="Brak mapy w bazie !" message="Brak mapy w bazie !" onClickClose={()=> closeConfirmationModal()} /> : null}
+
     </>
   );
 
