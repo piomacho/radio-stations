@@ -28,7 +28,7 @@ interface CoordinatesType {
 
 
 
-export const createBitmap = (fileName: string, size: number, corners: CornersType ) => {
+export const createBitmap = (fileName: string, size: number, corners: CornersType, adapterLat: any, adapterLon: any ) => {
 
 // Creates a client from a Google service account key.
 const storage = new Storage({keyFilename: path.join(__dirname, "../../magmapy-49829cb5b2d7.json"), projectId: 'magmapy'});
@@ -65,6 +65,8 @@ glob(path.join(__dirname, `../../validation_results/${fileName}/`) + '*.xlsx', {
 
     pointInfo.push({'phire': +phire, 'phirn': +phirn, 'color': color})
 }
+//@ts-ignore
+pointInfo.push({'phire':+adapterLat , 'phirn':+adapterLon , 'color': 0x00000080})
 
 fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: string, data: string) {
   if (err) {

@@ -157,12 +157,12 @@ export const handleExportToOctave = (
                            return oboe.drop;
                 }).done(function(finalJson: any){
 
-                notInlcudedCoordintesArray.push({
-                    c: [],
-                    r: {
-                      lng: adapterLon,
-                      lat: adapterLat
-                    }});
+                // notInlcudedCoordintesArray.push({
+                //     c: [],
+                //     r: {
+                //       lng: adapterLon,
+                //       lat: adapterLat
+                //     }});
                     const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.r);
                     const stringifyStream = json.createStringifyStream({
                         body: notIncludedReceivers
@@ -185,7 +185,6 @@ export const handleExportToOctave = (
 
                             const main_modulo = allProfleObjects % OCTAVE_ITERATIONS;
                             const podstawa_glowny = (allProfleObjects - main_modulo) / OCTAVE_ITERATIONS;
-                            console.log("------ > height ", height, " <> frequ ", frequency);
                                 runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, podstawa_glowny, dataFactor, corners, main_modulo, allProfleObjects - 2 );
 
                         });
@@ -226,8 +225,8 @@ const prepareProfileData = (parsedData: SegmentResultType ) => {
         return segment;
 }
 
-export const runBitmapScript = async(fName: string, size: number, corners: CornersType) => {
-    createBitmap(fName, size, corners);
+export const runBitmapScript = async(fName: string, size: number, corners: CornersType, adapterLat: number, adapterLon: number) => {
+    createBitmap(fName, size, corners, adapterLat, adapterLon);
 }
 
 const writeToReceiverFile = (numberOfIteration: number, receiverArray: string, fileName: string) => {
@@ -316,7 +315,7 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
                         if(globalProcessCounter === -1){
                             req.app.io.emit("finishMapProcessing", "Zakończono !");
                             const size = ((dataFactor * 2) | 0 ) - 1;
-                            runBitmapScript(fName, size, corners);
+                            runBitmapScript(fName, size, corners, adapterLat, adapterLon);
                             // const corners = getCorners()
                             ls1.kill()
                         } else {
