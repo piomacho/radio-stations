@@ -81,6 +81,7 @@ const allCoordinates = [...pointInfo, ...formattedCordsUnused]
 const sortedDataMap = sortAndGroupResultElements(allCoordinates);
 const sortedDataMapKeys = Object.keys(sortedDataMap);
 
+
 fs.stat(path.join(__dirname, `../../${fileName}.kml`), function (err: string, stats: string) {
 
     if (err) {
@@ -97,12 +98,17 @@ Jimp.read(path.join(__dirname, `../../initial.bmp`)).then((image: any) => {
   image.resize(+size, +size, () => {
     sortedDataMapKeys.map((elementFromAll, index) => {
       const mapKey = elementFromAll;
+      const filteredDataMap = sortedDataMap[mapKey].filter((thing:any, index:any, self:any) =>
+              index === self.findIndex((t:any) => (
+                t.phirn === thing.phirn
+              )) );
         for(let ii = 0; ii < +size; ii++){
-          if(sortedDataMap[mapKey][ii] === undefined){
-            console.log("Błąd w rysowaniu klucza -> ",sortedDataMap[mapKey][ii], " wartość - > ", mapKey)
+
+            if(filteredDataMap[ii] === undefined){
+              console.log("Błąd w rysowaniu klucza -> ",filteredDataMap[ii], " wartość - > ", mapKey)
+            }
+            image.setPixelColor(filteredDataMap[ii] ? filteredDataMap[ii].color : 0xffffff80, ii, index);
           }
-          image.setPixelColor(sortedDataMap[mapKey][ii] ? sortedDataMap[mapKey][ii].color : 0xffffff80, ii, index);
-        }
         console.log(index)
     if (index == sortedDataMapKeys.length - 1) {
       image.write(path.join(__dirname, `../../${fileName}.bmp`));

@@ -6,7 +6,7 @@ interface OverlayType {
 
 export const MapLeaflet = styled('div')`
     height: 100%;
-    width: 100%;
+    width: 90%;
     position: relative;
     z-index: 0;
     border-radius: 5px;

@@ -235,8 +235,8 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
     long = longitude0;
     lat = latitude0;
 
-    for (let i2 = 1; i2 < numberOfPoints; i2++) {
-        for (let j2 = 1; j2 < numberOfPoints; j2++) {
+    for (let i2 = 0; i2 < numberOfPoints; i2++) {
+        for (let j2 = 0; j2 < numberOfPoints; j2++) {
             const results = destinationPoint(180, distance * j2, lat, long);
             const latitudeNew = results && Number(results.lat.toFixed(5));
             const longitudeNew =  results && Number(results.lon.toFixed(5));
@@ -249,7 +249,7 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
     lat = latitude0;
 
 
-    for (let i3= 1; i3 < numberOfPoints; i3++) {
+    for (let i3= 0; i3 < numberOfPoints; i3++) {
         for (let j3 = 0; j3 < numberOfPoints; j3++) {
             const results = destinationPoint(180, distance * j3, lat, long);
             const latitudeNew = results && Number(results.lat.toFixed(5));
@@ -262,8 +262,8 @@ const generateCoordinates = (radius: number, distance: number, latitude0: number
     long = longitude0;
     lat = latitude0;
 
-    for (let i4 = 1; i4 < numberOfPoints; i4++) {
-        for (let j4 = 1; j4 < numberOfPoints; j4++) {
+    for (let i4 = 0; i4 < numberOfPoints; i4++) {
+        for (let j4 = 0; j4 < numberOfPoints; j4++) {
             const results = destinationPoint(0, distance * j4, lat, long);
             const latitudeNew = results && Number(results.lat.toFixed(5));
             const longitudeNew =  results && Number(results.lon.toFixed(5));
