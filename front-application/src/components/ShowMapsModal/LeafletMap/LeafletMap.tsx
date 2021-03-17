@@ -10,6 +10,7 @@ import { SourceTitle, ToggleWrapper } from "./ShowMapsModal.styles";
 import { CheckBox, CheckBoxLabel, CheckBoxWrapper } from "../../ToggleSwitch/ToggleSwitch.styles";
 import icon from '../images/transmitter_half.png';
 import { MissingMapDialog } from "../../ConfirmationDialog/MissingMapDialog";
+import Legend from "../../Legend/Legend";
 
 const config: Record<string, any> = {};
 
@@ -214,6 +215,7 @@ export const LeafletMap = ({handleOnChange}: LeafletMapType) => {
   }
   return (
     <>
+      <Legend />
       <ToggleWrapper>
         <SourceTitle>Mapy radiopolska</SourceTitle>
         <CheckBoxWrapper>
