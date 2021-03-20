@@ -105,7 +105,7 @@ Jimp.read(path.join(__dirname, `../../initial.bmp`)).then((image: any) => {
         for(let ii = 0; ii < +size; ii++){
 
             if(filteredDataMap[ii] === undefined){
-              console.log("Błąd w rysowaniu klucza -> ",filteredDataMap[ii], " wartość - > ", mapKey)
+              // console.log("Błąd w rysowaniu klucza -> ",filteredDataMap[ii], " wartość - > ", mapKey)
             }
             image.setPixelColor(filteredDataMap[ii] ? filteredDataMap[ii].color : 0xffffff80, ii, index);
           }

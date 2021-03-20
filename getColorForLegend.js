@@ -14,7 +14,7 @@ const getColorFotLegend = (e) => {
     } else if (e >= 85) {
         return  0xff0000ff;
     }
-    return 0xffffff00;
+    return 0xffffffff;
 }
 
 module.exports = { getColorFotLegend }

@@ -106,8 +106,8 @@ const removeResultsFile = () => {
 router.post('/generate-template', async (req: Request, res: Response) => {
     const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
     const coords = await generateCoordinates(radius, pointsDistance, adapter.latitude, adapter.longitude);
-    const roundedCoords = coords.map((coord: CoordinateType) => {
-        return {latitude: Number(coord.latitude.toFixed(4)), longitude: Number(coord.longitude.toFixed(4))}
+    const roundedCoords = coords.map((coord: any) => {
+        return {latitude: Number(coord.lat.toFixed(4)), longitude: Number(coord.lng.toFixed(4))}
     })
 
 
