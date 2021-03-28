@@ -7,6 +7,13 @@ export interface CoordinatesType {
     distance: number;
 }
 
+export interface ShortCoordinatesType {
+    lat: number;
+    e: number;
+    lng: number;
+    d: number;
+}
+
 interface GmapsLocationType {
     lat: number;
     lng: number;
@@ -59,7 +66,7 @@ interface InitialStateType {
     gmapsCoordinates: Array<GMapsCoordinatesType>,
     corners: CornersType,
     trialCoords: Array<any>,
-    elevationResults: Array<CoordinatesType>,
+    elevationResults: Array<ShortCoordinatesType>,
 }
 
 const initialState: InitialStateType = {

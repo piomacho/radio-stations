@@ -66,7 +66,7 @@ glob(path.join(__dirname, `../../validation_results/${fileName}/`) + '*.xlsx', {
     pointInfo.push({'phire': +phire, 'phirn': +phirn, 'color': color})
 }
 //@ts-ignore
-pointInfo.push({'phire':+adapterLat , 'phirn':+adapterLon , 'color': 0x00000080})
+pointInfo.push({'phire':+adapterLat.toFixed(5) , 'phirn':+adapterLon.toFixed(5) , 'color': 0x00000080})
 
 fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: string, data: string) {
   if (err) {

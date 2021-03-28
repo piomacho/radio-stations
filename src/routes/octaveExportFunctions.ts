@@ -260,7 +260,6 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string,
 
 const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, receiverLat: null, fName: string, height: number,  frequencyStr: string, req:any, podstawa_glowny:number, dataFactor:number, corners: CornersType, main_modulo: number, filesNumber: number): void | number => {
     if(globalProcessCounter !== -1 ){
-
         globalProcessCounter = globalProcessCounter + 1;
         req.app.io.emit("octaveLoader", globalProcessCounter/OCTAVE_ITERATIONS);
 

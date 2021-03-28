@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 import Button from "../Button/Button";
 import Map from '../Map/Map'
 import { ButtonWrapper, Message } from "./GMapsModal.style";
 import { callApiFetch } from "../../common/global";
-import store, { CoordinatesType, GMapsCoordinatesType } from "../../Store/Store";
+import store, { CoordinatesType, GMapsCoordinatesType, ShortCoordinatesType } from "../../Store/Store";
 
 interface PlotModalType {
   modalVisiblity: boolean;
@@ -15,22 +15,22 @@ interface PlotModalType {
 const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [successMessage, setSuccessMessage] = useState("");
   const { useGlobalState } = store;
-  const [elevationResults] = useGlobalState("elevationResults");
+  const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
   const [gMapsElevation] = useGlobalState("gmapsCoordinates");
-
   const handleExport = () => {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        coordinates: elevationResults.map((result: CoordinatesType) => result.elevation),
-        coordinatesGMaps: gMapsElevation.map((res: GMapsCoordinatesType) => Math.round(res.elevation))
+        coordinates: elevationResults.length > 0 ? elevationResults.map((result: ShortCoordinatesType) => result.e) : [],
+        coordinatesGMaps: gMapsElevation.length > 0 ? gMapsElevation.map((res: GMapsCoordinatesType) => Math.round(res.elevation)) : []
       })
     };
 
   callApiFetch(`api/gmaps/excel-send`, requestOptions)
     .then(() => {
       setSuccessMessage("File exported succcessfully!");
+
     })
     .catch(err => console.error(err));
   };

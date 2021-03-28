@@ -34,12 +34,12 @@ router.post('/excel-send', async (req: Request, res: Response) => {
         ws.cell(1,1).string("Open Elevation");
         ws.cell(1,2).string("Google Maps");
 
-        for (let i = 0; i < coordinates.length; i++) {
+        for (let i = 0; i < coordinatesGMaps.length; i++) {
             ws.cell(i + 2, 1).number(coordinates[i]);
             ws.cell(i + 2, 2).number(coordinatesGMaps[i]);
         }
 
-        wb.write(`results_wyzyny_szc.xlsx`);
+        wb.write(`prosta.xlsx`);
         return res.status(200).json({
             message: "Success",
         });

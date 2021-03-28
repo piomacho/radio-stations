@@ -104,8 +104,8 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExportClick = () => {
-      const adapterX = +(+adapter.szerokosc).toFixed(5);
-      const adapterY = +(+adapter.dlugosc).toFixed(5);
+      const adapterX = +(+adapter.szerokosc).toFixed(10);
+      const adapterY = +(+adapter.dlugosc).toFixed(10);
       return OEClient.postLookupLine({
         adapterLongitude: +adapterY,
         adapterLatitude: +adapterX,
