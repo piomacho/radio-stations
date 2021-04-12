@@ -66,7 +66,7 @@ router.get('/delete-kml/:id', async (req: Request, res: Response) => {
             const storage = new Storage({keyFilename: path.join(__dirname, "../../magmapy-49829cb5b2d7.json"), projectId: 'magmapy'});
             const bucketName = 'klm-map-storage';
             deleteFile(storage, bucketName, `${kmlName}.kml`);
-            deleteFile(storage, bucketName, `${kmlName}.bmp`);
+            deleteFile(storage, bucketName, `${kmlName}.png`);
 
             return res.status(200).json({
                 msg: "Deleted"

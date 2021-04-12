@@ -9,6 +9,7 @@ magmapy-49829cb5b2d7.json
 *.xlsx
 *.hgt
 *.bmp
+# *.png
 *.zip
 *.rar
 *.tif

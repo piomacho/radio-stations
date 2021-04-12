@@ -94,7 +94,7 @@ fs.stat(path.join(__dirname, `../../${fileName}.kml`), function (err: string, st
     });
 });
 
-Jimp.read(path.join(__dirname, `../../initial.bmp`)).then((image: any) => {
+Jimp.read(path.join(__dirname, `../../initial.png`)).then((image: any) => {
   image.resize(+size, +size, () => {
     sortedDataMapKeys.map((elementFromAll, index) => {
       const mapKey = elementFromAll;
@@ -107,17 +107,17 @@ Jimp.read(path.join(__dirname, `../../initial.bmp`)).then((image: any) => {
             if(filteredDataMap[ii] === undefined){
               // console.log("Błąd w rysowaniu klucza -> ",filteredDataMap[ii], " wartość - > ", mapKey)
             }
-            image.setPixelColor(filteredDataMap[ii] ? filteredDataMap[ii].color : 0xffffff80, ii, index);
+            image.setPixelColor(filteredDataMap[ii] ? filteredDataMap[ii].color : 0xffffff00, ii, index);
           }
         console.log(index)
     if (index == sortedDataMapKeys.length - 1) {
-      image.write(path.join(__dirname, `../../${fileName}.bmp`));
-      const kmlFile = createKml(corners, `${fileName}.bmp`);
+      image.write(path.join(__dirname, `../../${fileName}.png`));
+      const kmlFile = createKml(corners, `${fileName}.png`);
       fs.appendFile(`${fileName}.kml`, kmlFile, function (err: string) {
         if (err) throw err;
         rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () { console.log("Catalog with profiles and receviers is removed !"); });
       });
-      uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.bmp`)).catch(console.error);
+      uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.png`)).catch(console.error);
       uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.kml`)).catch(console.error);
 
     }

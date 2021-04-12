@@ -172,7 +172,7 @@ export const LeafletMap = ({handleOnChange}: LeafletMapType) => {
     const bucketName = 'klm-map-storage';
     const {id_nadajnik, id_program, id_antena} = adapter;
 
-    const url = `http://${bucketName}.storage.googleapis.com/${id_antena}_${id_nadajnik}_${id_program}.bmp`;
+    const url = `http://${bucketName}.storage.googleapis.com/${id_antena}_${id_nadajnik}_${id_program}.png`;
     if(layersGroup !== null) {
       const layer = L.imageOverlay(url, bounds, { opacity: 0.6 });
       layersGroup.addLayer(layer);
