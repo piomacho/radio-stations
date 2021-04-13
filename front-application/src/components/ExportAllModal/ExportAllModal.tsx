@@ -164,8 +164,8 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleExportClick = async() => {
-    const adapterLatitudeToQuery = adapter.szerokosc &&  +(+adapter.szerokosc).toFixed(10);
-    const adapterLongitudeToQuery = adapter.dlugosc &&  +(+adapter.dlugosc).toFixed(10);
+    const adapterLatitudeToQuery = adapter.szerokosc &&  +(+adapter.szerokosc).toFixed(13);
+    const adapterLongitudeToQuery = adapter.dlugosc &&  +(+adapter.dlugosc).toFixed(13);
     const doExists = await checkIfAlreadyExists();
     if(doExists === true && isConfirmed !== true) {
       setShowConfirmationBox(true);

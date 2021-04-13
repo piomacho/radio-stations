@@ -66,7 +66,7 @@ glob(path.join(__dirname, `../../validation_results/${fileName}/`) + '*.xlsx', {
     pointInfo.push({'phire': +phire, 'phirn': +phirn, 'color': color})
 }
 //@ts-ignore
-pointInfo.push({'phire':+adapterLat.toFixed(5) , 'phirn':+adapterLon.toFixed(5) , 'color': 0xffffff80})
+pointInfo.push({'phire':+adapterLat.toFixed(13) , 'phirn':+adapterLon.toFixed(13) , 'color': 0xffffff80})
 
 fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: string, data: string) {
   if (err) {
@@ -74,7 +74,7 @@ fs.readFile(path.join(__dirname, `../../otherCoords.json`), function read(err: s
   }
   const unusedArray= JSON.parse(data);
   const formattedCordsUnused = unusedArray.map((elem: CoordinatesType) => {
-    return {phire: parseFloat((+elem.lat).toFixed(5)), phirn: parseFloat((+elem.lng).toFixed(5)), color: 0xffffff80}
+    return {phire: parseFloat((+elem.lat).toFixed(13)), phirn: parseFloat((+elem.lng).toFixed(13)), color: 0xffffff80}
   })
 
 const allCoordinates = [...pointInfo, ...formattedCordsUnused]

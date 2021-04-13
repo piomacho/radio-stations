@@ -88,8 +88,6 @@ def get_elevation_distance_all(point):
         }
 
     return {
-        'lat': point['lat'],
-        'lng': point['lng'],
         'e': elevation,
         'd': point['d']
     }
@@ -178,7 +176,7 @@ def measureDistance(lat1, lon1, lat2, lon2):
 
     distance = R * c
 
-    return round(distance,5)
+    return distance
 
 
 def newCoordinates(latitude, longitude, dy, dx):
@@ -287,8 +285,8 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
             lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
                         math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
 
-            lat2 = round(math.degrees(lat2), 5)
-            lon2 = round(math.degrees(lon2), 5)
+            lat2 = round(math.degrees(lat2), 13)
+            lon2 = round(math.degrees(lon2), 13)
             cArray += [{"d": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"lat": lat2, "lng": lon2}]
             if(x == int(numberOfPoints) - 1):
                 xx = result({"lat": receivers[i]['lat'], "lng": receivers[i]['lng']}, cArray)
