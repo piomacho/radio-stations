@@ -28,7 +28,7 @@ interface CoordinatesType {
 
 
 
-export const createBitmap = (fileName: string, size: number, corners: CornersType, adapterLat: any, adapterLon: any ) => {
+export const createBitmap = (fileName: string, size: number, corners: CornersType, adapterLat: string, adapterLon: string, erp: string, polarization: string ) => {
 
 // Creates a client from a Google service account key.
 const storage = new Storage({keyFilename: path.join(__dirname, "../../magmapy-49829cb5b2d7.json"), projectId: 'magmapy'});
@@ -60,7 +60,10 @@ glob(path.join(__dirname, `../../validation_results/${fileName}/`) + '*.xlsx', {
     const phire = allDataArray[i].phire;
     const phirn = allDataArray[i].phirn;
     const lb = allDataArray[i].lb;
-    const e = 60 - lb  + 107
+    const erpValue = Number(erp);
+    const eirp = 10*Math.log10((erpValue * 1000000)) + 2.15;
+
+    const e = eirp - lb  + 107
     const color = getColorFotLegend(e);
 
     pointInfo.push({'phire': +phire, 'phirn': +phirn, 'color': color})

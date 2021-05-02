@@ -202,7 +202,9 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             latitude: adapterLatitudeToQuery,
             longitude: adapterLongitudeToQuery,
             height: adapter.antena_npt && +adapter.antena_npt,
-            frequency: adapter.czestotliwosc
+            frequency: adapter.czestotliwosc,
+            erp: adapter.erp,
+            polarization: adapter.polaryzacja,
           },
           radius: Number(radius),
           pointsDistance: Number(pointsDistance),
@@ -257,11 +259,11 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
             null }
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
-          <AdaptersHeader>Wprowadź promień obszaru wokół nadajnika:</AdaptersHeader>
+          <AdaptersHeader>Wprowadź promień obszaru wokół nadajnika [km]:</AdaptersHeader>
             <Coord><Input onChange={handleChangeRadius} placeholder="Promień: " /></Coord>
         </AdapterCoordsWrapper>
         <AdapterCoordsWrapper>
-          <AdaptersHeader>Wprowadź dystans pomiędzy kolejnymi punktami:</AdaptersHeader>
+          <AdaptersHeader>Wprowadź dystans pomiędzy kolejnymi punktami [km]:</AdaptersHeader>
             <Coord><Input onChange={handleChangePointsDistance} placeholder="Odległość: " /></Coord>
         </AdapterCoordsWrapper>
 

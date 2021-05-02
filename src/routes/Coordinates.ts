@@ -146,6 +146,7 @@ router.post('/generate', async (req: Request, res: Response) => {
 
         let counter = 0;
         res.status(200).json({coordinates: "success"});
+
         for(let i = 0; i < ITERATIONS; i++) {
 
             const body = {
@@ -157,7 +158,6 @@ router.post('/generate', async (req: Request, res: Response) => {
                 iteration: ITERATIONS,
                 currentIteration: i
             };
-            // const result = true
 
             const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
             if(result) {
@@ -172,12 +172,12 @@ router.post('/generate', async (req: Request, res: Response) => {
                                 fs.appendFile(path.join(__dirname, '../../full-result-4.json'), '""]', function (err: string) {
                                     if (!fs.existsSync(path.join(__dirname, `../../validation_results/${fileName}`))){
                                         fs.mkdirSync(path.join(__dirname, `../../validation_results/${fileName}`));
-                                        handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+                                        handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, adapter.erp, adapter.polarization, fileName, dataFactor, corners, `${adapter.frequency}`, req )
                                     } else {
                                         rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () {
                                             console.log("Catalog with profiles and receviers is removed !");
                                             fs.mkdir(path.join(__dirname, `../../validation_results/${fileName}`), () => {
-                                                handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+                                                handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, adapter.erp, adapter.polarization, fileName, dataFactor, corners, `${adapter.frequency}`, req )
                                             });
                                          });
                                     }

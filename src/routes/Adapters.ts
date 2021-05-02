@@ -9,7 +9,7 @@ router.get('/all/:id', async (req: Request, res: Response) => {
         const id = req.params.id;
         superagent.get(`https://mapy.radiopolska.pl/api/transmitterByProgId/PL/${id}`).end((err, response) => {
             if(response.body.data.fm) {
-                const programArray = getFieldsFromObject(response.body.data.fm, ['obiekt', 'dlugosc', 'szerokosc', 'id_obiekt', 'wys_npm', 'antena_npt', 'czestotliwosc', 'id_antena', 'id_nadajnik', 'id_program', '_mapahash']);
+                const programArray = getFieldsFromObject(response.body.data.fm, ['obiekt', 'dlugosc', 'szerokosc', 'id_obiekt', 'wys_npm', 'antena_npt', 'erp', 'polaryzacja', 'czestotliwosc', 'id_antena', 'id_nadajnik', 'id_program', '_mapahash']);
                 return res.send(programArray);
             }
 

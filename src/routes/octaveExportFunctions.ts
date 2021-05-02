@@ -48,9 +48,11 @@ let start = 0;
 let globalEnd = 0;
 
 export const handleExportToOctave = (
-    adapterLon: number,
-    adapterLat: number,
+    adapterLon: string,
+    adapterLat: string,
     height: number,
+    erp: string,
+    polarization: string,
     fName: string, dataFactor: number, corners: any, frequency: string, req: any) => {
     try {
         const segmentsArray: Array<Array<string>> = [];
@@ -157,12 +159,7 @@ export const handleExportToOctave = (
                            return oboe.drop;
                 }).done(function(finalJson: any){
 
-                // notInlcudedCoordintesArray.push({
-                //     c: [],
-                //     r: {
-                //       lng: adapterLon,
-                //       lat: adapterLat
-                //     }});
+
                     const notIncludedReceivers = notInlcudedCoordintesArray.map(e => e.r);
                     const stringifyStream = json.createStringifyStream({
                         body: notIncludedReceivers
@@ -184,8 +181,8 @@ export const handleExportToOctave = (
                             const allProfleObjects = profleObjects - 1;
 
                             const main_modulo = allProfleObjects % OCTAVE_ITERATIONS;
-                            const podstawa_glowny = (allProfleObjects - main_modulo) / OCTAVE_ITERATIONS;
-                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, podstawa_glowny, dataFactor, corners, main_modulo, allProfleObjects - 2 );
+                            const main_basis = (allProfleObjects - main_modulo) / OCTAVE_ITERATIONS;
+                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, main_basis, dataFactor, corners, main_modulo, allProfleObjects - 2, erp, polarization );
 
                         });
                         });
@@ -225,8 +222,8 @@ const prepareProfileData = (parsedData: SegmentResultType ) => {
         return segment;
 }
 
-export const runBitmapScript = async(fName: string, size: number, corners: CornersType, adapterLat: number, adapterLon: number) => {
-    createBitmap(fName, size, corners, adapterLat, adapterLon);
+export const runBitmapScript = async(fName: string, size: number, corners: CornersType, adapterLat: string, adapterLon: string, erp: string, polarization: string) => {
+    createBitmap(fName, size, corners, adapterLat, adapterLon, erp, polarization);
 }
 
 const writeToReceiverFile = (numberOfIteration: number, receiverArray: string, fileName: string) => {
@@ -258,13 +255,13 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string,
 }
 
 
-const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, receiverLat: null, fName: string, height: number,  frequencyStr: string, req:any, podstawa_glowny:number, dataFactor:number, corners: CornersType, main_modulo: number, filesNumber: number): void | number => {
+const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, receiverLat: null, fName: string, height: number,  frequencyStr: string, req:any, main_basis:number, dataFactor:number, corners: CornersType, main_modulo: number, filesNumber: number, erp: string, polarization: string): void | number => {
     if(globalProcessCounter !== -1 ){
         globalProcessCounter = globalProcessCounter + 1;
         req.app.io.emit("octaveLoader", globalProcessCounter/OCTAVE_ITERATIONS);
 
-        const moduloValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? podstawa_glowny % ITERATIONS : (podstawa_glowny + main_modulo) % ITERATIONS;
-        const rangeValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? (podstawa_glowny - moduloValGlobal) / ITERATIONS : ((podstawa_glowny + main_modulo) - moduloValGlobal) / ITERATIONS;
+        const moduloValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? main_basis % ITERATIONS : (main_basis + main_modulo) % ITERATIONS;
+        const rangeValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? (main_basis - moduloValGlobal) / ITERATIONS : ((main_basis + main_modulo) - moduloValGlobal) / ITERATIONS;
 
         if(globalProcessCounter === OCTAVE_ITERATIONS) {
             globalProcessCounter = -1;
@@ -282,13 +279,15 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
                 }
                 end = start + rangeValGlobal > filesNumber ? filesNumber : start + rangeValGlobal;
                 console.log("New Octave iteration...");
-                ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
+                const polarizationValue = polarization === 'H' ? 0 : 1;
+                ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter} ${erp} ${polarizationValue}`);
             } else {
                 start = (rangeValGlobal + 1) * i + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1);
                 end = (rangeValGlobal + 1) * i  + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1) + rangeValGlobal;
                 globalEnd = end;
                 console.log("New Octave iteration...");
-                ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter}`);
+                const polarizationValue = polarization === 'H' ? 0 : 1;
+                ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter} ${erp} ${polarizationValue}`);
 
             }
 
@@ -314,12 +313,12 @@ const runOctave = (adapterLon: number, adapterLat: number, receiverLon: null, re
                         if(globalProcessCounter === -1){
                             req.app.io.emit("finishMapProcessing", "Zakończono !");
                             const size = ((dataFactor * 2) | 0 ) - 1;
-                            runBitmapScript(fName, size, corners, adapterLat, adapterLon);
+                            runBitmapScript(fName, size, corners, adapterLat, adapterLon, erp, polarization);
                             // const corners = getCorners()
                             ls1.kill()
                         } else {
                             setTimeout(function() {
-                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequencyStr, req, podstawa_glowny, dataFactor, corners, main_modulo, filesNumber);
+                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequencyStr, req, main_basis, dataFactor, corners, main_modulo, filesNumber, erp, polarization);
                             }, 2000);
                         }
 

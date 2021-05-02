@@ -2,7 +2,6 @@
 args = argv();
 Tpc_array = [50];
 
-FlagVP = 1;
 Gtx = 0;
 Grx = 0;
 Hrg = 10;
@@ -17,6 +16,8 @@ startVal = str2double(args{9});
 endVal = str2double(args{10});
 lastIterationModulo = str2double(args{11});
 globalCounter = str2double(args{12});
+erp = str2double(args{13});
+FlagVP = str2double(args{14})
 Tpc = 0.001;
 Profile = 'Prof_b2iseac';
 octaveIteration = 0;

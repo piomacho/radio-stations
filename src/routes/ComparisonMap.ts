@@ -55,7 +55,7 @@ router.get('/kml-new/:id', async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
 
-        superagent.get(`https://klm-map-storage.storage.googleapis.com/${id}.kml`).buffer()
+        superagent.get(`https://storage.googleapis.com/klm-map-storage/${id}.kml`).buffer()
         .type('kml')
         .end((err, response) => {
            res.send(response);

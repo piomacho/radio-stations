@@ -14,6 +14,8 @@ interface AdapterType{
     wys_npm: string;
     antena_npt: string;
     czestotliwosc: string;
+    erp: string;
+    polaryzacja: string;
     id_antena: string;
     id_nadajnik: string;
     id_program: string;
@@ -33,6 +35,8 @@ const setParameters = (adapters: Array<AdapterType>): Array<OptionType> => {
           szerokosc: adapter.szerokosc,
           dlugosc: adapter.dlugosc,
           wys_npm: adapter.wys_npm,
+          erp: adapter.erp,
+          polaryzacja: adapter.polaryzacja,
           antena_npt: adapter.antena_npt,
           czestotliwosc: adapter.czestotliwosc,
           id_antena: adapter.id_antena,
@@ -62,7 +66,7 @@ const Adapters = () => {
           setLoading(false) })
         .catch(err => console.log(err));
       }, [station])
-
+console.log("ADAPTER ERP ", adapter.erp);
     return (
 
     <SelectContainer>

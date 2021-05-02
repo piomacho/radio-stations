@@ -228,8 +228,8 @@ export const LeafletMap = ({handleOnChange}: LeafletMapType) => {
       <OverLayElement active={loading} >
         <LoaderContainer><Loader type="Circles" color="#22a6b3" height={40} width={40}/></LoaderContainer>
        </OverLayElement>
-       {showConfirmationBox === true ?
-          <MissingMapDialog title="Brak mapy w bazie !" message="Brak mapy w bazie !" onClickClose={()=> closeConfirmationModal()} /> : null}
+       {/* {showConfirmationBox === true ?
+          <MissingMapDialog title="Brak mapy w bazie !" message="Brak mapy w bazie !" onClickClose={()=> closeConfirmationModal()} /> : null} */}
 
     </>
   );
