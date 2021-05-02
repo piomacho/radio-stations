@@ -23,7 +23,7 @@ const Stations = () => {
   const { useGlobalState } = store;
   const [station, setStation] = useGlobalState('station');
   const [ stations, setStations ] = useState([{value: '', label: ''}]);
-
+  const sortedStations = stations.sort((a: OptionType, b: OptionType) => a.label.localeCompare(b.label));
 
     useEffect(() => {
         callApiFetch('api/stations/all')
@@ -36,7 +36,7 @@ const Stations = () => {
     return (
     stations &&
       <SelectBox
-        options={stations}
+        options={sortedStations}
         setSelectedOption={setStation}
         selectedValue={station}
       />

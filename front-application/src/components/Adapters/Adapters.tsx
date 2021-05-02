@@ -66,13 +66,14 @@ const Adapters = () => {
           setLoading(false) })
         .catch(err => console.log(err));
       }, [station])
-console.log("ADAPTER ERP ", adapter.erp);
+
+    const sortedAdapers = adapters.sort((a: OptionType, b: OptionType) => a.label.localeCompare(b.label));
     return (
 
     <SelectContainer>
       {loading ? <LoaderContainer><Loader type="Circles" color="#22a6b3" height={40} width={40}/></LoaderContainer>:
       <SelectBox
-        options={adapters}
+        options={sortedAdapers}
         setSelectedOption={setAdapter}
         selectedValue={adapter}
       />}
