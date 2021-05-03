@@ -118,11 +118,10 @@ Jimp.read(path.join(__dirname, `../../initial.png`)).then((image: any) => {
       const kmlFile = createKml(corners, `${fileName}.png`);
       fs.appendFile(`${fileName}.kml`, kmlFile, function (err: string) {
         if (err) throw err;
+        uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.png`)).catch(console.error);
+        uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.kml`)).catch(console.error);
         rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () { console.log("Catalog with profiles and receviers is removed !"); });
       });
-      uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.png`)).catch(console.error);
-      uploadFile(storage, bucketName, path.join(__dirname, `../../${fileName}.kml`)).catch(console.error);
-
     }
     });
   })
