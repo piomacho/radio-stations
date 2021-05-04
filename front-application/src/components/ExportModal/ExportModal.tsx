@@ -136,7 +136,8 @@ const ExportModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       body: JSON.stringify({
         coordinates: results.results,
         fileName: fileName,
-        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.antena_npt, frequency: adapter.czestotliwosc},
+        adapter: { latitude: adapterX, longitude: adapterY, height: adapter.antena_npt, frequency: adapter.czestotliwosc,
+          polarization: adapter.polaryzacja},
         receiver: { latitude: +recLatitude, longitude: +recLongitude },
       })
     };

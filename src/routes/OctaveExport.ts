@@ -58,6 +58,7 @@ router.post('/send/', async (req: Request, res: Response) => {
         const receiverLat = req.body.receiver.latitude;
         const fName = req.body.fileName;
         const frequency = req.body.adapter.frequency;
+        const polarization = req.body.adapter.polarization;
 
         fs.writeFile('./validation_results/prof_b2iseac.m', `function [d,h,z] = prof_b2iseac()\r\na=[ ...\r\n${coordinates1.join("\r\n")}];\r\nd = a(:,1);\r\n
         h = a(:,2);\r\n
@@ -65,7 +66,8 @@ router.post('/send/', async (req: Request, res: Response) => {
         \r\n
         end`, function (err: any) {
           if (err) return console.log(err);
-          const ls = execFile("octave", ["-i", "--persist", "validate_p2001_b2iseac.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, +height, frequency]);
+          const polarizationValue = polarization === 'H' ? 0 : 1;
+          const ls = execFile("octave", ["-i", "--persist", "validate_p2001_b2iseac.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, +height, frequency, polarizationValue]);
 
           ls.stdout.on("data", (data: string) => {
               console.log(data);
@@ -107,7 +109,6 @@ router.post('/send/', async (req: Request, res: Response) => {
 router.get('/upload-xls/:id', async (req: Request, res: Response) => {
     try {
         const xlsName = req.params.id;
-        console.log("xls ",xlsName)
         try {
             const storage = new Storage({keyFilename: path.join(__dirname, "../../magmapy-49829cb5b2d7.json"), projectId: 'magmapy'});
             const bucketName = 'klm-map-storage';

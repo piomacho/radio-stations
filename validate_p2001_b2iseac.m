@@ -2,7 +2,6 @@ args = argv();
 fName = strcat('validation_results/',args{5},'.xlsx');
 Tpc_array = [50];
 
-FlagVP = 1;
 Gtx = 0;
 Grx = 0;
 Hrg = 30;
@@ -12,6 +11,7 @@ Phirn = str2double(args{4});
 Phite = str2double(args{1});
 Phitn = str2double(args{2});
 frequency = str2double(args{7});
+FlagVP = str2double(args{8});
 Tpc = 0.001;
 Profile = 'Prof_b2iseac';
 

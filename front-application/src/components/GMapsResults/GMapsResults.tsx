@@ -1,10 +1,10 @@
 import React from "react";
 import Modal from "react-modal";
 import { CloseButton } from "../ExportModal/ExportModal.style";
-import { CloseButtonWrapper, MapWrapper } from "../PlotModal/PlotModal.style";
+import { CloseButtonWrapper } from "../PlotModal/PlotModal.style";
 import { MapWithGroundOverlay } from "./ResultMap";
 import Keys from "../../keys";
-import { SourceTitle, ToggleWrapper } from "./ShowMapsModal.styles";
+import { MapWrapper, SourceTitle, ToggleWrapper } from "./ShowMapsModal.styles";
 import Legend from "../Legend/Legend";
 import { CheckBox, CheckBoxLabel, CheckBoxWrapper } from "../ToggleSwitch/ToggleSwitch.styles";
 import { MapWithGroundOverlayMRP } from "./ResultMapMRP";

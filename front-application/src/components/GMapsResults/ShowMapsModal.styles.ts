@@ -6,6 +6,9 @@ export const ToggleWrapper = styled('div')`
     z-index: 1;
     float: right;
     margin: 0 10px 10px 0;
+    position: absolute;
+    top: 70px;
+    right: 40px;
 `;
 
 export const SourceTitle = styled('div')`
@@ -14,3 +17,6 @@ export const SourceTitle = styled('div')`
     opacity: 1;
 `;
 
+export const MapWrapper = styled('div')`
+    margin: 0 30px;
+`;

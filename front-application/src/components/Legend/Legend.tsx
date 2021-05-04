@@ -9,7 +9,7 @@ const Legend = () => {
         <LegendWrapper>
             {levels.map((level: number) =>
             (
-                    <div>
+                    <div key={level}>
                         <LegendColorBlock level={level}/>
                         <div>{level}</div>
                     </div>
