@@ -8,7 +8,7 @@ import {
   SubmitPlotMemoButton,
   SendToOctaveButton,
   NavigationPanel,
-  NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton, SubmitMapsButton
+  NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton, SubmitMapsButton, ShowResultGMapsMapsButton
 } from "./SelectionPanel.styles";
 import PlotModal from "../PlotModal/PlotModal";
 import store, { CoordinatesType } from "../../Store/Store";
@@ -19,6 +19,7 @@ import GMapsModal from "../GMapsModal/GMapsModal";
 import ExportModal from "../ExportModal/ExportModal";
 import ExportAllModal from "../ExportAllModal/ExportAllModal";
 import ShowMapsModal from "../ShowMapsModal/ShowMapsModal";
+import GMapsResults from "../GMapsResults/GMapsResults";
 
 // todo refactor to see proper plot
 const format = (
@@ -107,6 +108,8 @@ const SelectionPanel = () => {
           return setExportAllModalVisiblity(value);
       case "show-maps":
           return setShowMapsModalVisiblity(value);
+      case "show-maps-google":
+          return setMapsModalVisiblity(value);
     }
   };
 
@@ -132,17 +135,20 @@ const SelectionPanel = () => {
           <ButtonWrapper>
             <SubmitPlotMemoButton callback={showModal(true, "plot", true)} />
           </ButtonWrapper>
-          <ButtonWrapper>
+          {/* <ButtonWrapper>
             <SubmitMapsButton callback={showModal(true, "maps", true)} />
-          </ButtonWrapper>
+          </ButtonWrapper> */}
           <ButtonWrapper>
             <SendToOctaveButton callback={showModal(true, "export", false)} />
           </ButtonWrapper>
           <ButtonWrapper>
             <SendAllToOctaveButton callback={showModal(true, "export-all", false)} />
           </ButtonWrapper>
-          <ButtonWrapper>
+          {/* <ButtonWrapper>
             <ShowResultMapsButton callback={showModal(true, "show-maps", false)} />
+          </ButtonWrapper> */}
+          <ButtonWrapper>
+            <ShowResultGMapsMapsButton callback={showModal(true, "show-maps-google", false)} />
           </ButtonWrapper>
         </NavigationPanel>
       </NavigationWrapper>
@@ -171,6 +177,7 @@ const SelectionPanel = () => {
           showModal={showModal}
           modalVisiblity={showMapsModalVisiblity}
         />
+        <GMapsResults showModal={showModal} modalVisiblity={mapsModalVisiblity} />
     </Wrapper>
   );
 };

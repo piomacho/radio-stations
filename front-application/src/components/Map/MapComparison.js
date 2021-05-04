@@ -27,6 +27,7 @@ const MapWithMarker = compose(
   };
 
   const path = [corners.maxLongMaxLat, corners.maxLongMinLat, corners.minLongMinLat, corners.minLongMaxLat, ]
+  console.log("sadsad ", path)
   return (
       <GoogleMap
         defaultZoom={11}

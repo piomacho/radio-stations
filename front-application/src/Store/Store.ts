@@ -69,6 +69,7 @@ interface InitialStateType {
     corners: CornersType,
     trialCoords: Array<any>,
     elevationResults: Array<ShortCoordinatesType>,
+    zoom: number
 }
 
 const initialState: InitialStateType = {
@@ -93,6 +94,7 @@ const initialState: InitialStateType = {
             lng: null
         }
     },
+    zoom: 9,
     coordinates: {elevations: [], distances: []}, trialCoords: [], elevationResults: []};
 
 

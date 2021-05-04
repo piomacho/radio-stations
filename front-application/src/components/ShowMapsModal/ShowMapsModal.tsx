@@ -8,9 +8,8 @@ import { CloseButton, Title } from "../ExportModal/ExportModal.style";
 import {LeafletMap} from "./LeafletMap/LeafletMap";
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string, query: boolean) => any;
+  showModal: (value: boolean, type: string, query: boolean) => ((event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>) => void) | undefined;
 }
-
 interface ErrorsType {
   xError: null | string;
   yError: null | string;

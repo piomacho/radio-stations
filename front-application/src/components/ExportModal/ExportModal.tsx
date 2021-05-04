@@ -28,7 +28,7 @@ import io from "socket.io-client";
 
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string, query: boolean, onClose?: () => void) => any;
+  showModal: (value: boolean, type: string, query: boolean, onClose?: () => void) =>  ((event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>) => void) | undefined;
 }
 
 interface ErrorsType {

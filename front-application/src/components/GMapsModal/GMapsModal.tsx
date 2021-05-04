@@ -8,9 +8,10 @@ import store, { CoordinatesType, GMapsCoordinatesType, ShortCoordinatesType } fr
 
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string, query: boolean) => any;
+  showModal: ((value: boolean, type: string, query: boolean) => ((event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>) => void) | undefined) | (() => void);
 
 }
+
 
 const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const [successMessage, setSuccessMessage] = useState("");
@@ -39,6 +40,7 @@ const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   return (
     <Modal
       isOpen={modalVisiblity}
+      //@ts-ignore
       onRequestClose={showModal(false, "maps", false)}
       ariaHideApp={false}
       contentLabel="Example Modal"

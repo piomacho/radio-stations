@@ -34,9 +34,8 @@ import OpenElevationClient from "../../OECient/OpenElevationClient";
 
 interface PlotModalType {
   modalVisiblity: boolean;
-  showModal: (value: boolean, type: string, query: boolean, onClose?: () => void) => any;
+  showModal: (value: boolean, type: string, query: boolean, onClose?: () => void) =>  ((event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>) => void) | undefined;
 }
-
 interface ErrorsType {
   yError: null | string;
   pointsError: null | string;

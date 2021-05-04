@@ -13,4 +13,5 @@ export const LegendColorBlock = styled('div')<LegendType>`
 export const LegendWrapper = styled('div')`
     display: flex;
     align-items: center;
+    margin-bottom: 20px;
 `;

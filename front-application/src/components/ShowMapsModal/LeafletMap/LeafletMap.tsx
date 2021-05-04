@@ -6,7 +6,7 @@ import {parseString} from 'xml2js';
 import Loader from 'react-loader-spinner'
 import 'leaflet/dist/leaflet.css';
 import { callApiFetch } from "../../../common/global";
-import { SourceTitle, ToggleWrapper } from "./ShowMapsModal.styles";
+import { SourceTitle, ToggleWrapper } from "../../GMapsResults/ShowMapsModal.styles";
 import { CheckBox, CheckBoxLabel, CheckBoxWrapper } from "../../ToggleSwitch/ToggleSwitch.styles";
 import icon from '../images/transmitter_half.png';
 import { MissingMapDialog } from "../../ConfirmationDialog/MissingMapDialog";

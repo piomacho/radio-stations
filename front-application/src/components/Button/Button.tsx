@@ -11,8 +11,9 @@ export interface ButtonType{
     backColorHover?: string;
     label?: string;
     disabled?: boolean;
-    onClick: (() => void);
+    onClick: any;
 }
+
 
 const Button = ({label, disabled, width, height, color, colorHover, backColor, backColorHover, onClick}: ButtonType) => {
     return (

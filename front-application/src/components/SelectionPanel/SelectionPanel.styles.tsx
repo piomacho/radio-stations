@@ -93,7 +93,18 @@ export const SubmitPlotButton = ({ callback }: any) => (
       height={50}
       backColor={"#2A8956"}
       backColorHover={"#1e392a"}
-      label={"Pokaz wyniki"}
+      label={"Pokaż wyniki"}
+      onClick={callback}
+    />
+  );
+
+  export const ShowResultGMapsMapsButton = ({ callback }: any) => (
+    <Button
+      width={180}
+      height={50}
+      backColor={"#2A8956"}
+      backColorHover={"#1e392a"}
+      label={"Zaprezentuj wyniki"}
       onClick={callback}
     />
   );

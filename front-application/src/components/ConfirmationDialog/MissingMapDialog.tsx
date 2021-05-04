@@ -15,7 +15,7 @@ export const MissingMapDialog = ({ title, message, onClickClose }: ConfirmationD
         message: message,
         buttons: [
             {
-            label: 'Close',
+            label: 'Zamknij',
             onClick: onClickClose
             },
         ]
