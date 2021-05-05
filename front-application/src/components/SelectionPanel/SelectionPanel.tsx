@@ -144,9 +144,9 @@ const SelectionPanel = () => {
           <ButtonWrapper>
             <SendAllToOctaveButton callback={showModal(true, "export-all", false)} />
           </ButtonWrapper>
-          {/* <ButtonWrapper>
+          <ButtonWrapper>
             <ShowResultMapsButton callback={showModal(true, "show-maps", false)} />
-          </ButtonWrapper> */}
+          </ButtonWrapper>
           <ButtonWrapper>
             <ShowResultGMapsMapsButton callback={showModal(true, "show-maps-google", false)} />
           </ButtonWrapper>

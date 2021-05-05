@@ -93,7 +93,7 @@ export const SubmitPlotButton = ({ callback }: any) => (
       height={50}
       backColor={"#2A8956"}
       backColorHover={"#1e392a"}
-      label={"Pokaż wyniki"}
+      label={"Zaprezentuj wyniki - Leaflet"}
       onClick={callback}
     />
   );
@@ -104,7 +104,7 @@ export const SubmitPlotButton = ({ callback }: any) => (
       height={50}
       backColor={"#2A8956"}
       backColorHover={"#1e392a"}
-      label={"Zaprezentuj wyniki"}
+      label={"Zaprezentuj wyniki - Google Maps"}
       onClick={callback}
     />
   );
