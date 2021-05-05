@@ -182,6 +182,7 @@ export const handleExportToOctave = (
 
                             const main_modulo = allProfleObjects % OCTAVE_ITERATIONS;
                             const main_basis = (allProfleObjects - main_modulo) / OCTAVE_ITERATIONS;
+                            console.log("ALLL PROFILE OBJ ", allProfleObjects);
                                 runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, main_basis, dataFactor, corners, main_modulo, allProfleObjects - 2, erp, polarization );
 
                         });
@@ -256,9 +257,15 @@ const writeToProfileFile = (numberOfIteration: number, segmentsArrayStr: string,
 
 
 const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, receiverLat: null, fName: string, height: number,  frequencyStr: string, req:any, main_basis:number, dataFactor:number, corners: CornersType, main_modulo: number, filesNumber: number, erp: string, polarization: string): void | number => {
+
+    const timerId = setInterval(() => {
+        const stats = fs.statSync("counter.txt")
+        const fileSizeInBytes = stats.size;
+        req.app.io.emit("octaveLoader", (fileSizeInBytes/filesNumber));
+    }, 3000);
+
     if(globalProcessCounter !== -1 ){
         globalProcessCounter = globalProcessCounter + 1;
-        req.app.io.emit("octaveLoader", globalProcessCounter/OCTAVE_ITERATIONS);
 
         const moduloValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? main_basis % ITERATIONS : (main_basis + main_modulo) % ITERATIONS;
         const rangeValGlobal = globalProcessCounter !== OCTAVE_ITERATIONS ? (main_basis - moduloValGlobal) / ITERATIONS : ((main_basis + main_modulo) - moduloValGlobal) / ITERATIONS;
@@ -295,12 +302,9 @@ const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, re
                 console.log(data);
             });
 
-            ls1.stderr.on("data", (data: string) => {
-                console.log(`stderr: ${data}`);
-            });
 
             ls1.on('error', (error: { message: string }) => {
-
+                req.app.io.emit("octaveError", "Wystąpił błąd");
                 console.log(`error: ${error.message}`);
             });
 
@@ -311,7 +315,10 @@ const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, re
                     if(processCounter === ITERATIONS) {
                         processCounter = 0;
                         if(globalProcessCounter === -1){
+                            clearInterval(timerId);
                             req.app.io.emit("finishMapProcessing", "Zakończono !");
+                            fs.writeFile('counter.txt', '', function(){console.log('Counter reset done!')})
+                            req.app.io.emit("octaveLoader", 0);
                             const size = ((dataFactor * 2) | 0 ) - 1;
                             runBitmapScript(fName, size, corners, adapterLat, adapterLon, erp, polarization);
                             // const corners = getCorners()

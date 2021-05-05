@@ -298,7 +298,7 @@ const ExportAllModal = ({ modalVisiblity, showModal }: PlotModalType) => {
       ))}
       {successMessage && <SuccessOctaveWrapper>
         <Message>{successMessage}</Message>
-        { octaveLoader && octaveValueLoader >= 0 &&
+        { octaveLoader && octaveValueLoader >= 0 && Math.round(octaveValueLoader) <= 1 &&
         <ProgressBarOctaveWrapper>
             <CircularProgressbar background={true} styles={buildStyles({textColor: '#88d317', pathColor: '#88d317'})} value={octaveValueLoader} maxValue={1} text={`${Math.round((octaveValueLoader) * 100)}%`} />
         </ProgressBarOctaveWrapper>
