@@ -102,8 +102,8 @@ export const SubmitPlotButton = ({ callback }: any) => (
     <Button
       width={180}
       height={50}
-      backColor={"#2A8956"}
-      backColorHover={"#1e392a"}
+      backColor={"#3582b9"}
+      backColorHover={"#0e3995"}
       label={"Zaprezentuj wyniki - Google Maps"}
       onClick={callback}
     />

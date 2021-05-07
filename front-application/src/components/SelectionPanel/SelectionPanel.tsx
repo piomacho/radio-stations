@@ -132,18 +132,18 @@ const SelectionPanel = () => {
       <Adapters />
       <NavigationWrapper>
         <NavigationPanel>
-          <ButtonWrapper>
+          {/* <ButtonWrapper>
             <SubmitPlotMemoButton callback={showModal(true, "plot", true)} />
-          </ButtonWrapper>
+          </ButtonWrapper> */}
           {/* <ButtonWrapper>
             <SubmitMapsButton callback={showModal(true, "maps", true)} />
           </ButtonWrapper> */}
-          <ButtonWrapper>
+          {/* <ButtonWrapper>
             <SendToOctaveButton callback={showModal(true, "export", false)} />
           </ButtonWrapper>
           <ButtonWrapper>
             <SendAllToOctaveButton callback={showModal(true, "export-all", false)} />
-          </ButtonWrapper>
+          </ButtonWrapper> */}
           <ButtonWrapper>
             <ShowResultMapsButton callback={showModal(true, "show-maps", false)} />
           </ButtonWrapper>
