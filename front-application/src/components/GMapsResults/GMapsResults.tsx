@@ -3,7 +3,7 @@ import Modal from "react-modal";
 import { CloseButton } from "../ExportModal/ExportModal.style";
 import { CloseButtonWrapper } from "../PlotModal/PlotModal.style";
 import { MapWithGroundOverlay } from "./ResultMap";
-import Keys from "../../keys";
+// import Keys from "../../keys";
 import { MapWrapper, SourceTitle, ToggleWrapper } from "./ShowMapsModal.styles";
 import Legend from "../Legend/Legend";
 import { CheckBox, CheckBoxLabel, CheckBoxWrapper } from "../ToggleSwitch/ToggleSwitch.styles";
@@ -36,7 +36,7 @@ const GMapsResults = ({ modalVisiblity, showModal }: PlotModalType) => {
       background: '#f2f8eb'
     }
   };
-
+  const MAP_KEY= process.env.MAP_KEY;
   return (
     <Modal
       isOpen={modalVisiblity}
@@ -61,7 +61,7 @@ const GMapsResults = ({ modalVisiblity, showModal }: PlotModalType) => {
       <MapWrapper>
         {isChecked === true ?
        <MapWithGroundOverlay
-          googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${Keys.mapsKey}&v=3.exp&libraries=geometry,drawing,places`}
+          googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${MAP_KEY}&v=3.exp&libraries=geometry,drawing,places`}
           loadingElement={<div style={{ height: `100%` }} />}
           containerElement={<div style={{ height: `700px` }} />}
           mapElement={<div style={{ height: `100%` }} />}
@@ -69,7 +69,7 @@ const GMapsResults = ({ modalVisiblity, showModal }: PlotModalType) => {
           setConfirmationBox={setConfirmationBox}
         /> :
         <MapWithGroundOverlayMRP
-          googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${Keys.mapsKey}&v=3.exp&libraries=geometry,drawing,places`}
+          googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${MAP_KEY}&v=3.exp&libraries=geometry,drawing,places`}
           loadingElement={<div style={{ height: `100%` }} />}
           containerElement={<div style={{ height: `700px` }} />}
           mapElement={<div style={{ height: `100%` }} />}
