@@ -64,6 +64,16 @@ export const SubmitPlotButton = ({ callback }: any) => (
       onClick={callback}
     />
   );
+  export const SubmitComparisonMapsButton = ({ callback }: any) => (
+    <Button
+      width={180}
+      height={50}
+      backColor={"#ddff00"}
+      backColorHover={"#27ae60"}
+      label={"Show Google Maps Comaprison"}
+      onClick={callback}
+    />
+  );
 
   export const SendToOctaveButton = ({ callback }: any) => (
     <Button

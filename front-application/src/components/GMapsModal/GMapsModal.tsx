@@ -18,6 +18,7 @@ const GMapsModal = ({ modalVisiblity, showModal }: PlotModalType) => {
   const { useGlobalState } = store;
   const [elevationResults, setElevationResults] = useGlobalState("elevationResults");
   const [gMapsElevation] = useGlobalState("gmapsCoordinates");
+
   const handleExport = () => {
     const requestOptions = {
       method: "POST",

@@ -8,7 +8,7 @@ import {
   SubmitPlotMemoButton,
   SendToOctaveButton,
   NavigationPanel,
-  NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton, SubmitMapsButton, ShowResultGMapsMapsButton
+  NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton, SubmitMapsButton, ShowResultGMapsMapsButton, SubmitComparisonMapsButton
 } from "./SelectionPanel.styles";
 import PlotModal from "../PlotModal/PlotModal";
 import store, { CoordinatesType } from "../../Store/Store";
@@ -20,6 +20,7 @@ import ExportModal from "../ExportModal/ExportModal";
 import ExportAllModal from "../ExportAllModal/ExportAllModal";
 import ShowMapsModal from "../ShowMapsModal/ShowMapsModal";
 import GMapsResults from "../GMapsResults/GMapsResults";
+import GMapsComparisonModal from "../GMapsModal/GMapsComparison";
 
 // todo refactor to see proper plot
 const format = (
@@ -58,6 +59,7 @@ const SelectionPanel = () => {
   const { useGlobalState } = store;
   const [plotModalVisiblity, setPlotModalVisiblity] = useState(false);
   const [mapsModalVisiblity, setMapsModalVisiblity] = useState(false);
+  const [mapsComparisonModalVisiblity, setMapsComaprisonModalVisiblity] = useState(false);
   const [exportModalVisiblity, setExportModalVisiblity] = useState(false);
   const [exportAllModalVisiblity, setExportAllModalVisiblity] = useState(false);
   const [showMapsModalVisiblity, setShowMapsModalVisiblity] = useState(false);
@@ -102,6 +104,8 @@ const SelectionPanel = () => {
         return setPlotModalVisiblity(value);
       case "maps":
         return setMapsModalVisiblity(value);
+      case "maps-comparison":
+          return setMapsComaprisonModalVisiblity(value);
       case "export":
         return setExportModalVisiblity(value);
       case "export-all":
@@ -135,9 +139,12 @@ const SelectionPanel = () => {
           <ButtonWrapper>
             <SubmitPlotMemoButton callback={showModal(true, "plot", true)} />
           </ButtonWrapper>
-          {/* <ButtonWrapper>
+          <ButtonWrapper>
             <SubmitMapsButton callback={showModal(true, "maps", true)} />
-          </ButtonWrapper> */}
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <SubmitComparisonMapsButton callback={showModal(true, "maps-comparison", true)} />
+          </ButtonWrapper>
           <ButtonWrapper>
             <SendToOctaveButton callback={showModal(true, "export", false)} />
           </ButtonWrapper>
@@ -164,6 +171,9 @@ const SelectionPanel = () => {
       ) : null}
       {coordinates.elevations.length > 0 ? (
         <GMapsModal showModal={showModal} modalVisiblity={mapsModalVisiblity} />
+      ) : null}
+      {coordinates.elevations.length > 0 ? (
+        <GMapsComparisonModal showModal={showModal} modalVisiblity={mapsComparisonModalVisiblity} />
       ) : null}
         <ExportModal
           showModal={showModal}

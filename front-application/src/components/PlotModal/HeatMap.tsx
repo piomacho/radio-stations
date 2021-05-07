@@ -8,7 +8,7 @@ import { callApiFetch } from '../../common/global';
 import { useState } from 'react';
 import OpenElevationClient from "../../OECient/OpenElevationClient";
 
-interface HeatmapType {
+export interface HeatmapType {
     latitude: string,
     longitude: string,
     elevation: number,
@@ -20,7 +20,7 @@ interface HeatmapObjectType {
     elevation: number,
 }
 
-const sortAndGroupResultElements = (results:Array<CoordinatesType>): any => {
+export const sortAndGroupResultElements = (results:Array<CoordinatesType>): any => {
     //@ts-ignore
     return results.sort((a, b) => {
            if (a.latitude === b.latitude) {
@@ -35,6 +35,8 @@ const sortAndGroupResultElements = (results:Array<CoordinatesType>): any => {
             return r;
            }, {});
 }
+
+
 
 const getCorners = (results: Array<CoordinatesType>) => {
     const grouped = sortAndGroupResultElements(results);

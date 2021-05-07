@@ -172,6 +172,7 @@ class OpenElevationRestClient extends React.Component {
             body = {"locations": parameters['locations'] };
 
         }
+        console.log("hmmm ");
 
         queryParameters = this.mergeQueryParams(parameters, queryParameters);
 
