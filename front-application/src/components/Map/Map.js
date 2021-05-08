@@ -58,7 +58,6 @@ const MapWithMarker = compose(
 
     callApiFetch(`api/gmaps/all/${formattedCoords}`)
       .then(response =>  setGMapsElevation(response))
-      .then(response =>  console.log("--- ", response))
       .catch(err => console.log(err));
   }, []);
 

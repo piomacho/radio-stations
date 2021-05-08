@@ -182,7 +182,6 @@ export const handleExportToOctave = (
 
                             const main_modulo = allProfleObjects % OCTAVE_ITERATIONS;
                             const main_basis = (allProfleObjects - main_modulo) / OCTAVE_ITERATIONS;
-                            console.log("ALLL PROFILE OBJ ", allProfleObjects);
                                 runOctave(adapterLon, adapterLat, null, null, fName, height, frequency, req, main_basis, dataFactor, corners, main_modulo, allProfleObjects - 2, erp, polarization );
 
                         });
