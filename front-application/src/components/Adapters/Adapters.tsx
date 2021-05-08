@@ -53,6 +53,7 @@ const Adapters = () => {
     const [adapter, setAdapter] = useGlobalState('adapter');
     const [ adapters, setAdapters ] = React.useState([{value: '', label: ''}]);
     const [ loading, setLoading ] = React.useState(false);
+    const [ noAdaterWarning, setNoAdaterWarning] = useGlobalState('noAdapterWarning');
 
     React.useEffect(() => {
         setLoading(true);
@@ -61,7 +62,12 @@ const Adapters = () => {
         .then(adapters =>  {
           setAdapters(adapters);
           if(adapters.length > 0) {
+            if(noAdaterWarning === true) {
+              setNoAdaterWarning(false);
+            }
             setAdapter(adapters[0]);
+          } else {
+            setNoAdaterWarning(true);
           }
           setLoading(false) })
         .catch(err => console.log(err));

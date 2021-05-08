@@ -25,7 +25,7 @@ const GMapsResults = ({ modalVisiblity, showModal }: PlotModalType) => {
   }
 
   const handleClose = () => {
-    showModal(false, "show-maps-google", false);
+   showModal(false, "show-maps-google", false);
   }
   const closeConfirmationModal = () => {
     setConfirmationBox(false);
@@ -59,7 +59,6 @@ const GMapsResults = ({ modalVisiblity, showModal }: PlotModalType) => {
       <SourceTitle>tl_p2001</SourceTitle>
       </ToggleWrapper>
       <MapWrapper>
-        {isChecked === true ?
        <MapWithGroundOverlay
           googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${Keys.mapsKey}&v=3.exp&libraries=geometry,drawing,places`}
           loadingElement={<div style={{ height: `100%` }} />}
@@ -67,16 +66,9 @@ const GMapsResults = ({ modalVisiblity, showModal }: PlotModalType) => {
           mapElement={<div style={{ height: `100%` }} />}
           isChecked={isChecked}
           setConfirmationBox={setConfirmationBox}
-        /> :
-        <MapWithGroundOverlayMRP
-          googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${Keys.mapsKey}&v=3.exp&libraries=geometry,drawing,places`}
-          loadingElement={<div style={{ height: `100%` }} />}
-          containerElement={<div style={{ height: `700px` }} />}
-          mapElement={<div style={{ height: `100%` }} />}
-          isChecked={isChecked}
-      /> }
+        />
       </MapWrapper>
-    {showConfirmationBox === true ?
+    {showConfirmationBox === true && isChecked === true ?
           <MissingMapDialog title="Brak mapy w bazie !" message="Brak mapy w bazie !" onClickClose={()=> closeConfirmationModal()} /> : null}
     </Modal>
   );

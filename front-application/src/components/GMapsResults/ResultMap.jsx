@@ -20,7 +20,9 @@ export const MapWithGroundOverlay = compose(
   const [zoom, setZoom] = useGlobalState("zoom");
   const {id_nadajnik, id_program, id_antena} = adapter;
 
+
   const [bounds, setBounds] = React.useState({});
+  const [boundsNew, setBoundsNew] = React.useState({});
   const {isChecked} = props;
   const mapKMLToBounds = (response) => {
     const kml = response.kml.GroundOverlay;
@@ -46,7 +48,9 @@ export const MapWithGroundOverlay = compose(
 
 
   React.useEffect(() => {
-    callApiFetch(`api/comparison-map/kml-new/${id_antena}_${id_nadajnik}_${id_program}`).then((res) => {
+    const mapahash = adapter._mapahash;
+
+      callApiFetch(`api/comparison-map/kml-new/${id_antena}_${id_nadajnik}_${id_program}`).then((res) => {
         parseString(res.text, function (err, result) {
             if(result && result.kml){
                 const bounds = mapKMLToBoundsNew(result);
@@ -59,6 +63,24 @@ export const MapWithGroundOverlay = compose(
         });
 
    });
+
+
+   callApiFetch(`api/comparison-map/kml/${mapahash}`).then((res) => {
+
+    parseString(res.text, function (err, result) {
+       if(res.status === 200) {
+
+         const bounds = mapKMLToBounds(result);
+         setBoundsNew(bounds);
+
+       } else {
+         throw Error('Brak opisu mapy pokrycia o podanym id w bazie danych');
+       }
+
+     });
+
+   });
+
 }, [isChecked]);
 
     const bucketName = 'klm-map-storage';
@@ -66,7 +88,6 @@ export const MapWithGroundOverlay = compose(
       setZoom(this.getZoom());
     }
 
-    const url = `https://${bucketName}.storage.googleapis.com/${id_antena}_${id_nadajnik}_${id_program}.png`
     return (
     <GoogleMap
         defaultZoom={zoom}
@@ -78,11 +99,26 @@ export const MapWithGroundOverlay = compose(
         {
         bounds.north !== undefined && bounds.south !== undefined &&  bounds.east !== undefined && bounds.west !== undefined  ?
         <GroundOverlay
-            url={url}
+            url={`https://${bucketName}.storage.googleapis.com/${id_antena}_${id_nadajnik}_${id_program}.png`}
+
             defaultBounds={new google.maps.LatLngBounds(
             new google.maps.LatLng(bounds.south, bounds.west),
             new google.maps.LatLng(bounds.north, bounds.east)
             )}
+            opacity={isChecked ? .5 : 0}
+            defaultOpacity={.5}
+        /> : null }
+
+{
+        boundsNew.north !== undefined && boundsNew.south !== undefined &&  boundsNew.east !== undefined && boundsNew.west !== undefined  ?
+        <GroundOverlay
+            url={`https://mapy.radiopolska.pl/files/get/fm-std/${adapter._mapahash}.png`}
+
+            defaultBounds={new google.maps.LatLngBounds(
+            new google.maps.LatLng(boundsNew.south, boundsNew.west),
+            new google.maps.LatLng(boundsNew.north, boundsNew.east)
+            )}
+            opacity={isChecked ? 0.0 : .5}
             defaultOpacity={.5}
         /> : null }
     </GoogleMap>

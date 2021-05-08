@@ -8,7 +8,7 @@ import {
   SubmitPlotMemoButton,
   SendToOctaveButton,
   NavigationPanel,
-  NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton, SubmitMapsButton, ShowResultGMapsMapsButton
+  NavigationWrapper, SendAllToOctaveButton, ShowResultMapsButton, SubmitMapsButton, ShowResultGMapsMapsButton, NoAdaperWarning
 } from "./SelectionPanel.styles";
 import PlotModal from "../PlotModal/PlotModal";
 import store, { CoordinatesType } from "../../Store/Store";
@@ -61,6 +61,7 @@ const SelectionPanel = () => {
   const [exportModalVisiblity, setExportModalVisiblity] = useState(false);
   const [exportAllModalVisiblity, setExportAllModalVisiblity] = useState(false);
   const [showMapsModalVisiblity, setShowMapsModalVisiblity] = useState(false);
+  const [ noAdaterWarning ] = useGlobalState('noAdapterWarning');
   const [loading, setLoading] = useState(false);
   const [plotData, setPlotData] = useState<Array<any>>([]);
   const [trialCoords, setTrialCoords] = useGlobalState("trialCoords");
@@ -130,6 +131,7 @@ const SelectionPanel = () => {
     <Wrapper>
       <Stations />
       <Adapters />
+      {noAdaterWarning !== true ?
       <NavigationWrapper>
         <NavigationPanel>
           <ButtonWrapper>
@@ -151,7 +153,7 @@ const SelectionPanel = () => {
             <ShowResultGMapsMapsButton callback={showModal(true, "show-maps-google", false)} />
           </ButtonWrapper>
         </NavigationPanel>
-      </NavigationWrapper>
+      </NavigationWrapper> : <NoAdaperWarning>Proszę wybrać inną stację</NoAdaperWarning>}
       {loading ? (
         <LoaderOverLay>
           <LoaderContainer>

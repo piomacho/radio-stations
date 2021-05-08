@@ -43,6 +43,14 @@ export const NavigationPanel = styled('div')`
     margin-top: 150px;
 `;
 
+export const NoAdaperWarning = styled('div')`
+    padding: 30px;
+    background: indianred;
+    border-radius: 6px;
+    font-size: 20px;
+    color: white;
+    margin: 40px auto;
+`;
 export const SubmitPlotButton = ({ callback }: any) => (
     <Button
       width={180}
