@@ -3,6 +3,8 @@ import { getCorners } from 'src/common/global';
 import { chunkArray } from './chunkArray';
 import { handleExportToOctave, SegmentResultType } from './octaveExportFunctions';
 import axiosRetry from 'axios-retry';
+import { createBitmapElevation } from './createBitmap';
+import { file } from 'find';
 const axios = require('axios')
 var fs = require('fs');
 const json = require('big-json');
@@ -116,8 +118,17 @@ router.post('/generate-template', async (req: Request, res: Response) => {
 router.post('/generate', async (req: Request, res: Response) => {
     try {
         const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
+        console.time("generateCoordinates")
         const coords = generateCoordinates(radius, pointsDistance, adapter.latitude, adapter.longitude);
+        console.timeEnd("generateCoordinates")
         const corners = await getCorners(coords);
+
+        console.log("- - -- - > cooords", coords.length);
+        // const size = ((dataFactor * 2) | 0 ) - 1;
+        // createBitmapElevation(fileName, size, corners, adapter.latitude, adapter.longitude, coords );
+
+
+
         removeResultsFile();
 
         let ITERATIONS = 100;
@@ -142,58 +153,72 @@ router.post('/generate', async (req: Request, res: Response) => {
         headers["Content-Type"] = ["application/json"];
 
 
-        const pathName = '/lookup-line-distance-all';
+        const pathName = '/find-elevation-for-web';
 
         let counter = 0;
-        res.status(200).json({coordinates: "success"});
 
+        const test = [];
+        console.time("generate profiles");
+        // console.log("first ", )
         for(let i = 0; i < ITERATIONS; i++) {
 
             const body = {
                 final: (i === ITERATIONS - 1),
                 adapterLatitude: adapter.latitude,
                 adapterLongitude: adapter.longitude,
-                distance: pointsDistance,
                 receivers: chunkedArray[i],
                 iteration: ITERATIONS,
                 currentIteration: i
             };
 
             const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
+
             if(result) {
                 try {
                     counter = counter + 1;
+
+                    // console.log("DONE ! ",result)
+                       test.push(...result);
                        //@ts-ignore
-                    req.app.io.emit("loaderGenerate", counter);
+
+                    // req.app.io.emit("loaderGenerate", counter);
+                //    console.time("generateCoordinates")
                    if(counter === ITERATIONS){
-                    fs.appendFile(path.join(__dirname, '../../full-result.json'), '""]', function (err: string) {
-                        fs.appendFile(path.join(__dirname, '../../full-result-2.json'), '""]', function (err: string) {
-                            fs.appendFile(path.join(__dirname, '../../full-result-3.json'), '""]', function (err: string) {
-                                fs.appendFile(path.join(__dirname, '../../full-result-4.json'), '""]', function (err: string) {
-                                    if (!fs.existsSync(path.join(__dirname, `../../validation_results/${fileName}`))){
-                                        fs.mkdirSync(path.join(__dirname, `../../validation_results/${fileName}`));
-                                        handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, adapter.erp, adapter.polarization, fileName, dataFactor, corners, `${adapter.frequency}`, req )
-                                    } else {
-                                        rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () {
-                                            console.log("Catalog with profiles and receviers is removed !");
-                                            fs.mkdir(path.join(__dirname, `../../validation_results/${fileName}`), () => {
-                                                handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, adapter.erp, adapter.polarization, fileName, dataFactor, corners, `${adapter.frequency}`, req )
-                                            });
-                                         });
-                                    }
-                                    //@ts-ignore
-                                    req.app.io.emit("octaveStart", "Rozpoczęto obliczenia w Octave...");
+                    console.log("DONE ! ",test.length);
+                    const size = ((dataFactor * 2) | 0 ) - 1;
+                    createBitmapElevation(fileName, size, corners, adapter.latitude, adapter.longitude, test );
+                    res.status(200).json({coordinates: "success"});
+
+                    // createBitmapElevation(fileName, size, corners, adapter.latitude,  adapter.longitude, result);
+                    // fs.appendFile(path.join(__dirname, '../../full-result.json'), '""]', function (err: string) {
+                    //     fs.appendFile(path.join(__dirname, '../../full-result-2.json'), '""]', function (err: string) {
+                    //         fs.appendFile(path.join(__dirname, '../../full-result-3.json'), '""]', function (err: string) {
+                    //             fs.appendFile(path.join(__dirname, '../../full-result-4.json'), '""]', function (err: string) {
+                    //                 // if (!fs.existsSync(path.join(__dirname, `../../validation_results/${fileName}`))){
+                    //                 //     fs.mkdirSync(path.join(__dirname, `../../validation_results/${fileName}`));
+                    //                     handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, adapter.erp, adapter.polarization, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+                    //                 // } else {
+                    //                     rimraf(path.join(__dirname, `../../validation_results/${fileName}`), function () {
+                    //                         console.log("Catalog with profiles and receviers is removed !");
+                    //                         // fs.mkdir(path.join(__dirname, `../../validation_results/${fileName}`), () => {
+                    //                             handleExportToOctave( adapter.longitude,adapter.latitude, adapter.height, adapter.erp, adapter.polarization, fileName, dataFactor, corners, `${adapter.frequency}`, req )
+                    //                         // });
+                    //                      });
+                    //                )
+                    //                 // }
+                    //                 //@ts-ignore
+                    //                 req.app.io.emit("octaveStart", "Rozpoczęto obliczenia w Octave...");
 
 
-                                });
-                            });
-                        });
-                    });
+                    //             });
+                    //         });
+                    //     });
+                    // });
 
                    }
                 }catch (err) {
                      //@ts-ignore
-                    req.app.io.emit("octaveError", "Wystąpił błąd !");
+                    // req.app.io.emit("octaveError", err);
                     return res.status(404).json({
                         error: err.message,
                 }

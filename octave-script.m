@@ -101,7 +101,7 @@ end
                 receiverLongitude = r1(:,2);
 
 
-                disp(['Processing ' num2str(octaveIteration) '/' num2str(iteration) " " num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  ' Tpc = ' num2str(Tpc) ' ...']);
+                % disp(['Processing ' num2str(octaveIteration) '/' num2str(iteration) " " num2str(length(Tpc_array)) ', GHz = ' num2str(GHz) ' GHz, Lat = ' num2str(receiverLatitude) ' Lon = ', num2str(receiverLongitude)  ' Tpc = ' num2str(Tpc) ' ...']);
                 fputs (fid, "1");
                 p2001 = tl_p2001(d, h, z, GHz, Tpc_array(tpccnt), receiverLatitude, receiverLongitude, Phite, Phitn, Hrg, Htg, Grx, Gtx, FlagVP);
                 row = [...

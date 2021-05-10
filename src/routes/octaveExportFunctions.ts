@@ -76,6 +76,7 @@ export const handleExportToOctave = (
 
         //----------------------------------------------
             let profleObjects = 0;
+            console.time("Prepare data for Octave")
 
             const readStream = fs.createReadStream(path.join(__dirname, '../../full-result.json'));
             const readStream2 = fs.createReadStream(path.join(__dirname, '../../full-result-2.json'));
@@ -175,8 +176,9 @@ export const handleExportToOctave = (
                             if (err) {
                                 throw err;
                             }
-                            console.log("JSON data is saved.");
-
+                            // console.log("JSON data is saved.");
+                            console.timeEnd("Prepare data for Octave");
+                            console.time('Octave calculations');
                             globalProcessCounter = 0;
                             const allProfleObjects = profleObjects - 1;
 
@@ -191,7 +193,7 @@ export const handleExportToOctave = (
             });
                 });
 
-                console.log("Zakończono pisanie do plików - receivers / profiles ! ")
+                // console.log("Zakończono pisanie do plików - receivers / profiles ! ")
             })
 
 
@@ -262,7 +264,8 @@ const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, re
         const fileSizeInBytes = stats.size;
         req.app.io.emit("octaveLoader", (fileSizeInBytes/filesNumber));
     }, 3000);
-
+    const size = ((dataFactor * 2) | 0 ) - 1;
+    runBitmapScript(fName, size, corners, adapterLat, adapterLon, erp, polarization);
     if(globalProcessCounter !== -1 ){
         globalProcessCounter = globalProcessCounter + 1;
 
@@ -284,14 +287,14 @@ const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, re
 
                 }
                 end = start + rangeValGlobal > filesNumber ? filesNumber : start + rangeValGlobal;
-                console.log("New Octave iteration...");
+                // console.log("New Octave iteration...");
                 const polarizationValue = polarization === 'H' ? 0 : 1;
                 ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter} ${erp} ${polarizationValue}`);
             } else {
                 start = (rangeValGlobal + 1) * i + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1);
                 end = (rangeValGlobal + 1) * i  + (globalProcessCounter - 1) * ITERATIONS * (rangeValGlobal + 1) + rangeValGlobal;
                 globalEnd = end;
-                console.log("New Octave iteration...");
+                // console.log("New Octave iteration...");
                 const polarizationValue = polarization === 'H' ? 0 : 1;
                 ls1 = exec(`octave -i --persist octave-script.m ${adapterLon} ${adapterLat} ${receiverLon} ${receiverLat} ${fName} ${height} ${frequencyStr} ${i} ${start} ${end} ${moduloValGlobal} ${globalProcessCounter} ${erp} ${polarizationValue}`);
 
@@ -319,12 +322,13 @@ const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, re
                             fs.writeFile('counter.txt', '', function(){console.log('Counter reset done!')})
                             req.app.io.emit("octaveLoader", 0);
                             const size = ((dataFactor * 2) | 0 ) - 1;
-                            runBitmapScript(fName, size, corners, adapterLat, adapterLon, erp, polarization);
+                            console.timeEnd('Octave calculations');
+                            // runBitmapScript(fName, size, corners, adapterLat, adapterLon, erp, polarization);
                             // const corners = getCorners()
                             ls1.kill()
                         } else {
                             setTimeout(function() {
-                                runOctave(adapterLon, adapterLat, null, null, fName, height, frequencyStr, req, main_basis, dataFactor, corners, main_modulo, filesNumber, erp, polarization);
+                                // runOctave(adapterLon, adapterLat, null, null, fName, height, frequencyStr, req, main_basis, dataFactor, corners, main_modulo, filesNumber, erp, polarization);
                             }, 2000);
                         }
 

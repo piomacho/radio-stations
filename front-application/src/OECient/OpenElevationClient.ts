@@ -80,7 +80,7 @@ class OpenElevationRestClient extends React.Component {
         }
         let deferred = Q.defer();
         let domain = this.domain,
-            path = '/lookupnew';
+            path = '/create-coordinates';
         let body: Record<string, any> = {},
             queryParameters: Record<string, any> = {},
             headers: Record<string, any> = {},
@@ -112,7 +112,7 @@ class OpenElevationRestClient extends React.Component {
         }
         let deferred = Q.defer();
         let domain = this.domain,
-            path = '/lookup-line';
+            path = '/create-one-point-propagation-data';
         let body: Record<string, any> = {},
             queryParameters: Record<string, any> = {},
             headers: Record<string, any> = {},

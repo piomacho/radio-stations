@@ -1,4 +1,5 @@
 args = argv();
+tic
 fName = strcat('validation_results/',args{5},'.xlsx');
 Tpc_array = [50];
 
@@ -106,3 +107,4 @@ for i = 1:length(d)
 end
 
 xlswrite(fName,B, Profile);
+toc

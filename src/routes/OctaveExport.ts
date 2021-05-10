@@ -67,6 +67,7 @@ router.post('/send/', async (req: Request, res: Response) => {
         end`, function (err: any) {
           if (err) return console.log(err);
           const polarizationValue = polarization === 'H' ? 0 : 1;
+          console.log("gurwa")
           const ls = execFile("octave", ["-i", "--persist", "validate_p2001_b2iseac.m", adapterLon, adapterLat, receiverLon, receiverLat, fName, +height, frequency, polarizationValue]);
 
           ls.stdout.on("data", (data: string) => {
@@ -89,6 +90,7 @@ router.post('/send/', async (req: Request, res: Response) => {
           ls.on('error', (error: { message: string }) => {
               console.log(`error: ${error.message}`);
           });
+
 
           ls.on("close", (code: string) => {
               console.log(`child process exited with code ${code}`);

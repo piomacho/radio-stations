@@ -89,6 +89,8 @@ def get_elevation_distance_all(point):
 
     return {
         'e': elevation,
+        'lat': point['lat'],
+        'lng': point['lng'],
         'd': point['d']
     }
 
@@ -240,6 +242,9 @@ class fullResult:
     def __init__(self, coords, points):
         self.r = coords
         self.c = points
+class notFullResult:
+    def __init__(self, coords):
+        self.r = coords
 
 def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers):
     cArray = []
@@ -267,6 +272,7 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
 
             lat2 = round(math.degrees(lat2), 13)
             lon2 = round(math.degrees(lon2), 13)
+            cArray += [{"d": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"lat": lat2, "lng": lon2}]
             cArray += [{"d": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"lat": lat2, "lng": lon2}]
             if(x == int(numberOfPoints) - 1):
                 xx = result({"lat": receivers[i]['lat'], "lng": receivers[i]['lng']}, cArray)
@@ -358,6 +364,37 @@ def body_to_line_distance_all():
     d = dict();
     a = json.loads(locations)
     d['results'] = a
+    d['iteration'] = iteration
+    d['currentIteration'] = currentIteration
+    return d
+
+
+def body_to_web():
+    try:
+        adapterLatitude = request.json['body'].get('adapterLatitude', None)
+        adapterLongitude = request.json['body'].get('adapterLongitude', None)
+        receivers = request.json['body'].get('receivers', None)
+        iteration = request.json['body'].get('iteration', None)
+        currentIteration = request.json['body'].get('currentIteration', None)
+
+    except Exception:
+        raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
+
+    if not adapterLatitude:
+        raise InternalException(json.dumps({'error': '"adapterLatitude" is required in the body.'}))
+    if not adapterLongitude:
+        raise InternalException(json.dumps({'error': '"adapterLongitude" is required in the body.'}))
+    if not receivers:
+        raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
+
+    # locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
+
+    latlng = []
+    latLngFull = []
+
+    d = dict();
+    # a = json.loads(receivers)
+    d['results'] = receivers
     d['iteration'] = iteration
     d['currentIteration'] = currentIteration
     return d
@@ -478,7 +515,8 @@ def do_lookup_line_distance_all(get_locations_func):
         iterations = allData['iteration']
 
         for data in allData['results']:
-            xxx = fullResult({'lat': data['coords']['lat'], 'lng': data['coords']['lng'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
+            # xxx = fullResult({'lat': data['coords']['lat'], 'lng': data['coords']['lng'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
+            # xxx = fullResult({'lat': data['coords']['lat'], 'lng': data['coords']['lng'] }, 'elevation': get_elevation(data['coords']['lat'], data['coords']['lng']) )
             if currentIt < iterations/4:
                 do_write_to_file(xxx.__dict__,path);
             elif currentIt >= iterations/4 and currentIt < iterations/2:
@@ -489,6 +527,49 @@ def do_lookup_line_distance_all(get_locations_func):
                  do_write_to_file(xxx.__dict__,path4);
 
         return {'results': 'ok'}
+    except InternalException as e:
+        response.status = 401
+        response.content_type = 'application/json'
+        return e.args[0]
+
+def do_lookup_web(get_locations_func):
+
+    """
+    Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
+    and returns an answer ready to go to the client.
+    :return:
+    """
+    try:
+        resultArray = []
+        f = None
+        # my_path = os.path.abspath(os.path.dirname(__file__))
+        # path = os.path.join(my_path, "../full-result.json")
+        # path2 = os.path.join(my_path, "../full-result-2.json")
+        # path3 = os.path.join(my_path, "../full-result-3.json")
+        # path4 = os.path.join(my_path, "../full-result-4.json")
+
+        # allData = get_locations_func();
+        # data = allData['results']
+        # iterations = allData['results']
+        allData = get_locations_func();
+        currentIt = allData['currentIteration']
+        iterations = allData['iteration']
+        for data in allData['results']:
+
+            # xxx = fullResult({'lat': data['coords']['lat'], 'lng': data['coords']['lng'] }, [get_elevation_distance_all(pointData) for pointData in data['coordinates']] )
+            xxx = get_elevation(data['lat'], data['lng']);
+            # print("-- ", xxx);
+            resultArray.append(xxx);
+            # if currentIt < iterations/4:
+            #     do_write_to_file(xxx.__dict__,path);
+            # elif currentIt >= iterations/4 and currentIt < iterations/2:
+            #     do_write_to_file(xxx.__dict__,path2)
+            # elif currentIt >= iterations/2 and currentIt < iterations*3/4:
+            #     do_write_to_file(xxx.__dict__,path3);
+            # else:
+            #      do_write_to_file(xxx.__dict__,path4);
+
+        return {'results': resultArray}
     except InternalException as e:
         response.status = 401
         response.content_type = 'application/json'
@@ -521,7 +602,7 @@ def post_lookup():
     return do_lookup_heatmap(body_to_locations)
 
 # Base Endpoint
-URL_ENDPOINT_NEW = '/api/v1/lookupnew'
+URL_ENDPOINT_NEW = '/api/v1/create-coordinates'
 
 # For CORS
 @route(URL_ENDPOINT_NEW, method=['OPTIONS'])
@@ -537,7 +618,7 @@ def post_lookup_new():
     return do_lookup(body_to_adapter)
 
 # Base Endpoint
-URL_ENDPOINT_LINE = '/api/v1/lookup-line'
+URL_ENDPOINT_LINE = '/api/v1/create-one-point-propagation-data'
 
 # For CORS
 @route(URL_ENDPOINT_LINE, method=['OPTIONS'])
@@ -554,7 +635,26 @@ def post_lookup_line():
 
 
 # Base Endpoint
-URL_ENDPOINT_LINE_DISTANCE_ALL = '/api/v1/lookup-line-distance-all'
+URL_ENDPOINT_LINE = '/api/v1/find-elevation-for-web'
+
+# For CORS
+@route(URL_ENDPOINT_LINE, method=['OPTIONS'])
+def cors_handler():
+    return {}
+
+@route(URL_ENDPOINT_LINE, method=['POST'])
+def post_lookup_line():
+    """
+        GET method. Uses body_to_locations.
+        :return:
+        """
+    return do_lookup_web(body_to_web)
+
+
+
+
+# Base Endpoint
+URL_ENDPOINT_LINE_DISTANCE_ALL = '/api/v1/create-full-propagation-data'
 
 # For CORS
 @route(URL_ENDPOINT_LINE_DISTANCE_ALL, method=['OPTIONS'])

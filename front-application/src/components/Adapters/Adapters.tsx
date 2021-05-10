@@ -31,7 +31,7 @@ const setParameters = (adapters: Array<AdapterType>): Array<OptionType> => {
     return adapters.map((adapter: AdapterType) => {
         return {
           value: adapter.id_obiekt,
-          label: adapter.obiekt,
+          label: `${adapter.obiekt} - ${+adapter.czestotliwosc/1000} MHz`,
           szerokosc: adapter.szerokosc,
           dlugosc: adapter.dlugosc,
           wys_npm: adapter.wys_npm,
@@ -60,6 +60,7 @@ const Adapters = () => {
         callApiFetch(`api/adapters/all/${station.value}`)
         .then(response =>  setParameters(response))
         .then(adapters =>  {
+          console.log("adapters", adapters);
           setAdapters(adapters);
           if(adapters.length > 0) {
             if(noAdaterWarning === true) {

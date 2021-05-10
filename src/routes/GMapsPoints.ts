@@ -39,7 +39,7 @@ router.post('/excel-send', async (req: Request, res: Response) => {
             ws.cell(i + 2, 2).number(coordinatesGMaps[i]);
         }
 
-        wb.write(`prosta.xlsx`);
+        wb.write(`prosta-druga.xlsx`);
         return res.status(200).json({
             message: "Success",
         });
