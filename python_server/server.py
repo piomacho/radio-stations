@@ -48,6 +48,7 @@ def get_elevation(lat, lng):
     }
 
 def get_elevation_distance(lat, lng, distance):
+    # print("000000 ", lat)
     """
     Get the elevation at point (lat,lng) using the currently opened interface
     :param lat:
@@ -79,6 +80,7 @@ def get_elevation_distance_all(point):
 
     """
     try:
+        print("HM ", point['lat'])
         elevation = interface.lookup(point['lat'], point['lng'])
     except:
         return {
@@ -150,6 +152,31 @@ def body_to_locations():
             raise InternalException(json.dumps({'error': '"%s" is not in a valid format.' % l}))
 
     return latlng
+
+
+def body_to_elevation_exp():
+    """
+    Grab a list of locations from the body and turn them into [(lat,lng),(lat,lng),...]
+    :return:
+    """
+    try:
+        adapterLatitude = request.json['body'].get('adapterLatitude', None)
+        adapterLongitude = request.json['body'].get('adapterLongitude', None)
+        distance = request.json['body'].get('distance', None)
+        radius = request.json['body'].get('radius', None)
+        point = request.json['body'].get('point', None)
+        # pointLongitude = request.json.get('pointLongitude', None)
+    except Exception:
+        raise InternalException(json.dumps({'error': 'Invalid JSON.'}))
+
+
+    loc = generateCoordinatesExp(distance, radius, adapterLongitude, adapterLatitude, point["longitude"], point["latitude"] )
+    d = dict()
+    a = json.loads(loc)
+    d['locations'] = a
+
+    return d
+
 
 
 def degrees_to_radians(degrees):
@@ -274,6 +301,41 @@ def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, 
 
     return jsonpickle.encode(resultArray, unpicklable=False)
 
+
+def generateCoordinatesExp(distance, range1, adapterLongitude, adapterLatitude, pointLat, pointLong):
+    # print("JEST W generateCoordinatesExp", distance, range1, adapterLongitude, adapterLatitude, pointLat, pointLong)
+    cArray = []
+    resultArray=[]
+
+    cArray = []
+
+    brng = calculateBearing(degrees_to_radians(adapterLongitude), degrees_to_radians(adapterLatitude), degrees_to_radians(float(pointLong)), degrees_to_radians(float(pointLat)))
+    # range1 = measureDistance(adapterLatitude, adapterLongitude, receivers[i]['lat'], receivers[i]['lng'])
+
+    numberOfPoints = float(range1)/float(distance)
+    for x in range(int(numberOfPoints)):
+        d = (float(range1)/int(numberOfPoints)) * x
+
+        R = 6378.1 #Radius of the Earth
+
+        lat1 = math.radians(adapterLatitude) #Current lat point converted to radians
+        lon1 = math.radians(adapterLongitude) #Current long point converted to radians
+
+        lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
+            math.cos(lat1)*math.sin(d/R)*math.cos(brng))
+
+        lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
+                    math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
+
+        lat2 = round(math.degrees(lat2), 13)
+        lon2 = round(math.degrees(lon2), 13)
+        cArray += [{"d": measureDistance( adapterLatitude, adapterLongitude, lat2, lon2 ),"lat": lat2, "lng": lon2}]
+        if(x == int(numberOfPoints) - 1):
+            xx = result({"lat": pointLat, "lng": pointLong}, cArray)
+            resultArray.append(xx.__dict__)
+
+    return jsonpickle.encode(resultArray, unpicklable=False)
+
 def generateCoordinates(range1, x0, y0):
     unitDistance = 0.007
     cArray = []
@@ -350,7 +412,7 @@ def body_to_line_distance_all():
     if not receivers:
         raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
 
-    locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
+    locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, [])
 
     latlng = []
     latLngFull = []
@@ -435,8 +497,49 @@ def do_lookup_distance(get_locations_func):
     :return:
     """
     try:
+        print("do_lookup_distance")
         locations = get_locations_func()
         return {'results': [get_elevation_distance(lat, lng, dst) for (lat, lng, dst) in locations]}
+    except InternalException as e:
+        response.status = 400
+        response.content_type = 'application/json'
+        return e.args[0]
+
+def do_lookup_exp(get_locations_func):
+    """
+    Generic method which gets the locations in [(lat,lng),(lat,lng),...] format by calling get_locations_func
+    and returns an answer ready to go to the client.
+    :return:
+    """
+    try:
+        # print("do_lookup_distance")
+        allData = get_locations_func()
+        finalArr = []
+        aa = allData['locations'][0]['coordinates']
+        # print("do_lookup_distance", aa)
+
+        for x in aa:
+            # print(": )) -", round(x['lng'],3))
+
+            try:
+                elevation = interface.lookup(x['lng'], x['lat'])
+            except:
+                return {
+                    'latitude': x['lat'],
+                    'longitude': x['lng'],
+                    'error': 'No such coordinate (%s, %s)' % (x['lat'], x['lng'])
+                }
+
+            finalArr.append ({
+                'latitude': x['lat'],
+                'longitude': x['lng'],
+                'elevation': elevation,
+                'distance': x['d']
+            })
+
+
+
+        return {'results': finalArr}
     except InternalException as e:
         response.status = 400
         response.content_type = 'application/json'
@@ -568,5 +671,21 @@ def post_lookup_line_distance_all():
         :return:
         """
     return do_lookup_line_distance_all(body_to_line_distance_all)
+
+# Base Endpoint
+URL_ENDPOINT_LINE_ELEVATION_EXP = '/api/v1/lookup-elevation-experiment'
+
+# For CORS
+@route(URL_ENDPOINT_LINE_ELEVATION_EXP, method=['OPTIONS'])
+def cors_handler():
+    return {}
+
+@route(URL_ENDPOINT_LINE_ELEVATION_EXP, method=['POST'])
+def post_lookup_line_distance_exp():
+    """
+        GET method. Uses body_to_locations.
+        :return:
+        """
+    return do_lookup_exp(body_to_elevation_exp)
 run(host='0.0.0.0', port=10000, server='waitress', workers=4)
 

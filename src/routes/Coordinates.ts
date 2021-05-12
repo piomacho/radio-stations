@@ -113,6 +113,43 @@ router.post('/generate-template', async (req: Request, res: Response) => {
 
     res.send({coordinates: roundedCoords});
 });
+
+router.post('/lookup-elevation-experiment', async (req: Request, res: Response) => {
+
+    const { adapterLongitude,adapterLatitude, point  } = req.body;
+    const computerName = os.platform() === 'win32' ? os.hostname() : '0.0.0.0';
+
+    const domain = `http://${computerName}:10000`;
+    // const chunkedArray = chunkArray(coords, ITERATIONS, true);
+    const queryParameters: Record<string, any> = {}
+
+    const headers: any = {};
+    const form: Record<string, any> = {};
+    headers["Accept"] = ["application/json"];
+    headers["Content-Type"] = ["application/json"];
+
+
+    const pathName = '/lookup-elevation-experiment';
+    // api/v1/lookup-elevation-experiment'
+    let counter = 0;
+
+
+
+        const body = {
+            adapterLatitude: +adapterLatitude,
+            adapterLongitude: +adapterLongitude,
+            distance: 0.025,
+            radius: 1,
+            point: point
+        };
+
+        const result = await makeRequest('POST', domain + '/api/v1' + pathName, body, body, headers, queryParameters, form);
+        if(result) {
+            // console.log("Results", result)
+            res.status(200).json({coordinates: result});
+        }
+})
+
 router.post('/generate', async (req: Request, res: Response) => {
     try {
         const { adapter, radius, pointsDistance, fileName, dataFactor,  } = req.body;
