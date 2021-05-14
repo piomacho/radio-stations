@@ -89,7 +89,9 @@ def get_elevation_distance_all(point):
 
     return {
         'e': elevation,
-        'd': point['d']
+        'd': point['d'],
+        'lat': point['lat'],
+        'lng': point['lng']
     }
 
 @hook('after_request')
