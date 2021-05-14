@@ -49,7 +49,7 @@
     "jimp": "^0.16.1",
     "kill-port": "^1.6.1",
     "leaflet": "^1.7.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "module-alias": "^2.2.2",
     "morgan": "^1.9.1",
     "object-sizeof": "^1.6.1",
