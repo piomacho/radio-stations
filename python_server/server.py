@@ -163,7 +163,7 @@ def radians_to_degrees(radians):
 
 
 def measureDistance(lat1, lon1, lat2, lon2):
-    R = 6373.0
+    R = 6378.1
 
     lat1 = math.radians(lat1)
     lon1 = math.radians(lon1)
@@ -182,7 +182,7 @@ def measureDistance(lat1, lon1, lat2, lon2):
 
 
 def newCoordinates(latitude, longitude, dy, dx):
-    r_earth = 6378.137
+    r_earth = 6378.1
     new_latitude  = latitude  + (dy / r_earth) * (180 / math.pi)
     new_longitude = longitude + (dx / r_earth) * (180 / math.pi) / math.cos(latitude * math.pi/180)
     d = dict()
@@ -243,7 +243,7 @@ class fullResult:
         self.r = coords
         self.c = points
 
-def generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers):
+def createProfiles(distance, adapterLongitude, adapterLatitude, receivers):
     cArray = []
     resultArray=[]
     for i in range(int(len(receivers))):
@@ -352,7 +352,7 @@ def body_to_line_distance_all():
     if not receivers:
         raise InternalException(json.dumps({'error': '"receivers" is required in the body.'}))
 
-    locations = generateCoordinatesDistanceAll(distance, adapterLongitude, adapterLatitude, receivers)
+    locations = createProfiles(distance, adapterLongitude, adapterLatitude, receivers)
 
     latlng = []
     latLngFull = []
@@ -571,4 +571,5 @@ def post_lookup_line_distance_all():
         """
     return do_lookup_line_distance_all(body_to_line_distance_all)
 run(host='0.0.0.0', port=10000, server='waitress', workers=4)
+
 

@@ -90,7 +90,7 @@ export const handleExportToOctave = (
                }
                if(parsedData.r && parsedData.c){
 
-                 writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                 writeToReceiverFile(profleObjects, `'${parsedData.r.lat}'; '${parsedData.r.lng}'`, fName);
                  const a = prepareProfileData(parsedData);
                  writeToProfileFile(profleObjects, a, fName);
                }
@@ -110,7 +110,7 @@ export const handleExportToOctave = (
                    }
                    if(parsedData.r && parsedData.c){
 
-                     writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                     writeToReceiverFile(profleObjects, `'${parsedData.r.lat}'; '${parsedData.r.lng}'`, fName);
                      const a = prepareProfileData(parsedData);
                      writeToProfileFile(profleObjects, a, fName);
                    }
@@ -130,7 +130,7 @@ export const handleExportToOctave = (
                            }
                            if(parsedData.r && parsedData.c){
 
-                             writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                             writeToReceiverFile(profleObjects, `'${parsedData.r.lat}'; '${parsedData.r.lng}'`, fName);
                              const a = prepareProfileData(parsedData);
                              writeToProfileFile(profleObjects, a, fName);
                            }
@@ -149,7 +149,7 @@ export const handleExportToOctave = (
                            }
                            if(parsedData.r && parsedData.c){
 
-                             writeToReceiverFile(profleObjects, `[${parsedData.r.lat} ${parsedData.r.lng}];`, fName);
+                             writeToReceiverFile(profleObjects, `'${parsedData.r.lat}'; '${parsedData.r.lng}'`, fName);
                              const a = prepareProfileData(parsedData);
                              writeToProfileFile(profleObjects, a, fName);
                            }
@@ -338,5 +338,6 @@ const runOctave = (adapterLon: string, adapterLat: string, receiverLon: null, re
     }
 
 }
+
 
 
