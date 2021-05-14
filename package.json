@@ -26,7 +26,7 @@
     "@types/leaflet": "^1.5.21",
     "@types/react-router-dom": "^5.1.3",
     "async": "^3.2.0",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "axios-retry": "^3.1.9",
     "big-json": "^3.1.0",
     "bmp-js": "^0.1.0",
