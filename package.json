@@ -25,7 +25,7 @@
     "@types/google-map-react": "^2.1.0",
     "@types/leaflet": "^1.5.21",
     "@types/react-router-dom": "^5.1.3",
-    "async": "^3.2.0",
+    "async": "^3.2.2",
     "axios": "^0.21.0",
     "axios-retry": "^3.1.9",
     "big-json": "^3.1.0",
